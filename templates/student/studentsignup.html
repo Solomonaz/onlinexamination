@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+{% load widget_tweaks %}
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <style>
+
+        form{
+           margin: 50px; 
+          
+        }
+
+    </style>
+  </head>
+  <body>
+<br><br><br>
+<div class="container">
+  <h3 style="text-align: center;"><a href="/admin-view-student" class="btn btn-primary btn-sm btn-rounded">back</a>Examinee Signup Form</h3>
+  <p class="text-center">የተፈታኝ መመዝገቢያ ቅጽ</p>
+  <hr>
+  {% if messages %}
+  <div class="alert alert-success" role="alert">
+    {% for message in messages %}
+      {{ message }}
+    {% endfor %}
+  </div>
+{% endif %}
+
+
+<form method="POST" autocomplete="off" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="first_name">First Name</label>
+          {% render_field userForm.first_name|attr:'required:true'  class="form-control form-control-sm rounded-0" placeholder="First Name" %}
+        </div>
+        <div class="form-group col-md-6">
+          <label for="last_name">Last Name</label>
+          {% render_field userForm.last_name|attr:'required:true'  class="form-control form-control-sm rounded-0" placeholder="Last Name" %}
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="mobile">Contact</label>
+          {% render_field studentForm.mobile|attr:'required:true'  class="form-control form-control-sm rounded-0" placeholder="Contact Number" %}
+        </div>
+        <div class="form-group col-md-6">
+          <label for="address">Address</label>
+          {% render_field studentForm.address|attr:'required:true'  class="form-control form-control-sm rounded-0" placeholder="Address" %}
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="username">Username</label>
+          {% render_field userForm.username|attr:'required:true'  class="form-control form-control-sm rounded-0" placeholder="username" %}
+        </div>
+        <div class="form-group col-md-6">
+          <label for="inputPassword4">Password</label>
+          {% render_field userForm.password|attr:'required:true'  class="form-control form-control-sm rounded-0" placeholder="password" %}
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group col-md-12">
+          <button type="submit" class="btn btn-primary">Sign Up</button>
+        </div>
+        
+      </div>
+    </form>
+</div>
+
+  </body>
+</html>

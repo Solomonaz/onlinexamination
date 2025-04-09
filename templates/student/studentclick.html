@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en" dir="ltr">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <style media="screen">
+    .jumbotron {
+      margin-top: 0px;
+      margin-bottom: 0px;
+    }
+
+    .jumbotron h1, p {
+      text-align: center;
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  {% include "exam/navbar.html" %}
+ 
+  <div class="jumbotron"">
+    <h1 class="display-4">የተፈታኝ መግቢያ</h1>
+    <hr class="my-4">
+    <p>ወደ ሲስተሙ ለመግባት ይግቡ የሚለዉን ማስፈንጠሪያ ይጫኑ</p>
+    <p class="lead">
+      <!-- <a class="btn btn-secondary rounded-0" href="studentsignup" role="button">Create Your Account</a> -->
+      <a class="btn btn-primary rounded-0" href="studentlogin" role="button">ይግቡ</a>
+    </p>
+  </div>
+ 
+</body>
+
+</html>

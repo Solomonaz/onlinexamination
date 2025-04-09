@@ -1,0 +1,51 @@
+{% extends 'student/studentbase.html' %}
+{% load widget_tweaks %}
+{% block content %}
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+</head>
+
+<br><br>
+
+<div class="container">
+    <div class="row">
+
+        <!-- Card 1: Available Exams -->
+        <div class="col-md-6">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-body">
+                    <h6 class="card-title">Available Exams</h6>
+                    <h2 class="d-flex justify-content-between align-items-center">
+                        <i class="fas fa-book"></i>
+                        <span>{{total_course}}</span>
+                    </h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 2: Total Questions -->
+        <div class="col-md-6">
+            <div class="card text-white bg-secondary mb-3">
+                <div class="card-body">
+                    <h6 class="card-title">Total Questions</h6>
+                    <h2 class="d-flex justify-content-between align-items-center">
+                        <i class="fas fa-question-circle"></i>
+                        <span>{{total_question}}</span>
+                    </h2>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<br><br><br><br><br><br><br><br><br><br>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+
+{% endblock content %}
