@@ -10,6 +10,15 @@ class StudentUserForm(forms.ModelForm):
         widgets = {
         'password': forms.PasswordInput()
         }
+        error_messages = {
+            'username': {
+                'required': "Please enter a username.",
+                'unique': "This username is already taken.",
+            },
+            'password': {
+                'required': "Please enter a password.",
+            },
+        }
 
 class StudentForm(forms.ModelForm):
     class Meta:
