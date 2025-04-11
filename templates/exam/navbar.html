@@ -4,60 +4,94 @@
 
 <head>
   <meta charset="utf-8">
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fancy Navbar</title>
 
-  <style type="text/css">
-    .bs-example {
-      margin: 0px;
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&display=swap" rel="stylesheet">
 
+  <style>
+    body {
+      font-family: 'Ubuntu', sans-serif;
     }
-    .bg-dark {
-    background-color: #212529!important;
-}
-    .navbar-brand {
-      font-size: 20px;
-      font-family: sans-serif;
 
+    .navbar {
+      background: linear-gradient(to right, #00bcd4, #2196f3);
+      padding: 1rem 2rem;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .navbar-brand {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #fff !important;
+      letter-spacing: 1px;
+    }
+
+    .navbar-nav .nav-link {
+      color: #f8f9fa !important;
+      margin-left: 1rem;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .navbar-nav .nav-link:hover {
+      color: #ffd700 !important;
+      transform: scale(1.05);
+    }
+
+    .navbar-toggler {
+      border: none;
+    }
+
+    .navbar-toggler:focus {
+      box-shadow: none;
+    }
+
+    .nav-icon {
+      margin-right: 5px;
     }
   </style>
 </head>
 
 <body>
-
-
-
-  <div class="bs-example">
-    <nav class="navbar navbar-expand-md navbar-dark fixed-top" style="background-color: #17a2b8;">
-    <a style="color: #ffffff;text-decoration: none; " href="/"><font face = "verdana" size =" 5">Online Examination</font><br /></a>  
-      <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
+  <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/">
+        <i class="fas fa-laptop-code nav-icon"></i> Online Examination
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
         <span class="navbar-toggler-icon"></span>
       </button>
 
-      <div class="collapse navbar-collapse justify-content-between" id="navbarCollapse">
-        <div class="navbar-nav">
-    
-        </div>
-
-        <div class="navbar-nav">
-          <!-- <a style="padding-left: 30px;" href="/" class="nav-item nav-link"> Home</a> -->
-          <a href="/teacher/teacherlogin" class="nav-item nav-link" style="color: white">አሰልጣኝ</a>
-          <a href="/student/studentlogin" class="nav-item nav-link" style="color: white">ተፈታኝ</a>
-          <a href="/adminclick" class="nav-item nav-link" style="color: white">አድሚን</a>
-          
-        </div>
-
-
-
-
+      <div class="collapse navbar-collapse justify-content-end" id="navbarCollapse">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a href="/teacher/teacherlogin" class="nav-link">
+              <i class="fas fa-chalkboard-teacher nav-icon"></i> አሰልጣኝ
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="/student/studentlogin" class="nav-link">
+              <i class="fas fa-user-graduate nav-icon"></i> ተፈታኝ
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="/adminclick" class="nav-link">
+              <i class="fas fa-user-shield nav-icon"></i> አድሚን
+            </a>
+          </li>
+        </ul>
       </div>
-    </nav>
-  </div>
+    </div>
+  </nav>
 
-
+  <!-- Bootstrap 5 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
