@@ -20,7 +20,10 @@ def studentclick_view(request):
 def student_signup_view(request):
     userForm=forms.StudentUserForm()
     studentForm=forms.StudentForm()
-    mydict={'userForm':userForm,'studentForm':studentForm}
+    mydict={
+        'userForm':userForm,
+        'studentForm':studentForm,
+        }
     if request.method=='POST':
         userForm=forms.StudentUserForm(request.POST)
         studentForm=forms.StudentForm(request.POST,request.FILES)

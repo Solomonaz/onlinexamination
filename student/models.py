@@ -1,11 +1,22 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.apps import apps
 
 
 class Student(models.Model):
     user=models.OneToOneField(User,on_delete=models.CASCADE)
     address = models.CharField(max_length=40)
     mobile = models.CharField(max_length=20,null=False)
+    organization = models.CharField(max_length=200, null=False)
+    
+    def get_course_model():
+        return apps.get_model('exam', 'Course')
+
+    course = models.ForeignKey(
+        'exam.Course',
+        on_delete=models.SET_NULL,
+        null=True
+    )
    
     @property
     def get_name(self):

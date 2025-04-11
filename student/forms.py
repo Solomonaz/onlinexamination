@@ -3,12 +3,16 @@ from django.contrib.auth.models import User
 from . import models
 from exam import models as QMODEL
 
+from django import forms
+from django.contrib.auth.models import User
+from . import models
+
 class StudentUserForm(forms.ModelForm):
     class Meta:
-        model=User
-        fields=['first_name','last_name','username','password']
+        model = User
+        fields = ['first_name', 'last_name', 'username', 'password']
         widgets = {
-        'password': forms.PasswordInput()
+            'password': forms.PasswordInput(),
         }
         error_messages = {
             'username': {
@@ -22,6 +26,10 @@ class StudentUserForm(forms.ModelForm):
 
 class StudentForm(forms.ModelForm):
     class Meta:
-        model=models.Student
-        fields=['address','mobile']
+        model = models.Student
+        fields = ['address', 'mobile', 'course','organization']
+        widgets = {
+            'course': forms.Select(attrs={'class': 'form-control'}),
+        }
+
 
