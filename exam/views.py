@@ -60,6 +60,7 @@ def admin_dashboard_view(request):
     'total_teacher':TMODEL.Teacher.objects.all().filter(status=True).count(),
     'total_course':models.Course.objects.all().count(),
     'total_question':models.Question.objects.all().count(),
+    # 'active_students':SMODEL.Student.objects.filter(is_active=True)
     }
     return render(request,'exam/admin_dashboard.html',context=dict)
 

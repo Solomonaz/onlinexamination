@@ -46,22 +46,37 @@ def student_signup_view(request):
 def is_student(user):
     return user.groups.filter(name='STUDENT').exists()
 
+# @login_required(login_url='studentlogin')
+# @user_passes_test(is_student)
+# def student_dashboard_view(request):
+#     dict={
+    
+#     'total_course':QMODEL.Course.objects.all().count(),
+#     'total_question':QMODEL.Question.objects.all().count(),
+#     'courses':QMODEL.Course.objects.all()
+#     }
+#     return render(request,'student/student_dashboard.html',context=dict)
+
 @login_required(login_url='studentlogin')
 @user_passes_test(is_student)
 def student_dashboard_view(request):
-    dict={
-    
-    'total_course':QMODEL.Course.objects.all().count(),
-    'total_question':QMODEL.Question.objects.all().count(),
-    'courses':QMODEL.Course.objects.all()
+    student = models.Student.objects.get(user_id=request.user.id)
+    student_course = student.course
+    total_questions = QMODEL.Question.objects.filter(course=student_course).count()
+
+    context = {
+        'total_course': 1,
+        'total_question': total_questions,
+        'courses': [student_course],
     }
-    # return render(request,'student/student_exam.html',context=dict)
-    return render(request,'student/student_dashboard.html',context=dict)
+
+    return render(request, 'student/student_dashboard.html', context=context)
+
 
 @login_required(login_url='studentlogin')
 @user_passes_test(is_student)
 def student_exam_view(request):
-    courses=QMODEL.Course.objects.all()
+    courses=QMODEL.Course.objects.get()
     return render(request,'student/student_exam.html',{'courses':courses})
 
 
@@ -150,8 +165,10 @@ def calculate_marks_view(request):
 @login_required(login_url='studentlogin')
 @user_passes_test(is_student)
 def view_result_view(request):
-    courses=QMODEL.Course.objects.all()
-    return render(request,'student/view_result.html',{'courses':courses})
+    student = models.Student.objects.get(user=request.user)
+    student_course = student.course
+    # courses=QMODEL.Course.objects.all()
+    return render(request,'student/view_result.html',{'courses':[student_course]})
     
 
 @login_required(login_url='studentlogin')
