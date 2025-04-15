@@ -13,6 +13,7 @@ from student import models as SMODEL
 from teacher import forms as TFORM
 from student import forms as SFORM
 from django.contrib.auth.models import User
+from django.contrib import messages
 
 
 def frontpage(request):
@@ -207,11 +208,21 @@ def admin_add_course_view(request):
         return HttpResponseRedirect('/admin-view-course')
     return render(request,'exam/admin_add_course.html',{'courseForm':courseForm})
 
-
+from django.db.models import Count
 @login_required(login_url='adminlogin')
 def admin_view_course_view(request):
-    courses = models.Course.objects.all()
+    courses = models.Course.objects.annotate(examinee_count=Count('result'))
     return render(request,'exam/admin_view_course.html',{'courses':courses})
+
+@login_required(login_url='adminlogin')
+def admin_view_examinees_view(request, course_id):
+    course = models.Course.objects.get(id=course_id)
+    results = models.Result.objects.filter(exam=course).select_related('student')
+
+    return render(request, 'exam/admin_view_examinees.html', {
+        'course': course,
+        'results': results
+    })
 
 @login_required(login_url='adminlogin')
 def delete_course_view(request,pk):
@@ -228,18 +239,25 @@ def admin_question_view(request):
 
 @login_required(login_url='adminlogin')
 def admin_add_question_view(request):
-    questionForm=forms.QuestionForm()
-    if request.method=='POST':
-        questionForm=forms.QuestionForm(request.POST)
+    questionForm = forms.QuestionForm()
+    
+    if request.method == 'POST':
+        questionForm = forms.QuestionForm(request.POST)
         if questionForm.is_valid():
-            question=questionForm.save(commit=False)
-            course=models.Course.objects.get(id=request.POST.get('courseID'))
-            question.course=course
-            question.save()       
+            try:
+                question = questionForm.save(commit=False)
+                course = models.Course.objects.get(id=request.POST.get('courseID'))
+                question.course = course
+                question.save()
+                messages.success(request, "Question added successfully!")
+            except Exception as e:
+                messages.error(request, f"An error occurred while adding the question: {str(e)}")
         else:
-            print("form is invalid")
-        return HttpResponseRedirect('/admin-view-question')
-    return render(request,'exam/admin_add_question.html',{'questionForm':questionForm})
+            messages.error(request, "Form is invalid. Please correct the errors and try again.")
+        
+        return HttpResponseRedirect('/admin-add-question')
+    
+    return render(request, 'exam/admin_add_question.html', {'questionForm': questionForm})
 
 
 @login_required(login_url='adminlogin')
@@ -264,10 +282,12 @@ def admin_view_student_marks_view(request):
     return render(request,'exam/admin_view_student_marks.html',{'students':students})
 
 @login_required(login_url='adminlogin')
-def admin_view_marks_view(request,pk):
-    courses = models.Course.objects.all()
-    response =  render(request,'exam/admin_view_marks.html',{'courses':courses})
-    response.set_cookie('student_id',str(pk))
+def admin_view_marks_view(request, pk):
+    # Filter courses the student has a result for
+    courses = models.Course.objects.filter(result__student__id=pk).distinct()
+
+    response = render(request, 'exam/admin_view_marks.html', {'courses': courses})
+    response.set_cookie('student_id', str(pk))
     return response
 
 @login_required(login_url='adminlogin')

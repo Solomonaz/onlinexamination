@@ -37,6 +37,8 @@ urlpatterns = [
     path('admin-check-marks/<int:pk>', views.admin_check_marks_view,name='admin-check-marks'),
     path('update-student/<int:pk>', views.update_student_view,name='update-student'),
     path('delete-student/<int:pk>', views.delete_student_view,name='delete-student'),
+    path('admin-view-examinees/<int:course_id>/', views.admin_view_examinees_view, name='admin-view-examinees'),
+
 
     path('admin-course', views.admin_course_view,name='admin-course'),
     path('admin-add-course', views.admin_add_course_view,name='admin-add-course'),

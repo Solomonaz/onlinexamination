@@ -2,7 +2,22 @@
 {% load widget_tweaks %}
 {% block content %}
 </head>
-<h2 style="text-align:center;">Add Question</h2>
+<h2 class="text-center">Add Question</h2>
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert 
+        {% if message.tags == 'success' %}alert-success
+        {% elif message.tags == 'error' %}alert-danger
+        {% elif message.tags == 'warning' %}alert-warning
+        {% elif message.tags == 'info' %}alert-info
+        {% else %}alert-secondary{% endif %}
+        alert-dismissible fade show" role="alert">
+      {{ message }}
+    </div>
+  {% endfor %}
+{% endif %}
+
+
 <form method="POST" autocomplete="off" style="margin:100px;margin-top: 0px;">
     {%csrf_token%}
     <div class="form-group">

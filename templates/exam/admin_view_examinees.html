@@ -1,0 +1,40 @@
+{% extends 'exam/adminbase.html' %}
+{% block content %}
+<div class="container mt-5">
+  <div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+      <h5 class="mb-0">Examinees - {{ course.course_name }}</h5>
+    </div>
+    <div class="card-body">
+      {% if results %}
+      <table class="table table-bordered table-hover">
+        <thead class="thead-light">
+          <tr>
+            <th>#</th>
+            <th>Student Name</th>
+            <th>Username</th>
+            <th>Mobile</th>
+            <th>Marks</th>
+            <th>Date Taken</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for result in results %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ result.student.get_name }}</td>
+            <td>{{ result.student.user.username }}</td>
+            <td>{{ result.student.mobile }}</td>
+            <td>{{ result.marks }}</td>
+            <td>{{ result.date|date:"M d, Y H:i" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+        <p class="text-muted">No examinee have taken this exam yet.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
