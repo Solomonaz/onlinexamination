@@ -1,61 +1,258 @@
 {% extends 'exam/adminbase.html' %}
 {% block content %}
-{%load static%}
+{% load static %}
 
 <head>
-  <style media="screen">
-    a:link {
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #4361ee;
+      --primary-hover: #3a56d4;
+      --danger-color: #e63946;
+      --light-gray: #f8f9fa;
+      --border-radius: 8px;
+      --box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    
+    .dashboard-container {
+      padding: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .card {
+      border: none;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      overflow: hidden;
+    }
+    
+    .card-header {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 1.25rem 1.5rem;
+      border-bottom: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .card-title {
+      font-weight: 600;
+      margin: 0;
+      font-size: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    
+    .add-examinee-btn {
+      background-color: white;
+      color: var(--primary-color);
+      padding: 0.5rem 1.25rem;
+      border-radius: var(--border-radius);
+      font-weight: 600;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      border: 1px solid var(--primary-color);
+    }
+    
+    .add-examinee-btn:hover {
+      background-color: var(--primary-color);
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(67, 97, 238, 0.2);
       text-decoration: none;
     }
-
-    h6 {
-      text-align: center;
+    
+    .table {
+      margin-bottom: 0;
+      border-collapse: separate;
+      border-spacing: 0;
     }
-
-    .row {
-      margin: 100px;
+    
+    .table thead th {
+      background-color: var(--light-gray);
+      border-bottom: 2px solid #dee2e6;
+      font-weight: 600;
+      padding: 1rem;
+      position: sticky;
+      top: 0;
+    }
+    
+    .table tbody td {
+      padding: 1rem;
+      vertical-align: middle;
+      border-top: 1px solid #f1f3f5;
+    }
+    
+    .table tbody tr:hover {
+      background-color: rgba(67, 97, 238, 0.05);
+    }
+    
+    .action-btns {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+    }
+    
+    .btn-edit {
+      background-color: var(--primary-color);
+      color: white;
+      border-radius: var(--border-radius);
+      padding: 0.5rem;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .btn-delete {
+      background-color: var(--danger-color);
+      color: white;
+      border-radius: var(--border-radius);
+      padding: 0.5rem;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .btn-edit:hover, .btn-delete:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: #6c757d;
+    }
+    
+    .empty-state i {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      color: #dee2e6;
+    }
+    
+    .status-badge {
+      padding: 0.35rem 0.75rem;
+      border-radius: 50px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    
+    .badge-active {
+      background-color: rgba(40, 167, 69, 0.1);
+      color: #28a745;
+    }
+    
+    @media (max-width: 768px) {
+      .dashboard-container {
+        padding: 1rem;
+      }
+      
+      .table-responsive {
+        border: none;
+      }
+      
+      .action-btns {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      
+      .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
     }
   </style>
 </head>
-<br><br>
-<div class="container">
-  <div class="panel panel-primary rounded-0">
-    <a href="/student/studentsignup" class="btn btn-primary btn-sm my-2">Add Examinee</a>
-    <div class="panel-heading rounded-0">
-      <h6 class="panel-title">Students</h6>
+
+<div class="dashboard-container">
+  <div class="card">
+    <div class="card-header">
+      <h5 class="card-title">
+        <i class="fas fa-users"></i> Examinee Management
+      </h5>
+      <a href="/student/studentsignup" class="add-examinee-btn">
+        <i class="fas fa-user-plus"></i> Add Examinee
+      </a>
     </div>
-    <table class="table table-hover table-bordered" id="dev-table">
-      <thead>
-        <tr>
-
-          <th>Name</th>
-          <!-- <th>Photo</th> -->
-          <th>Contact</th>
-          <th>Address</th>
-         
-          <th>Actions</th>
-        </tr>
-      </thead>
-      {% for t in students %}
-      <tr>
-
-        <td> {{t.get_name}}</td>
-        <!-- <td> <img src="{% static t.profile_pic.url %}" alt="Profile Pic" height="40px" width="40px" /></td> -->
-        <td>{{t.mobile}}</td>
-        <td>{{t.address}}</td>
-        
-        <td class="text-center"><a class="btn btn-primary btn-xs" style="border-radius: 0%;" href="{% url 'update-student' t.id  %}"><small class="fas fa-edit"></small></a>
-        <!-- <a class="btn btn-danger btn-xs" style="border-radius: 0%;" href="{% url 'delete-student' t.id  %}"><small class="fas fa-trash"></small></a></td> -->
-        <a class="btn btn-danger btn-xs" style="border-radius: 0%;" 
-        href="{% url 'delete-student' t.id %}" 
-        onclick="return confirm('Are you sure you want to delete this item?');">
-        <small class="fas fa-trash"></small>
-     </a>
-     
-      </tr>
-      {% endfor %}
-    </table>
+    
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Contact</th>
+            <th>Address</th>
+            <th>Organization</th>
+            <th class="text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if students %}
+            {% for t in students %}
+              <tr>
+                <td>{{forloop.counter}}</td>
+                <td class="fw-semibold">{{ t.get_name }}</td>
+                <td>{{ t.mobile }}</td>
+                <td>{{ t.address|truncatechars:30 }}</td>
+                <td>{{ t.organization|truncatechars:30 }}</td>
+                <td>
+                  <div class="action-btns">
+                    <a href="{% url 'update-student' t.id %}" class="btn-edit" title="Edit">
+                      <i class="fas fa-edit"></i>
+                    </a>
+                    <a href="{% url 'delete-student' t.id %}" 
+                       class="btn-delete" 
+                       title="Delete"
+                       onclick="return confirm('Are you sure you want to delete this examinee?');">
+                      <i class="fas fa-trash-alt"></i>
+                    </a>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="5">
+                <div class="empty-state">
+                  <i class="fas fa-user-slash"></i>
+                  <h5>No Examinees Found</h5>
+                  <p>Add your first examinee by clicking the button above</p>
+                </div>
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Tooltip initialization
+  const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+  tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl);
+  });
+  
+  // Add hover effect to table rows
+  document.querySelectorAll('.table tbody tr').forEach(row => {
+    row.addEventListener('mouseenter', function() {
+      this.style.transition = 'all 0.2s ease';
+    });
+  });
+</script>
 
 {% endblock content %}
