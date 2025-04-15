@@ -319,3 +319,37 @@ def contactus_view(request):
     return render(request, 'exam/contactus.html', {'form':sub})
 
 
+from django.db.models import Q
+from exam import models  # assuming you have Course, Result, Student models
+
+@login_required(login_url='adminlogin')
+def report_view(request):
+    courses = models.Course.objects.all()
+    organizations = models.Student.objects.values_list('organization', flat=True).distinct()
+
+    results = models.Result.objects.select_related('student', 'exam')
+
+    course_id = request.GET.get('course')
+    organization = request.GET.get('organization')
+    min_mark = request.GET.get('min_mark')
+    max_mark = request.GET.get('max_mark')
+
+    if course_id:
+        results = results.filter(exam__id=course_id)
+    if organization:
+        results = results.filter(student__organization=organization)
+    if min_mark:
+        results = results.filter(marks__gte=min_mark)
+    if max_mark:
+        results = results.filter(marks__lte=max_mark)
+
+    context = {
+        'results': results,
+        'courses': courses,
+        'organizations': organizations,
+        'selected_course': course_id,
+        'selected_org': organization,
+        'min_mark': min_mark,
+        'max_mark': max_mark,
+    }
+    return render(request, 'exam/report_view.html', context)
