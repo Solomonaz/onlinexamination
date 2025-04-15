@@ -98,8 +98,19 @@
         <a href="admin-view-teacher-salary" style="text-decoration: none;color:white;">
         <div class="card bg-c-green order-card">
           <div class="card-block">
-            <h6 class="m-b-20">Income Generated from examination</h6>
-            <h2 class="text-right"><i class="fas fa-dollar-sign f-left"></i><span>${{salary}}</span></h2>
+            <h6 class="m-b-20">Income Generated</h6>
+            {% if salary %}
+            <h2 class="text-right">
+              <i class="fas fa-dollar-sign f-left"></i>
+              <span>{{ salary }}</span>
+            </h2>
+          {% else %}
+            <h2 class="text-right">
+              <i class="fas fa-dollar-sign f-left"></i>
+              <span>0</span>
+            </h2>
+          {% endif %}
+          
           </div>
         </div>
       </a>

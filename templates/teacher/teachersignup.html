@@ -1,76 +1,243 @@
 <!DOCTYPE html>
 {% load widget_tweaks %}
-<html lang="en" dir="ltr">
-  <head>
-    <meta charset="utf-8">
-    <style>
-
-        form{
-           margin: 50px; 
-          
-        }
-
-    </style>
-  </head>
-  <body>
-    {% include "exam/navbar.html" %}
- 
-
-
-<br><br><br>
-<div class="container">
-  <h3 style="text-align: center;">Teacher Signup Form</h3>
-<form method="POST" autocomplete="off" enctype="multipart/form-data">
-    {% csrf_token %}
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Examiner Signup | Education Platform</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #4361ee;
+      --primary-hover: #3a56d4;
+      --secondary-color: #f8f9fa;
+      --text-color: #2b2d42;
+      --light-gray: #f1f3f5;
+    }
     
-    <div class="form-row">
-        <div class="form-group col-md-6">
-          <label for="first_name">First Name</label>
-          {% render_field userForm.first_name|attr:'required:true'  class="form-control form-control-sm rounded-0"  placeholder="First Name" %}
-        </div>
-        <div class="form-group col-md-6">
-          <label for="last_name">Last Name</label>
-          {% render_field userForm.last_name|attr:'required:true'  class="form-control form-control-sm rounded-0" placeholder="Last Name" %}
-        </div>
-      </div>
+    body {
+      background-color: var(--secondary-color);
+      color: var(--text-color);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      padding-top: 30px;
+      line-height: 1.6;
+    }
+    
+    .signup-container {
+      max-width: 900px;
+      margin: 2rem auto;
 
-      <div class="form-row">
-        <div class="form-group col-md-6">
-          <label for="mobile">Contact</label>
-          {% render_field teacherForm.mobile|attr:'required:true'  class="form-control form-control-sm rounded-0" placeholder="Contact Number" %}
+      
+    }
+    
+    .signup-card {
+      padding: 2.5rem;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+      border: none;
+    }
+    
+    .form-title {
+      text-align: center;
+      font-weight: 700;
+      margin-bottom: 2rem;
+      color: var(--primary-color);
+      font-size: 2rem;
+    }
+    
+    .form-title i {
+      margin-right: 0.5rem;
+    }
+    
+    .form-label {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--text-color);
+    }
+    
+    .form-control, .form-control-file {
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      border: 1px solid #dee2e6;
+      transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+    }
+    
+    .btn-primary {
+      background-color: var(--primary-color);
+      border: none;
+      padding: 0.75rem 2rem;
+      font-weight: 600;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      letter-spacing: 0.5px;
+    }
+    
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+      transform: translateY(-2px);
+    }
+    
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    
+    .password-toggle {
+      position: relative;
+    }
+    
+    .password-toggle-icon {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: #6c757d;
+    }
+    
+    .form-note {
+      font-size: 0.875rem;
+      color: #6c757d;
+      margin-top: 0.25rem;
+    }
+    
+    @media (max-width: 768px) {
+      .signup-card {
+        padding: 1.5rem;
+        margin: 1rem;
+      }
+      
+      .form-title {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+
+  <div class="container signup-container">
+    <div class="card signup-card">
+      <a href="/admin-dashboard" class="back-btn">
+        <i class="fas fa-arrow-left me-2"></i> Back
+      </a>
+      <h1 class="form-title">
+        <i class="fas fa-chalkboard-teacher"></i>
+        Examiner Registration</h1>
+
+      <form method="POST" autocomplete="off" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+
+        <div class="row g-3">
+          <!-- Personal Information Section -->
+          <div class="col-md-6">
+            <h5 class="mb-4 text-muted"><i class="fas fa-user-circle me-2"></i>Personal Information</h5>
+            
+            <div class="form-group">
+              <label for="id_first_name" class="form-label">First Name</label>
+              {% render_field userForm.first_name|attr:'required:true' class="form-control" placeholder="Enter your first name" %}
+            </div>
+            
+            <div class="form-group">
+              <label for="id_last_name" class="form-label">Last Name</label>
+              {% render_field userForm.last_name|attr:'required:true' class="form-control" placeholder="Enter your last name" %}
+            </div>
+            
+            <div class="form-group">
+              <label for="id_mobile" class="form-label">Contact Number</label>
+              {% render_field teacherForm.mobile|attr:'required:true' class="form-control" placeholder="+1 (123) 456-7890" %}
+              <small class="form-note">Include country code</small>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <h5 class="mb-4 text-muted"><i class="fas fa-address-card me-2"></i>Additional Details</h5>
+            
+            <div class="form-group">
+              <label for="id_address" class="form-label">Address</label>
+              {% render_field teacherForm.address|attr:'required:true' class="form-control" placeholder="Your full address" %}
+            </div>
+            <div class="form-group">
+              <label for="id_department" class="form-label">Department</label>
+              {% render_field teacherForm.department|attr:'required:true' class="form-control" placeholder="Enter your department" %}
+            </div>
+            <div class="form-group">
+              <label for="id_profile_pic" class="form-label">Profile Picture</label>
+              {% render_field teacherForm.profile_pic|attr:'required:true' class="form-control form-control-file" %}
+              <small class="form-note">JPEG or PNG, max 2MB</small>
+            </div>
+          </div>
         </div>
-        <div class="form-group col-md-6">
-          <label for="address">Address</label>
-          {% render_field teacherForm.address|attr:'required:true'  class="form-control form-control-sm rounded-0" placeholder="Address" %}
+
+        <hr class="my-4">
+
+        <!-- Account Information Section -->
+        <div class="row g-3">
+          <div class="col-12">
+            <h5 class="mb-4 text-muted"><i class="fas fa-key me-2"></i>Account Information</h5>
+          </div>
+          
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="id_username" class="form-label">Username</label>
+              {% render_field userForm.username|attr:'required:true' class="form-control" placeholder="Choose a username" %}
+              <small class="form-note">Letters, numbers and @/./+/-/_ only</small>
+            </div>
+          </div>
+          
+          <div class="col-md-6">
+            <div class="form-group password-toggle">
+              <label for="id_password" class="form-label">Password</label>
+              {% render_field userForm.password|attr:'required:true' class="form-control" placeholder="Create a password" id="id_password" %}
+              <i class="fas fa-eye-slash password-toggle-icon" id="togglePassword"></i>
+              <small class="form-note">Minimum 8 characters</small>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <div class="form-row">
-        <div class="form-group col-md-6">
-          <label for="username">Username</label>
-          {% render_field userForm.username|attr:'required:true'  class="form-control form-control-sm rounded-0" placeholder="username" %}
+        <div class="d-grid gap-2 mt-5">
+          <button type="submit" class="btn btn-primary btn-lg">
+            <i class="fas fa-user-plus me-2"></i>Complete Registration
+          </button>
         </div>
-        <div class="form-group col-md-6">
-          <label for="inputPassword4">Password</label>
-          {% render_field userForm.password|attr:'required:true'  class="form-control form-control-sm rounded-0" placeholder="password" %}
-        </div>
-      </div>
+      </form>
+    </div>
+  </div>
 
-      <div class="form-row">
-        <div class="form-group col-md-12">
-          <label for="profile_pic">Profile Picture</label>
-          {% render_field teacherForm.profile_pic|attr:'required:true' class="form-control form-control-sm rounded-0" placeholder="" %}
-        </div>
-        
-      </div>
+  {% include "exam/footer.html" %}
 
-
-    <button type="submit" class="btn btn-primary btn-lg rounded-0">Sign Up</button>
-  </form>
-</div>
-
-
-<br><br>
-{% include "exam/footer.html" %}
-  </body>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Password toggle functionality
+    document.getElementById('togglePassword').addEventListener('click', function() {
+      const passwordInput = document.getElementById('id_password');
+      const icon = this;
+      
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+      } else {
+        passwordInput.type = 'password';
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+      }
+    });
+    
+    // Add focus styles for better accessibility
+    document.querySelectorAll('.form-control').forEach(input => {
+      input.addEventListener('focus', function() {
+        this.parentNode.querySelector('.form-label').style.color = 'var(--primary-color)';
+      });
+      
+      input.addEventListener('blur', function() {
+        this.parentNode.querySelector('.form-label').style.color = 'var(--text-color)';
+      });
+    });
+  </script>
+</body>
 </html>
