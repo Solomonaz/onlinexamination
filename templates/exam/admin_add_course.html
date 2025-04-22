@@ -1,38 +1,126 @@
 {% extends 'exam/adminbase.html' %}
 {% load widget_tweaks %}
 {% block content %}
+
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
-  <style>
-       <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
-  a:link {
-        text-decoration: none;
-      }
-    
-  </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --light-gray: #f8f9fa;
+        }
+        
+        .form-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+            background: white;
+        }
+        
+        .form-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        .form-header h2 {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #495057;
+        }
+        
+        .form-control {
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid #ced4da;
+            transition: all 0.3s;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+        }
+        
+        .btn-submit {
+            background-color: var(--primary-color);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            width: 100%;
+            transition: all 0.3s;
+        }
+        
+        .btn-submit:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+        
+        .input-icon {
+            position: relative;
+        }
+        
+        .input-icon i {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+    </style>
 </head>
-<h2 style="text-align:center;">Add Course</h2>
-<form method="POST" autocomplete="off" style="margin:100px;margin-top: 0px;">
-    {%csrf_token%}
-    <div class="form-group">
-      <label for="course_name">Course Name</label>
-      {% render_field courseForm.course_name class="form-control rounded-0" placeholder="Example: Software Engineering" %}
 
-      <label for="question_number">Total Question</label>
-      {% render_field courseForm.question_number class="form-control rounded-0" placeholder="Example: 50" %}
-
-      <label for="total_marks">Total Marks</label>
-      {% render_field courseForm.total_marks class="form-control rounded-0" placeholder="Example: 100" %}
+<div class="container">
+    <div class="form-container">
+        <div class="form-header">
+            <h2><i class="fas fa-book-open me-2"></i> Add New Course</h2>
+            <p class="text-muted">Fill in the details to create a new examination course</p>
+        </div>
+        
+        <form method="POST" autocomplete="off">
+            {% csrf_token %}
+            
+            <div class="mb-4">
+                <label for="course_name" class="form-label">Course Name</label>
+                <div class="input-icon">
+                    {% render_field courseForm.course_name class="form-control" placeholder="e.g. Software Engineering" %}
+                    <i class="fas fa-book"></i>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <label for="question_number" class="form-label">Total Questions</label>
+                    <div class="input-icon">
+                        {% render_field courseForm.question_number class="form-control" placeholder="e.g. 50" %}
+                        <i class="fas fa-list-ol"></i>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label for="total_marks" class="form-label">Total Marks</label>
+                    <div class="input-icon">
+                        {% render_field courseForm.total_marks class="form-control" placeholder="e.g. 100" %}
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-submit">
+                <i class="fas fa-plus-circle me-2"></i> Create Course
+            </button>
+        </form>
     </div>
-    
+</div>
 
-    <button type="submit" class="btn btn-primary rounded-0">Add Course Info</button>
-  </form>
-<br><br><br>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 {% endblock content %}

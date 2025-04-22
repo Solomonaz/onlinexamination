@@ -3,54 +3,136 @@
 {%load static%}
 
 <head>
-  <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
-  <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
-  <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
-
-  <style media="screen">
-    a:link {
-      text-decoration: none;
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    .salary-card {
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
+      margin-bottom: 30px;
     }
-
-    h6 {
-      text-align: center;
+    .salary-card:hover {
+      transform: translateY(-5px);
     }
-
-    .row {
-      margin: 100px;
+    .card-header {
+      background: linear-gradient(135deg, #3f87a6, #ebf8e1);
+      color: white;
+      border-radius: 10px 10px 0 0 !important;
+      padding: 15px 20px;
+    }
+    .teacher-img {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 3px solid #fff;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .salary-badge {
+      background-color: #28a745;
+      font-size: 1rem;
+      padding: 8px 15px;
+      border-radius: 20px;
+    }
+    .contact-info {
+      color: #6c757d;
+    }
+    .contact-info i {
+      color: #3f87a6;
+      margin-right: 8px;
+    }
+    .table-responsive {
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .table thead {
+      background-color: #f8f9fa;
+    }
+    .table th {
+      border-top: none;
+      font-weight: 600;
+      color: #495057;
+    }
+    .table td {
+      vertical-align: middle;
+    }
+    .action-btn {
+      padding: 5px 12px;
+      border-radius: 5px;
+      font-size: 0.85rem;
     }
   </style>
 </head>
-<br><br>
-<div class="container">
-  <div class="panel panel-primary rounded-0">
-    <div class="panel-heading rounded-0">
-      <h6 class="panel-title">Teachers Salary</h6>
-    </div>
-    <table class="table table-hover table-bordered" id="dev-table">
-      <thead>
-        <tr>
 
-          <th>Name</th>
+<div class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-primary"><i class="fas fa-money-bill-wave me-2"></i> Income</h2>
+    <div>
+      <button class="btn btn-outline-primary me-2"><i class="fas fa-download me-1"></i> Export</button>
+      <button class="btn btn-primary"><i class="fas fa-plus me-1"></i> Add Payment</button>
+    </div>
+  </div>
+
+  <div class="table-responsive bg-white shadow-sm rounded-lg">
+    <table class="table table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th class="ps-4">Trainer</th>
           <th>Photo</th>
           <th>Contact</th>
           <th>Salary</th>
-         
-          
+          <!-- <th class="text-end pe-4">Actions</th> -->
         </tr>
       </thead>
-      {% for t in teachers %}
-      <tr>
-
-        <td> {{t.get_name}}</td>
-        <td> <img src="{% static t.profile_pic.url %}" alt="Profile Pic" height="40px" width="40px" /></td>
-        <td>{{t.mobile}}</td>
-        <td>${{t.salary}}</td>
+      <tbody>
+        {% for t in teachers %}
+        <tr>
+          <td class="ps-4 fw-semibold">{{t.get_name}}</td>
+          <td>
+            <img src="{% static t.profile_pic.url %}" alt="Profile" class="teacher-img">
+          </td>
+          <td class="contact-info">
+            <div><i class="fas fa-phone"></i> {{t.mobile}}</div>
+            {% if t.email %}
+            <div><i class="fas fa-envelope"></i> {{t.email}}</div>
+            {% endif %}
+          </td>
+          <td>
+            <span class="salary-badge text-white">${{t.salary}}</span>
+          </td>
+          <!-- <td class="text-end pe-4">
+            <button class="btn btn-sm btn-outline-secondary action-btn me-1">
+              <i class="fas fa-eye"></i> View
+            </button>
+            <button class="btn btn-sm btn-outline-primary action-btn">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+          </td> -->
         </tr>
-      {% endfor %}
+        {% endfor %}
+      </tbody>
     </table>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center mt-4">
+    <div class="text-muted">
+      Showing 1 to {{ teachers|length }} of {{ teachers|length }} entries
+    </div>
+    <nav aria-label="Page navigation">
+      <ul class="pagination">
+        <li class="page-item disabled">
+          <a class="page-link" href="#" tabindex="-1">Previous</a>
+        </li>
+        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+        <li class="page-item">
+          <a class="page-link" href="#">Next</a>
+        </li>
+      </ul>
+    </nav>
   </div>
 </div>
 
-<br><br><br><br><br><br>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 {% endblock content %}
