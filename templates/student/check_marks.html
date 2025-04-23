@@ -3,55 +3,211 @@
 {% load static %}
 
 <head>
-  <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
-  <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
-  <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
-
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    a:link {
-      text-decoration: none;
+    .results-container {
+      max-width: 1000px;
+      margin: 2rem auto;
+      padding: 0 15px;
     }
-    h6 {
+    
+    .results-card {
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+    }
+    
+    .results-header {
+      background: linear-gradient(135deg, #4a6fdc 0%, #3a5bc7 100%);
+      color: white;
+      padding: 1.25rem 1.5rem;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .results-count {
+      background-color: rgba(255, 255, 255, 0.2);
+      padding: 0.35rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+    }
+    
+    .results-table {
+      width: 100%;
+      margin: 0;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+    
+    .results-table thead th {
+      background-color: #f8fafc;
+      padding: 1rem 1.5rem;
+      font-weight: 600;
+      color: #4a5568;
+      border-bottom: 2px solid #edf2f7;
+    }
+    
+    .results-table tbody td {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid #edf2f7;
+      vertical-align: middle;
+    }
+    
+    .results-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+    
+    .results-table tbody tr:hover {
+      background-color: #f8fafc;
+    }
+    
+    .course-name {
+      font-weight: 500;
+      color: #2d3748;
+    }
+    
+    .marks-value {
+      font-weight: 600;
+      color: #4a6fdc;
+    }
+    
+    .attempt-badge {
+      background-color: #e2e8f0;
+      color: #4a5568;
+      padding: 0.35rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+    
+    .date-value {
+      color: #718096;
+      font-size: 0.9rem;
+    }
+    
+    .empty-state {
+      padding: 3rem;
       text-align: center;
+      color: #6c757d;
     }
-    .row {
-      margin: 100px;
+    
+    .empty-icon {
+      font-size: 3rem;
+      color: #e2e8f0;
+      margin-bottom: 1rem;
+    }
+    
+    .performance-indicator {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    
+    .excellent {
+      background-color: #10ac84;
+    }
+    
+    .good {
+      background-color: #2e86de;
+    }
+    
+    .average {
+      background-color: #ff9f43;
+    }
+    
+    .poor {
+      background-color: #ee5253;
+    }
+    
+    @media (max-width: 768px) {
+      .results-table {
+        display: block;
+        overflow-x: auto;
+      }
+      
+      .results-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
     }
   </style>
 </head>
 
-<br><br>
-<div class="container">
-  <div class="panel panel-primary rounded-0">
-    <div class="panel-heading rounded-0">
-      <h6 class="panel-title">My Marks</h6>
+<div class="results-container">
+  <div class="results-card">
+    <div class="results-header">
+      <div>
+        <i class="fas fa-chart-line me-2"></i>My Exam Results
+      </div>
+      {% if results %}
+      <div class="results-count">
+        {{ results|length }} attempt{{ results|length|pluralize }}
+      </div>
+      {% endif %}
     </div>
-    <table class="table table-hover table-bordered" id="dev-table">
-      <thead>
-        <tr>
-          <th>Course</th>
-          <th>Total Marks</th>
-          <th>Number of Attempts</th>
-          <th>Exam Date</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for t in results %}
-        <tr>
-          <td>{{ t.exam.course_name }}</td> <!-- Update field if course name needs customization -->
-          <td>{{ t.marks }}</td>
-          <td>Attempt {{ forloop.counter }}</td>
-          <td>{{ t.date|date:"Y-m-d H:i" }}</td>
-        </tr>
-        {% empty %}
-        <tr>
-          <td colspan="4" class="text-center">You did not take the exam.</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    
+    {% if results %}
+    <div class="table-responsive">
+      <table class="results-table">
+        <thead>
+          <tr>
+            <th>Course</th>
+            <th>Score</th>
+            <th>Attempt</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for t in results %}
+          <tr>
+            <td class="course-name">
+              <i class="fas fa-book me-2 text-primary"></i>
+              {{ t.exam.course_name }}
+            </td>
+            <td class="marks-value">
+              {% if t.marks >= 80 %}
+                <span class="performance-indicator excellent"></span>
+              {% elif t.marks >= 60 %}
+                <span class="performance-indicator good"></span>
+              {% elif t.marks >= 40 %}
+                <span class="performance-indicator average"></span>
+              {% else %}
+                <span class="performance-indicator poor"></span>
+              {% endif %}
+              {{ t.marks }}
+            </td>
+            <td>
+              <span class="attempt-badge">
+                <i class="fas fa-redo me-1"></i> Attempt {{ forloop.counter }}
+              </span>
+            </td>
+            <td class="date-value">
+              <i class="far fa-calendar-alt me-2"></i>
+              {{ t.date|date:"M d, Y H:i" }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">
+        <i class="fas fa-clipboard-question"></i>
+      </div>
+      <h4>No Exam Results Found</h4>
+      <p class="mb-0">You haven't completed any exams yet</p>
+    </div>
+    {% endif %}
   </div>
 </div>
 
-<br><br><br><br><br><br>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 {% endblock content %}

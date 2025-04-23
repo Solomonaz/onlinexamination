@@ -1,86 +1,200 @@
-{% extends 'student/studentbase.html' %} {% block content %} {%load static%}
+{% extends 'student/studentbase.html' %}
+{% block content %}
+{%load static%}
 
 <head>
-    <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
-    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
-    <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
-
-
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .exam-container {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 0 15px;
+    }
+    
+    .exam-card {
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      background: white;
+    }
+    
+    .exam-header {
+      background: linear-gradient(135deg, #4a6fdc 0%, #3a5bc7 100%);
+      color: white;
+      padding: 1.5rem;
+      text-align: center;
+      font-weight: 600;
+      font-size: 1.25rem;
+    }
+    
+    .question-container {
+      padding: 1.5rem;
+    }
+    
+    .question-card {
+      margin-bottom: 2rem;
+      padding: 1.5rem;
+      border-radius: 10px;
+      background-color: #f8fafc;
+      border-left: 4px solid #4a6fdc;
+    }
+    
+    .question-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+    
+    .question-text {
+      font-weight: 500;
+      font-size: 1.1rem;
+      color: #2d3748;
+      margin: 0;
+    }
+    
+    .question-marks {
+      background-color: #e2e8f0;
+      color: #4a5568;
+      padding: 0.35rem 0.8rem;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    
+    .option-item {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.75rem;
+      border-radius: 8px;
+      background-color: white;
+      border: 1px solid #e2e8f0;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    
+    .option-item:hover {
+      border-color: #4a6fdc;
+      background-color: #f8fafc;
+    }
+    
+    .option-input {
+      margin-right: 1rem;
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+    
+    .option-label {
+      margin: 0;
+      cursor: pointer;
+      color: #4a5568;
+    }
+    
+    .submit-btn {
+      background: linear-gradient(135deg, #4a6fdc 0%, #3a5bc7 100%);
+      border: none;
+      border-radius: 8px;
+      padding: 0.75rem 2rem;
+      color: white;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      display: block;
+      margin: 2rem auto 1rem;
+      width: fit-content;
+    }
+    
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(74, 111, 220, 0.3);
+    }
+    
+    @media (max-width: 768px) {
+      .question-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+      
+      .question-container {
+        padding: 1rem;
+      }
+      
+      .question-card {
+        padding: 1.25rem;
+      }
+    }
+  </style>
 </head>
 
-
-<div class="jumbotron my-4">
-    <form class="form" autocomplete="off" onsubmit="return saveAns()" action="/student/calculate-marks" method="POST">
-        {% csrf_token %}
-        <h2 style="text-align: center;">Course: {{course.course_name}}</h2>
-        {% for q in questions%}
-        <div class="d-flex w-100 align-items-center">
-            <div class="col-auto flex-shrink-1 flex-grow-1">
-                <h3 class="">{{ forloop.counter }}. {{q.question}}</h3>
-            </div>
-            <div class="col-auto">
-                <h4 style="text-align: right;">[{{q.marks}} Marks]</h4>
-            </div>
+<div class="exam-container">
+  <form class="exam-card" autocomplete="off" onsubmit="return saveAns()" action="/student/calculate-marks" method="POST">
+    {% csrf_token %}
+    <div class="exam-header">
+      <i class="fas fa-book-open me-2"></i>Course: {{course.course_name}}
+    </div>
+    
+    <div class="question-container">
+      {% for q in questions %}
+      <div class="question-card">
+        <div class="question-header">
+          <h3 class="question-text">{{ forloop.counter }}. {{q.question}}</h3>
+          <span class="question-marks">{{q.marks}} Marks</span>
         </div>
+        
         <input type="hidden" name="csrfmiddlewaretoken" value="C24rUotmdHawVQJL3KrqiWxvti8UffOFYUc8TRbZtLt36AVLdP3jbkzUVe3beRAa">
-
-
-        <div class="form-check mx-4 d-flex align-items-center">
-            <input class="form-check-input" type="radio" name="{{ forloop.counter }}" id="{{q.option1}}" value="Option1">
-            <label class="form-check-label ml-3" for="option1">
-              {{q.option1}}
-            </label>
+        
+        <div class="option-item">
+          <input class="option-input" type="radio" name="{{ forloop.counter }}" id="{{q.id}}_option1" value="Option1">
+          <label class="option-label" for="{{q.id}}_option1">{{q.option1}}</label>
         </div>
-
-
-        <div class="form-check mx-4 d-flex align-items-center">
-            <input class="form-check-input" type="radio" name="{{ forloop.counter }}" id="{{q.option2}}" value="Option2">
-            <label class="form-check-label ml-3" for="option2">
-              {{q.option2}}
-            </label>
+        
+        <div class="option-item">
+          <input class="option-input" type="radio" name="{{ forloop.counter }}" id="{{q.id}}_option2" value="Option2">
+          <label class="option-label" for="{{q.id}}_option2">{{q.option2}}</label>
         </div>
-
-
-        <div class="form-check mx-4 d-flex align-items-center">
-            <input class="form-check-input" type="radio" name="{{ forloop.counter }}" id="{{q.option3}}" value="Option3">
-            <label class="form-check-label ml-3" for="option3">
-              {{q.option3}}
-            </label>
+        
+        <div class="option-item">
+          <input class="option-input" type="radio" name="{{ forloop.counter }}" id="{{q.id}}_option3" value="Option3">
+          <label class="option-label" for="{{q.id}}_option3">{{q.option3}}</label>
         </div>
-
-
-        <div class="form-check mx-4 d-flex align-items-center">
-            <input class="form-check-input" type="radio" name="{{ forloop.counter }}" id="{{q.option4}}" value="Option4">
-            <label class="form-check-label ml-3" for="option4">
-              {{q.option4}}
-            </label>
+        
+        <div class="option-item">
+          <input class="option-input" type="radio" name="{{ forloop.counter }}" id="{{q.id}}_option4" value="Option4">
+          <label class="option-label" for="{{q.id}}_option4">{{q.option4}}</label>
         </div>
-
-        {% endfor %}
-        <input class="btn btn-primary btn-lg" style="border-radius: 0%;" type="submit" value="Submit Answers">
-    </form>
+      </div>
+      {% endfor %}
+      
+      <button type="submit" class="submit-btn">
+        <i class="fas fa-paper-plane me-2"></i>Submit Answers
+      </button>
+    </div>
+  </form>
 </div>
 
 <script>
-    function saveAns() {
-
-        var ele = document.getElementsByTagName('input');
-        for (i = 0; i < ele.length; i++) {
-            if (ele[i].type = "radio") {
-                if (ele[i].checked) {
-                    setCookie(ele[i].name, ele[i].value, 3)
-                }
-            }
+  function saveAns() {
+    var ele = document.getElementsByTagName('input');
+    for (i = 0; i < ele.length; i++) {
+      if (ele[i].type = "radio") {
+        if (ele[i].checked) {
+          setCookie(ele[i].name, ele[i].value, 3)
         }
-
+      }
     }
+  }
 
-    function setCookie(cname, cvalue, exdays) {
-        var d = new Date();
-        d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
-        var expires = "expires=" + d.toUTCString();
-        document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
-    }
+  function setCookie(cname, cvalue, exdays) {
+    var d = new Date();
+    d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+    var expires = "expires=" + d.toUTCString();
+    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+  }
 </script>
 
-<br><br><br><br><br><br> {% endblock content %}
+{% endblock content %}

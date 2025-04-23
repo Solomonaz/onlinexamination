@@ -155,7 +155,7 @@
         <thead>
           <tr>
             <th>Name</th>
-            <th>Photo</th>
+            <!-- <th>Photo</th> -->
             <th>Contact</th>
             <th>Address</th>
             <th>Department</th>
@@ -167,9 +167,9 @@
             {% for t in teachers %}
               <tr>
                 <td class="fw-semibold">{{ t.get_name }}</td>
-                <td>
+                <!-- <td>
                   <img src="{% static t.profile_pic.url %}" alt="{{ t.get_name }}" class="profile-img">
-                </td>
+                </td> -->
                 <td>{{ t.mobile }}</td>
                 <td>{{ t.address|truncatechars:30 }}</td>
                 <td>{{ t.department|truncatechars:30 }}</td>
