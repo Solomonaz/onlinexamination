@@ -9,6 +9,7 @@ from datetime import date, timedelta
 from exam import models as QMODEL
 from teacher import models as TMODEL
 from django.contrib import messages
+from datetime import datetime, timedelta
 
 
 #for showing signup/login button for student
@@ -123,16 +124,35 @@ def take_exam_view(request, pk):
     return render(request, 'student/take_exam.html', context)
 
 
+
 @login_required(login_url='studentlogin')
 @user_passes_test(is_student)
-def start_exam_view(request,pk):
-    course=QMODEL.Course.objects.get(id=pk)
-    questions=QMODEL.Question.objects.all().filter(course=course)
-    
-    if request.method=='POST':
-        pass
-    response= render(request,'student/start_exam.html',{'course':course,'questions':questions})
-    response.set_cookie('course_id',course.id)
+def start_exam_view(request, pk):
+    exam_duration = timedelta(minutes=20)
+    exam_duration_seconds = int(exam_duration.total_seconds())
+
+    exam_start_time_str = request.session.get('exam_start_time')
+    if not exam_start_time_str:
+        exam_start_time = datetime.now()
+        exam_start_time_str = exam_start_time.isoformat()
+        request.session['exam_start_time'] = exam_start_time_str
+    else:
+        exam_start_time = datetime.fromisoformat(exam_start_time_str)
+
+    course = QMODEL.Course.objects.get(id=pk)
+    questions = QMODEL.Question.objects.filter(course=course)
+
+    if request.method == 'POST':
+        pass  # Handle exam submission here
+
+    context = {
+        'exam_duration_seconds': exam_duration_seconds,
+        'exam_start_time': exam_start_time_str,
+        'course': course,
+        'questions': questions,
+    }
+    response = render(request, 'student/start_exam.html', context)
+    response.set_cookie('course_id', course.id)
     return response
 
 
