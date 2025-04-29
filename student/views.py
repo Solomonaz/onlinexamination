@@ -128,8 +128,9 @@ def take_exam_view(request, pk):
 @login_required(login_url='studentlogin')
 @user_passes_test(is_student)
 def start_exam_view(request, pk):
-    exam_duration = timedelta(minutes=20)
-    exam_duration_seconds = int(exam_duration.total_seconds())
+    # exam_duration = timedelta(minutes=20)
+    exam_duration_seconds = QMODEL.Course.objects.get(id=pk)
+    given_time = exam_duration_seconds.given_time
 
     exam_start_time_str = request.session.get('exam_start_time')
     if not exam_start_time_str:
@@ -146,7 +147,7 @@ def start_exam_view(request, pk):
         pass  # Handle exam submission here
 
     context = {
-        'exam_duration_seconds': exam_duration_seconds,
+        'exam_duration_seconds': given_time,
         'exam_start_time': exam_start_time_str,
         'course': course,
         'questions': questions,
