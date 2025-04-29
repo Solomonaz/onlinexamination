@@ -90,13 +90,22 @@
         <form method="POST" autocomplete="off">
             {% csrf_token %}
             
-            <div class="mb-4">
+            <div class="row mb-4">
+                <div class="col-md-6">
                 <label for="course_name" class="form-label">Course Name</label>
                 <div class="input-icon">
                     {% render_field courseForm.course_name class="form-control" placeholder="e.g. Software Engineering" %}
                     <i class="fas fa-book"></i>
                 </div>
             </div>
+            <div class="col-md-6">
+                <label for="given_time" class="form-label">Given Time in Minutes</label>
+                <div class="input-icon">
+                    {% render_field courseForm.given_time class="form-control" placeholder="e.g. 60" %}
+                    <i class="fas fa-clock-o"></i>
+                </div>
+            </div>
+        </div>
             
             <div class="row mb-4">
                 <div class="col-md-6">
