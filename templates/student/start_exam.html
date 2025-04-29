@@ -27,6 +27,18 @@
       text-align: center;
       font-weight: 600;
       font-size: 1.25rem;
+      position: relative;
+    }
+    
+    .timer-container {
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      background-color: rgba(0, 0, 0, 0.2);
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-weight: 600;
     }
     
     .question-container {
@@ -94,6 +106,29 @@
       color: #4a5568;
     }
     
+    .progress-container {
+      padding: 1rem;
+      text-align: center;
+    }
+    
+    .progress-text {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    
+    .progress-bar {
+      height: 8px;
+      border-radius: 4px;
+      background-color: #e2e8f0;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(135deg, #4a6fdc 0%, #3a5bc7 100%);
+      transition: width 0.3s ease;
+    }
+    
     .submit-btn {
       background: linear-gradient(135deg, #4a6fdc 0%, #3a5bc7 100%);
       border: none;
@@ -113,64 +148,61 @@
       box-shadow: 0 6px 15px rgba(74, 111, 220, 0.3);
     }
     
-    @media (max-width: 768px) {
-      .question-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-      }
-      
-      .question-container {
-        padding: 1rem;
-      }
-      
-      .question-card {
-        padding: 1.25rem;
-      }
+    .hidden {
+      display: none;
     }
   </style>
 </head>
 
 <div class="exam-container">
-  <form class="exam-card" autocomplete="off" onsubmit="return saveAns()" action="/student/calculate-marks" method="POST">
+  <form class="exam-card" autocomplete="off" action="/student/calculate-marks" method="POST" id="examForm">
     {% csrf_token %}
     <div class="exam-header">
       <i class="fas fa-book-open me-2"></i>Course: {{course.course_name}}
+      <div class="timer-container">
+        <i class="fas fa-clock me-2"></i>
+        <span id="timer">00:00</span>
+      </div>
     </div>
     
-    <div class="question-container">
+    <div class="progress-container">
+      <div class="progress-text">Question <span id="current-question">1</span> of {{ questions|length }}</div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill" style="width: {% widthratio 1 questions|length 100 %}%"></div>
+      </div>
+    </div>
+    
+    <div class="question-container" id="questions-container">
       {% for q in questions %}
-      <div class="question-card">
+      <div class="question-card {% if not forloop.first %}hidden{% endif %}" id="question-{{ forloop.counter }}">
         <div class="question-header">
           <h3 class="question-text">{{ forloop.counter }}. {{q.question}}</h3>
           <span class="question-marks">{{q.marks}} Marks</span>
         </div>
         
-        <input type="hidden" name="csrfmiddlewaretoken" value="C24rUotmdHawVQJL3KrqiWxvti8UffOFYUc8TRbZtLt36AVLdP3jbkzUVe3beRAa">
-        
         <div class="option-item">
-          <input class="option-input" type="radio" name="{{ forloop.counter }}" id="{{q.id}}_option1" value="Option1">
+          <input class="option-input" type="radio" name="q{{ q.id }}" id="{{q.id}}_option1" value="Option1" data-next="{{ forloop.counter|add:1 }}">
           <label class="option-label" for="{{q.id}}_option1">{{q.option1}}</label>
         </div>
         
         <div class="option-item">
-          <input class="option-input" type="radio" name="{{ forloop.counter }}" id="{{q.id}}_option2" value="Option2">
+          <input class="option-input" type="radio" name="q{{ q.id }}" id="{{q.id}}_option2" value="Option2" data-next="{{ forloop.counter|add:1 }}">
           <label class="option-label" for="{{q.id}}_option2">{{q.option2}}</label>
         </div>
         
         <div class="option-item">
-          <input class="option-input" type="radio" name="{{ forloop.counter }}" id="{{q.id}}_option3" value="Option3">
+          <input class="option-input" type="radio" name="q{{ q.id }}" id="{{q.id}}_option3" value="Option3" data-next="{{ forloop.counter|add:1 }}">
           <label class="option-label" for="{{q.id}}_option3">{{q.option3}}</label>
         </div>
         
         <div class="option-item">
-          <input class="option-input" type="radio" name="{{ forloop.counter }}" id="{{q.id}}_option4" value="Option4">
+          <input class="option-input" type="radio" name="q{{ q.id }}" id="{{q.id}}_option4" value="Option4" data-next="{{ forloop.counter|add:1 }}">
           <label class="option-label" for="{{q.id}}_option4">{{q.option4}}</label>
         </div>
       </div>
       {% endfor %}
       
-      <button type="submit" class="submit-btn">
+      <button type="submit" class="submit-btn hidden" id="submit-btn">
         <i class="fas fa-paper-plane me-2"></i>Submit Answers
       </button>
     </div>
@@ -178,13 +210,97 @@
 </div>
 
 <script>
+  // Server-side time tracking
+  const examDurationSeconds = {{ exam_duration_seconds|default:1800 }};
+  const examId = "{{ exam_id }}";
+  const userId = {{ request.user.id|default:0 }};
+  const totalQuestions = {{ questions|length }};
+  
+  // Create a unique storage key for this user+exam
+  const storageKey = `examTimer_${userId}_${examId}`;
+  
+  // Try to get remaining time from localStorage or calculate from server time
+  let timeLeft;
+  const storedTime = localStorage.getItem(storageKey);
+  
+  if (storedTime) {
+    timeLeft = parseInt(storedTime);
+  } else {
+    // Calculate from server time if first load
+    const examStartTimeStr = "{{ exam_start_time|date:'Y-m-d H:i:s' }}";
+    if (examStartTimeStr) {
+      const examStartTime = new Date(examStartTimeStr).getTime();
+      const now = new Date().getTime();
+      const elapsedSeconds = Math.floor((now - examStartTime) / 1000);
+      timeLeft = Math.max(0, examDurationSeconds - elapsedSeconds);
+    } else {
+      timeLeft = examDurationSeconds;
+    }
+    localStorage.setItem(storageKey, timeLeft.toString());
+  }
+
+  // Timer function
+  function updateTimer() {
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    
+    document.getElementById('timer').textContent = 
+      `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    
+    // Auto-submit when time expires
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      document.getElementById('timer').textContent = "00:00";
+      document.getElementById('examForm').submit();
+    } else {
+      timeLeft--;
+      localStorage.setItem(storageKey, timeLeft.toString());
+    }
+  }
+
+  // Start timer
+  const timerInterval = setInterval(updateTimer, 1000);
+  updateTimer();
+
+  // Question navigation
+  document.querySelectorAll('.option-input').forEach(input => {
+    input.addEventListener('change', function() {
+      // Save the answer
+      setCookie(this.name, this.value, 3);
+      
+      // Get the next question number
+      const nextQuestion = parseInt(this.dataset.next);
+      
+      // Hide current question
+      document.getElementById(`question-${nextQuestion-1}`).classList.add('hidden');
+      
+      if (nextQuestion <= totalQuestions) {
+        // Show next question
+        document.getElementById(`question-${nextQuestion}`).classList.remove('hidden');
+        document.getElementById('current-question').textContent = nextQuestion;
+        
+        // Update progress bar
+        const progressPercent = (nextQuestion / totalQuestions) * 100;
+        document.getElementById('progress-fill').style.width = `${progressPercent}%`;
+      } else {
+        // All questions answered, show submit button
+        document.getElementById('submit-btn').classList.remove('hidden');
+      }
+    });
+  });
+
+  // Submit handler
+  document.getElementById('examForm').addEventListener('submit', function() {
+    localStorage.removeItem(storageKey);
+    saveAns();
+  });
+
+  // Save all answers before submitting
   function saveAns() {
     var ele = document.getElementsByTagName('input');
     for (i = 0; i < ele.length; i++) {
-      if (ele[i].type = "radio") {
-        if (ele[i].checked) {
-          setCookie(ele[i].name, ele[i].value, 3)
-        }
+      if (ele[i].type = "radio" && ele[i].checked) {
+        setCookie(ele[i].name, ele[i].value, 3);
       }
     }
   }

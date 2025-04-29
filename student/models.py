@@ -28,12 +28,13 @@ class Student(models.Model):
         return self.user.first_name
 
 class ExamAttempt(models.Model):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)  # Assuming the student is a User
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
     course = models.ForeignKey('exam.Course', on_delete=models.CASCADE)
-    attempt_time = models.DateTimeField(auto_now_add=True)  # Records when the student took the exam
+    attempt_time = models.DateTimeField(auto_now_add=True)
+    start_time = models.DateTimeField(null=True, blank=True)
+    end_time = models.DateTimeField(null=True, blank=True)
     attempted = models.BooleanField(default=False)
-    
+    is_active = models.BooleanField(default=False)  
+
     class Meta:
-        unique_together = ('student', 'course')  # Prevent multiple attempts by the same student on the same exam
-
-
+        unique_together = ('student', 'course')
