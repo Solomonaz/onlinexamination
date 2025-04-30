@@ -124,23 +124,21 @@ def take_exam_view(request, pk):
     return render(request, 'student/take_exam.html', context)
 
 
-
+from django.utils import timezone
 @login_required(login_url='studentlogin')
 @user_passes_test(is_student)
 def start_exam_view(request, pk):
-    # exam_duration = timedelta(minutes=20)
-    exam_duration_seconds = QMODEL.Course.objects.get(id=pk)
-    given_time = exam_duration_seconds.given_time
+    course = QMODEL.Course.objects.get(id=pk)
+    given_time = course.given_time
 
     exam_start_time_str = request.session.get('exam_start_time')
     if not exam_start_time_str:
-        exam_start_time = datetime.now()
+        exam_start_time = timezone.now()
         exam_start_time_str = exam_start_time.isoformat()
         request.session['exam_start_time'] = exam_start_time_str
     else:
-        exam_start_time = datetime.fromisoformat(exam_start_time_str)
+        exam_start_time = timezone.datetime.fromisoformat(exam_start_time_str)
 
-    course = QMODEL.Course.objects.get(id=pk)
     questions = QMODEL.Question.objects.filter(course=course)
 
     if request.method == 'POST':
@@ -153,9 +151,8 @@ def start_exam_view(request, pk):
         'questions': questions,
     }
     response = render(request, 'student/start_exam.html', context)
-    response.set_cookie('course_id', course.id)
+    response.set_cookie('course_id', course.id, httponly=True, samesite='Lax')
     return response
-
 
 @login_required(login_url='studentlogin')
 @user_passes_test(is_student)

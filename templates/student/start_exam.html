@@ -41,6 +41,21 @@
       font-weight: 600;
     }
     
+    .timer-warning {
+      color: #ffcc00;
+    }
+    
+    .timer-danger {
+      color: #ff3333;
+      animation: pulse 1s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+    
     .question-container {
       padding: 1.5rem;
     }
@@ -106,29 +121,6 @@
       color: #4a5568;
     }
     
-    .progress-container {
-      padding: 1rem;
-      text-align: center;
-    }
-    
-    .progress-text {
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-    }
-    
-    .progress-bar {
-      height: 8px;
-      border-radius: 4px;
-      background-color: #e2e8f0;
-      overflow: hidden;
-    }
-    
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(135deg, #4a6fdc 0%, #3a5bc7 100%);
-      transition: width 0.3s ease;
-    }
-    
     .submit-btn {
       background: linear-gradient(135deg, #4a6fdc 0%, #3a5bc7 100%);
       border: none;
@@ -147,62 +139,178 @@
       transform: translateY(-2px);
       box-shadow: 0 6px 15px rgba(74, 111, 220, 0.3);
     }
+
+    .nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 1.5rem;
+    }
+
+    .nav-btn {
+      background: #e2e8f0;
+      border: none;
+      border-radius: 8px;
+      padding: 0.5rem 1.5rem;
+      color: #4a5568;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .nav-btn:hover {
+      background: #cbd5e0;
+    }
+
+    .nav-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .question-counter {
+      text-align: center;
+      margin: 1rem 0;
+      color: #4a5568;
+      font-weight: 500;
+    }
+
+    .question-navigation {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 1rem 0;
+    }
+
+    .page-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1px solid #e2e8f0;
+      background: white;
+      color: #4a5568;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .page-btn:hover {
+      background: #f8fafc;
+      border-color: #4a6fdc;
+    }
+
+    .page-btn.active {
+      background: #4a6fdc;
+      color: white;
+      border-color: #4a6fdc;
+    }
+
+    .page-btn.answered {
+      background: #e6f7e6;
+      border-color: #4CAF50;
+    }
     
-    .hidden {
-      display: none;
+    @media (max-width: 768px) {
+      .question-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+      
+      .question-container {
+        padding: 1rem;
+      }
+      
+      .question-card {
+        padding: 1.25rem;
+      }
+      
+      .timer-container {
+        position: static;
+        transform: none;
+        margin-top: 0.5rem;
+        display: inline-block;
+      }
+
+      .nav-buttons {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .nav-btn {
+        width: 100%;
+      }
     }
   </style>
 </head>
 
 <div class="exam-container">
-  <form class="exam-card" autocomplete="off" action="/student/calculate-marks" method="POST" id="examForm">
+  <form class="exam-card" autocomplete="off" onsubmit="return saveAns()" action="/student/calculate-marks" method="POST" id="examForm">
     {% csrf_token %}
     <div class="exam-header">
       <i class="fas fa-book-open me-2"></i>Course: {{course.course_name}}
       <div class="timer-container">
         <i class="fas fa-clock me-2"></i>
-        <span id="timer">{{exam_duration_seconds}}</span>
+        <span id="timer">00:00</span>
       </div>
     </div>
     
-    <div class="progress-container">
-      <div class="progress-text">Question <span id="current-question">1</span> of {{ questions|length }}</div>
-      <div class="progress-bar">
-        <div class="progress-fill" id="progress-fill" style="width: {% widthratio 1 questions|length 100 %}%"></div>
+    <div class="question-container">
+      <!-- Question navigation buttons -->
+      <div class="question-navigation">
+        {% for q in questions %}
+        <button type="button" class="page-btn" onclick="showQuestion({{ forloop.counter0 }})" id="nav-btn-{{ forloop.counter0 }}">
+          {{ forloop.counter }}
+        </button>
+        {% endfor %}
       </div>
-    </div>
-    
-    <div class="question-container" id="questions-container">
+
+      <!-- Question counter -->
+      <div class="question-counter">
+        Question <span id="current-question">1</span> of {{ questions|length }}
+      </div>
+
+      <!-- Single question display -->
       {% for q in questions %}
-      <div class="question-card {% if not forloop.first %}hidden{% endif %}" id="question-{{ forloop.counter }}">
+      <div class="question-card" id="question-{{ forloop.counter0 }}" {% if not forloop.first %}style="display:none;"{% endif %}>
         <div class="question-header">
           <h3 class="question-text">{{ forloop.counter }}. {{q.question}}</h3>
           <span class="question-marks">{{q.marks}} Marks</span>
         </div>
         
+        <input type="hidden" name="csrfmiddlewaretoken" value="C24rUotmdHawVQJL3KrqiWxvti8UffOFYUc8TRbZtLt36AVLdP3jbkzUVe3beRAa">
+        
         <div class="option-item">
-          <input class="option-input" type="radio" name="q{{ q.id }}" id="{{q.id}}_option1" value="Option1" data-next="{{ forloop.counter|add:1 }}">
+          <input class="option-input" type="radio" name="{{ forloop.counter }}" id="{{q.id}}_option1" value="Option1">
           <label class="option-label" for="{{q.id}}_option1">{{q.option1}}</label>
         </div>
         
         <div class="option-item">
-          <input class="option-input" type="radio" name="q{{ q.id }}" id="{{q.id}}_option2" value="Option2" data-next="{{ forloop.counter|add:1 }}">
+          <input class="option-input" type="radio" name="{{ forloop.counter }}" id="{{q.id}}_option2" value="Option2">
           <label class="option-label" for="{{q.id}}_option2">{{q.option2}}</label>
         </div>
         
         <div class="option-item">
-          <input class="option-input" type="radio" name="q{{ q.id }}" id="{{q.id}}_option3" value="Option3" data-next="{{ forloop.counter|add:1 }}">
+          <input class="option-input" type="radio" name="{{ forloop.counter }}" id="{{q.id}}_option3" value="Option3">
           <label class="option-label" for="{{q.id}}_option3">{{q.option3}}</label>
         </div>
         
         <div class="option-item">
-          <input class="option-input" type="radio" name="q{{ q.id }}" id="{{q.id}}_option4" value="Option4" data-next="{{ forloop.counter|add:1 }}">
+          <input class="option-input" type="radio" name="{{ forloop.counter }}" id="{{q.id}}_option4" value="Option4">
           <label class="option-label" for="{{q.id}}_option4">{{q.option4}}</label>
         </div>
       </div>
       {% endfor %}
       
-      <button type="submit" class="submit-btn hidden" id="submit-btn">
+      <!-- Navigation buttons -->
+      <div class="nav-buttons">
+        <button type="button" class="nav-btn" id="prev-btn" onclick="prevQuestion()" disabled>
+          <i class="fas fa-arrow-left me-2"></i>Previous
+        </button>
+        <button type="button" class="nav-btn" id="next-btn" onclick="nextQuestion()" {% if questions|length <= 1 %}disabled{% endif %}>
+          Next<i class="fas fa-arrow-right ms-2"></i>
+        </button>
+      </div>
+      
+      <!-- Only show submit button on last question -->
+      <button type="submit" class="submit-btn" id="submit-btn" style="display:none;">
         <i class="fas fa-paper-plane me-2"></i>Submit Answers
       </button>
     </div>
@@ -210,97 +318,61 @@
 </div>
 
 <script>
-  // Server-side time tracking
-  const examDurationSeconds = {{ exam_duration_seconds|default:1800 }};
-  const examId = "{{ exam_id }}";
-  const userId = {{ request.user.id|default:0 }};
+  // Set the exam duration in minutes (change this value as needed)
+  const examDurationMinutes = {{exam_duration_seconds}};
+  let timeLeft = examDurationMinutes * 60; // Convert to seconds
+  let currentQuestion = 0;
   const totalQuestions = {{ questions|length }};
-  
-  // Create a unique storage key for this user+exam
-  const storageKey = `examTimer_${userId}_${examId}`;
-  
-  // Try to get remaining time from localStorage or calculate from server time
-  let timeLeft;
-  const storedTime = localStorage.getItem(storageKey);
-  
-  if (storedTime) {
-    timeLeft = parseInt(storedTime);
-  } else {
-    // Calculate from server time if first load
-    const examStartTimeStr = "{{ exam_start_time|date:'Y-m-d H:i:s' }}";
-    if (examStartTimeStr) {
-      const examStartTime = new Date(examStartTimeStr).getTime();
-      const now = new Date().getTime();
-      const elapsedSeconds = Math.floor((now - examStartTime) / 1000);
-      timeLeft = Math.max(0, examDurationSeconds - elapsedSeconds);
-    } else {
-      timeLeft = examDurationSeconds;
-    }
-    localStorage.setItem(storageKey, timeLeft.toString());
-  }
+  const answeredQuestions = new Set();
 
-  // Timer function
   function updateTimer() {
     const minutes = Math.floor(timeLeft / 60);
     const seconds = timeLeft % 60;
     
-    document.getElementById('timer').textContent = 
-      `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    // Format the time as MM:SS
+    const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    document.getElementById('timer').textContent = formattedTime;
     
-    // Auto-submit when time expires
+    // Add warning classes when time is running low
+    const timerElement = document.getElementById('timer');
+    timerElement.classList.remove('timer-warning', 'timer-danger');
+    
+    if (timeLeft <= 300) { // 5 minutes or less
+      timerElement.classList.add('timer-warning');
+    }
+    if (timeLeft <= 60) { // 1 minute or less
+      timerElement.classList.add('timer-danger');
+    }
+    
+    // Check if time is up
     if (timeLeft <= 0) {
       clearInterval(timerInterval);
       document.getElementById('timer').textContent = "00:00";
+      // Automatically submit the form
+      saveAns();
       document.getElementById('examForm').submit();
     } else {
       timeLeft--;
-      localStorage.setItem(storageKey, timeLeft.toString());
     }
   }
 
-  // Start timer
+  // Update the timer every second
   const timerInterval = setInterval(updateTimer, 1000);
+
+  // Initialize timer immediately
   updateTimer();
 
-  // Question navigation
-  document.querySelectorAll('.option-input').forEach(input => {
-    input.addEventListener('change', function() {
-      // Save the answer
-      setCookie(this.name, this.value, 3);
-      
-      // Get the next question number
-      const nextQuestion = parseInt(this.dataset.next);
-      
-      // Hide current question
-      document.getElementById(`question-${nextQuestion-1}`).classList.add('hidden');
-      
-      if (nextQuestion <= totalQuestions) {
-        // Show next question
-        document.getElementById(`question-${nextQuestion}`).classList.remove('hidden');
-        document.getElementById('current-question').textContent = nextQuestion;
-        
-        // Update progress bar
-        const progressPercent = (nextQuestion / totalQuestions) * 100;
-        document.getElementById('progress-fill').style.width = `${progressPercent}%`;
-      } else {
-        // All questions answered, show submit button
-        document.getElementById('submit-btn').classList.remove('hidden');
-      }
-    });
-  });
-
-  // Submit handler
-  document.getElementById('examForm').addEventListener('submit', function() {
-    localStorage.removeItem(storageKey);
-    saveAns();
-  });
-
-  // Save all answers before submitting
   function saveAns() {
     var ele = document.getElementsByTagName('input');
     for (i = 0; i < ele.length; i++) {
-      if (ele[i].type = "radio" && ele[i].checked) {
-        setCookie(ele[i].name, ele[i].value, 3);
+      if (ele[i].type = "radio") {
+        if (ele[i].checked) {
+          setCookie(ele[i].name, ele[i].value, 3);
+          // Mark question as answered
+          const questionNum = parseInt(ele[i].name);
+          answeredQuestions.add(questionNum);
+          document.getElementById(`nav-btn-${questionNum-1}`).classList.add('answered');
+        }
       }
     }
   }
@@ -311,6 +383,80 @@
     var expires = "expires=" + d.toUTCString();
     document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
   }
+
+  // Question navigation functions
+  function showQuestion(index) {
+    // Save current answer before switching
+    saveAns();
+    
+    // Hide all questions
+    document.querySelectorAll('.question-card').forEach(q => {
+      q.style.display = 'none';
+    });
+    
+    // Remove active class from all nav buttons
+    document.querySelectorAll('.page-btn').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    
+    // Show selected question
+    document.getElementById(`question-${index}`).style.display = 'block';
+    // Add active class to current nav button
+    document.getElementById(`nav-btn-${index}`).classList.add('active');
+    
+    // Update current question index
+    currentQuestion = index;
+    document.getElementById('current-question').textContent = currentQuestion + 1;
+    
+    // Update prev/next buttons
+    document.getElementById('prev-btn').disabled = currentQuestion === 0;
+    document.getElementById('next-btn').disabled = currentQuestion === totalQuestions - 1;
+    
+    // Show submit button if on last question
+    if (currentQuestion === totalQuestions - 1) {
+      document.getElementById('submit-btn').style.display = 'block';
+      document.getElementById('next-btn').style.display = 'none';
+    } else {
+      document.getElementById('submit-btn').style.display = 'none';
+      document.getElementById('next-btn').style.display = 'block';
+    }
+  }
+
+  function nextQuestion() {
+    if (currentQuestion < totalQuestions - 1) {
+      showQuestion(currentQuestion + 1);
+    }
+  }
+
+  function prevQuestion() {
+    if (currentQuestion > 0) {
+      showQuestion(currentQuestion - 1);
+    }
+  }
+
+  // Initialize first question
+  document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('nav-btn-0').classList.add('active');
+    
+    // Check for previously answered questions from cookies
+    const cookies = document.cookie.split(';');
+    cookies.forEach(cookie => {
+      const [name, value] = cookie.trim().split('=');
+      if (/^\d+$/.test(name)) { // If cookie name is a number (question number)
+        answeredQuestions.add(parseInt(name));
+        document.getElementById(`nav-btn-${parseInt(name)-1}`).classList.add('answered');
+      }
+    });
+  });
+
+  // Keyboard navigation
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight') {
+      nextQuestion();
+    } else if (e.key === 'ArrowLeft') {
+      prevQuestion();
+    }
+  });
 </script>
 
 {% endblock content %}
