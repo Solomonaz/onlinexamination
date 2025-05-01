@@ -16,6 +16,8 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.sessions.models import Session
 from django.utils.timezone import now
+from django.http import JsonResponse
+
 
 
 
@@ -66,22 +68,26 @@ def get_active_students():
             if uid:
                 uid_list.append(uid)
         except Exception:
-            # Skip sessions that can't be decoded
             continue
 
     student_users = User.objects.filter(id__in=uid_list, groups__name='STUDENT')
     return SMODEL.Student.objects.filter(user__in=student_users)
 
-
 @login_required(login_url='adminlogin')
 def admin_dashboard_view(request):
     active_students = get_active_students()
+
+    if request.is_ajax():
+        # Return active students in JSON format for AJAX requests
+        students_data = [{"name": student.user.get_full_name, "username": student.user.username, "course": student.course.course_name, "organization": student.organization, "exam_date": student.exam_date.strftime("%H:%M:%S")} for student in active_students]
+        return JsonResponse({'active_students': students_data})
+    
     dict={
     'total_student':SMODEL.Student.objects.all().count(),
     'total_teacher':TMODEL.Teacher.objects.all().filter(status=True).count(),
     'total_course':models.Course.objects.all().count(),
     'total_question':models.Question.objects.all().count(),
-    'active_students': active_students,    
+    'active_students': active_students, 
     }
     return render(request,'exam/admin_dashboard.html',context=dict)
 
@@ -319,9 +325,6 @@ def admin_check_marks_view(request,pk):
     results= models.Result.objects.all().filter(exam=course).filter(student=student)
     return render(request,'exam/admin_check_marks.html',{'results':results})
     
-
-
-
 
 def aboutus_view(request):
     return render(request,'exam/aboutus.html')
