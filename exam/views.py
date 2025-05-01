@@ -14,6 +14,9 @@ from teacher import forms as TFORM
 from student import forms as SFORM
 from django.contrib.auth.models import User
 from django.contrib import messages
+from django.contrib.sessions.models import Session
+from django.utils.timezone import now
+
 
 
 def frontpage(request):
@@ -53,15 +56,32 @@ def adminclick_view(request):
         return HttpResponseRedirect('afterlogin')
     return HttpResponseRedirect('adminlogin')
 
+def get_active_students():
+    sessions = Session.objects.filter(expire_date__gte=now())
+    uid_list = []
+    for session in sessions:
+        try:
+            data = session.get_decoded()
+            uid = data.get('_auth_user_id')
+            if uid:
+                uid_list.append(uid)
+        except Exception:
+            # Skip sessions that can't be decoded
+            continue
+
+    student_users = User.objects.filter(id__in=uid_list, groups__name='STUDENT')
+    return SMODEL.Student.objects.filter(user__in=student_users)
+
 
 @login_required(login_url='adminlogin')
 def admin_dashboard_view(request):
+    active_students = get_active_students()
     dict={
     'total_student':SMODEL.Student.objects.all().count(),
     'total_teacher':TMODEL.Teacher.objects.all().filter(status=True).count(),
     'total_course':models.Course.objects.all().count(),
     'total_question':models.Question.objects.all().count(),
-    # 'active_students':SMODEL.Student.objects.filter(is_active=True)
+    'active_students': active_students,    
     }
     return render(request,'exam/admin_dashboard.html',context=dict)
 
