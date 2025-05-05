@@ -77,9 +77,14 @@ def get_active_students():
 def admin_dashboard_view(request):
     active_students = get_active_students()
 
-    if request.is_ajax():
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         # Return active students in JSON format for AJAX requests
-        students_data = [{"name": student.user.get_full_name, "username": student.user.username, "course": student.course.course_name, "organization": student.organization, "exam_date": student.exam_date.strftime("%H:%M:%S")} for student in active_students]
+        students_data = [{
+            "name": student.user.get_full_name(),
+            "username": student.user.username,
+            "course": student.course.course_name,
+            "organization": student.organization,
+        } for student in active_students]
         return JsonResponse({'active_students': students_data})
     
     dict={
