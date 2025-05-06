@@ -17,6 +17,8 @@ from django.contrib import messages
 from django.contrib.sessions.models import Session
 from django.utils.timezone import now
 from django.http import JsonResponse
+from django.core.paginator import Paginator
+
 
 
 
@@ -188,7 +190,10 @@ def admin_student_view(request):
 
 @login_required(login_url='adminlogin')
 def admin_view_student_view(request):
-    students= SMODEL.Student.objects.all()
+    student_list= SMODEL.Student.objects.all()
+    paginator = Paginator(student_list, 10)
+    page_number = request.GET.get('page')
+    students = paginator.get_page(page_number)
     return render(request,'exam/admin_view_student.html',{'students':students})
 
 
@@ -348,8 +353,7 @@ def contactus_view(request):
 
 
 from django.db.models import Q
-from exam import models  # assuming you have Course, Result, Student models
-
+from exam import models 
 @login_required(login_url='adminlogin')
 def report_view(request):
     courses = models.Course.objects.all()
