@@ -2,113 +2,203 @@
 {% load widget_tweaks %}
 {% block content %}
 
-
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-    <link href="http://netdna.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style type="text/css">
-      a:link {
-        text-decoration: none;
-      }
-  
-      .order-card {
-        color: rgb(255, 255, 255);
-      }
-  
-      .bg-c-blue {
-        background: #104f66;
-      }
-  
-      .bg-c-green {
-        background:#4C51BF;
-      }
-  
-      .bg-c-yellow {
-        background: #53616e;
-      }
-  
-      .bg-c-gtx {
-        background:#303a3c;
-      }
-  
-  
-      .card {
+        :root {
+            --primary-blue: #0078C9;
+            --primary-yellow: #FFF200;
+            --primary-white: #FFFFFF;
+            --light-blue: #E6F2FA;
+            --dark-blue: #005A9C;
+        }
         
-        -webkit-box-shadow: 0 1px 2.94px 0.06px rgba(4, 26, 55, 0.16);
-        box-shadow: 0 1px 2.94px 0.06px rgba(4, 26, 55, 0.16);
-        margin-bottom: 30px;
-        -webkit-transition: all 0.3s ease-in-out;
-        transition: all 0.3s ease-in-out;
-      }
-  
-      .card .card-block {
-        padding: 25px;
-      }
-  
-      .order-card i {
-        font-size: 26px;
-      }
-  
-      .f-left {
-        float: left;
-      }
-  
-      .f-right {
-        float: right;
-      }
-      header {
-      left: 0px;
-      right: 0px;
-    }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        .dashboard-header {
+            margin-bottom: 40px;
+            padding-bottom: 15px;
+        }
+        
+        .dashboard-header h2 {
+            color: var(--primary-blue);
+            font-weight: 600;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .dashboard-header h2:after {
+            content: '';
+            position: absolute;
+            width: 50px;
+            height: 4px;
+            background: var(--primary-yellow);
+            bottom: -10px;
+            left: 0;
+            border-radius: 2px;
+        }
+        
+        .dashboard-header p {
+            color: #6c757d;
+        }
+        
+        .stat-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            margin-bottom: 25px;
+            overflow: hidden;
+            height: 100%;
+            background: white;
+            border-left: 4px solid var(--primary-yellow);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(0, 120, 201, 0.15);
+        }
+        
+        .card-body {
+            padding: 25px;
+            position: relative;
+        }
+        
+        .card-icon-container {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .blue-icon {
+            background-color: var(--light-blue);
+            color: var(--primary-blue);
+        }
+        
+        .yellow-icon {
+            background-color: var(--primary-yellow);
+            color: var(--primary-blue);
+        }
+        
+        .card-icon {
+            font-size: 1.5rem;
+        }
+        
+        .card-title {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #6b7280;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .card-value {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--primary-blue);
+            margin-bottom: 5px;
+        }
+        
+        .card-description {
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin-bottom: 0;
+        }
+        
+        .bg-c-blue {
+            background: var(--primary-blue);
+            color: white;
+        }
+        
+        .bg-c-blue .card-title,
+        .bg-c-blue .card-value,
+        .bg-c-blue .card-description {
+            color: white;
+        }
+        
+        .bg-c-blue .card-icon-container {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
     </style>
-  </head>
-<br><br>
+</head>
 
-  <div class="container">
-    <div class="row">
-      
-        <div class="col-md-4 col-xl-4">
-            <div class="card bg-c-gtx order-card">
-              <div class="card-block">
-                <h6 class="m-b-20">Registered Students </h6>
-                <h2 class="text-right"><i class="fas fa-user-graduate f-left"></i><span>{{total_student}}</span></h2>
-                
-              </div>
-            </div>
-          </div>
-  
-      <div class="col-md-4 col-xl-4">
-        <div class="card bg-c-yellow order-card">
-          <div class="card-block">
-            <h6 class="m-b-20">Total Courses</h6>
-           <h2 class="text-right"><i class="fas fa-book f-left"></i><span>{{total_course}}</span></h2>
-            
-          </div>
-        </div>
-      </div>
-  
-      <div class="col-md-4 col-xl-4">
-        <div class="card bg-c-blue order-card">
-          <div class="card-block">
-            <h6 class="m-b-20">Total Questions</h6>
-            <h2 class="text-right"><i class="fas fa-question-circle f-left"></i><span>{{total_question}}</span></h2>
-            
-          </div>
-        </div>
-      </div>
+<div class="container py-5">
+    <div class="dashboard-header">
+        <h2>Trainer Dashboard</h2>
+        <p class="text-muted">Overview of your teaching resources</p>
     </div>
-  </div>
+    
+    <div class="row">
+        <!-- Students Card -->
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="card-body">
+                    <div class="card-icon-container blue-icon">
+                        <i class="fa fa-user-graduate card-icon"></i>
+                    </div>
+                    <h6 class="card-title">Registered Students</h6>
+                    <h2 class="card-value">{{total_student}}</h2>
+                    <p class="card-description">Active learners in your courses</p>
+                    <div class="progress mt-2" style="height: 6px;">
+                        <div class="progress-bar" role="progressbar" style="width: 75%; background-color: var(--primary-blue);" 
+                             aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Courses Card -->
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="card-body">
+                    <div class="card-icon-container yellow-icon">
+                        <i class="fa fa-book card-icon"></i>
+                    </div>
+                    <h6 class="card-title">Total Courses</h6>
+                    <h2 class="card-value">{{total_course}}</h2>
+                    <p class="card-description">Courses you're teaching</p>
+                    <div class="progress mt-2" style="height: 6px;">
+                        <div class="progress-bar" role="progressbar" style="width: 60%; background-color: var(--primary-yellow);" 
+                             aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Questions Card -->
+        <div class="col-md-4">
+            <div class="stat-card bg-c-blue">
+                <div class="card-body">
+                    <div class="card-icon-container">
+                        <i class="fa fa-question-circle card-icon"></i>
+                    </div>
+                    <h6 class="card-title">Total Questions</h6>
+                    <h2 class="card-value">{{total_question}}</h2>
+                    <p class="card-description">Questions in your question bank</p>
+                    <div class="progress mt-2" style="height: 6px; background-color: rgba(255,255,255,0.2);">
+                        <div class="progress-bar" role="progressbar" style="width: 85%; background-color: white;" 
+                             aria-valuenow="85" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-
-<br><br><br><br><br><br><br><br><br><br>
-
-<script src="http://netdna.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js"></script>
-
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
 
 {% endblock content %}

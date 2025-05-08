@@ -93,31 +93,6 @@ def admin_dashboard_view(request):
     for log in recent_logs:
         log.time_ago = timesince(log.action_time, now()) + " ago"
 
-    # if not request.headers.get('x-requested-with') == 'XMLHttpRequest':
-    #     recent_log = LogEntry.objects.filter(
-    #         user_id=request.user.pk,
-    #         content_type_id=ContentType.objects.get_for_model(request.user.__class__).pk,
-    #         object_id=request.user.pk,
-    #         action_flag=CHANGE,
-    #         change_message="Viewed the custom admin dashboard.",
-    #         action_time__gte=now() - timedelta(minutes=5)
-    #     ).first()
-        
-    #     if not recent_log:
-    #         LogEntry.objects.log_action(
-    #             user_id=request.user.pk,
-    #             content_type_id=ContentType.objects.get_for_model(request.user.__class__).pk,
-    #             object_id=request.user.pk,
-    #             object_repr=str(request.user),
-    #             action_flag=CHANGE,
-    #             change_message="Viewed the custom admin dashboard.",
-    #         )
-
-    # recent_logs = LogEntry.objects.select_related('user', 'content_type').order_by('-action_time')[:5]
-
-    # for log in recent_logs:
-    #     log.time_ago = timesince(log.action_time, now()) + " ago"
-
     dict={
     'total_student':SMODEL.Student.objects.all().count(),
     'total_teacher':TMODEL.Teacher.objects.all().filter(status=True).count(),

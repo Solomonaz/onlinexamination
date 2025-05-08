@@ -2,107 +2,181 @@
 {% load widget_tweaks %}
 {% block content %}
 
-
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-    <link href="http://netdna.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style type="text/css">
-      a:link {
-        text-decoration: none;
-      }
-  
-      .order-card {
-        color: rgb(255, 255, 255);
-      }
-  
-      .bg-c-blue {
-        background: #104f66;
-      }
-  
-      .bg-c-gtx {
-        background:#303a3c;
-      }
-      .bg-c-yellow {
-        background: #53616e;
-      }
-  
-      .bg-c-pink {
-        background: #663a30;
-      }
-  
-  
-      .card {
+        :root {
+            --primary-blue: #0078C9;
+            --primary-yellow: #FFF200;
+            --primary-white: #FFFFFF;
+            --dark-blue: #005a9c;
+            --light-blue: #e6f2fa;
+        }
         
-        -webkit-box-shadow: 0 1px 2.94px 0.06px rgba(4, 26, 55, 0.16);
-        box-shadow: 0 1px 2.94px 0.06px rgba(4, 26, 55, 0.16);
-        margin-bottom: 30px;
-        -webkit-transition: all 0.3s ease-in-out;
-        transition: all 0.3s ease-in-out;
-      }
-  
-      .card .card-block {
-        padding: 25px;
-      }
-  
-      .order-card i {
-        font-size: 26px;
-      }
-  
-      .f-left {
-        float: left;
-      }
-  
-      .f-right {
-        float: right;
-      }
-      header {
-      left: 0px;
-      right: 0px;
-    }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        .dashboard-header {
+            margin-bottom: 40px;
+            padding-bottom: 15px;
+        }
+        
+        .dashboard-header h2 {
+            color: var(--primary-blue);
+            font-weight: 600;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .dashboard-header h2:after {
+            content: '';
+            position: absolute;
+            width: 50%;
+            height: 4px;
+            background: var(--primary-yellow);
+            bottom: -10px;
+            left: 0;
+            border-radius: 2px;
+        }
+        
+        .dashboard-header p {
+            color: #6c757d;
+        }
+        
+        .action-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            margin-bottom: 25px;
+            overflow: hidden;
+            height: 100%;
+            border-top: 4px solid var(--primary-yellow);
+        }
+        
+        .action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(0, 120, 201, 0.15);
+        }
+        
+        .card-body {
+            padding: 30px;
+            position: relative;
+        }
+        
+        .card-icon {
+            font-size: 2.5rem;
+            color: var(--primary-blue);
+            margin-bottom: 20px;
+            background: var(--primary-yellow);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--primary-blue);
+            margin-bottom: 15px;
+        }
+        
+        .bg-c-blue {
+            background-color: var(--primary-white);
+            color: var(--primary-blue);
+        }
+        
+        .bg-c-blue:hover {
+            background-color: var(--light-blue);
+        }
+        
+        .bg-c-dark-blue {
+            background-color: var(--primary-blue);
+            color: var(--primary-white);
+        }
+        
+        .bg-c-dark-blue .card-title,
+        .bg-c-dark-blue .card-icon {
+            color: var(--primary-white);
+        }
+        
+        .bg-c-dark-blue .card-icon {
+            background-color: var(--primary-yellow);
+        }
+        
+        .action-link {
+            text-decoration: none !important;
+        }
+        
+        .action-link:hover .card-title {
+            text-decoration: underline;
+            text-decoration-color: var(--primary-yellow);
+        }
+        
+        .btn-yellow {
+            background-color: var(--primary-yellow);
+            color: var(--primary-blue);
+            font-weight: 500;
+            border: none;
+            padding: 8px 20px;
+        }
+        
+        .btn-yellow:hover {
+            background-color: #e6d900;
+            color: var(--primary-blue);
+        }
     </style>
-  </head>
-<br><br>
+</head>
 
-  <div class="container">
-    <div class="row">
-      <div class="col-md-4 col-xl-6">
-        <a href="teacher-add-exam" style="text-decoration: none;color:white;">
-        <div class="card bg-c-blue order-card">
-          <div class="card-block">
-            <h6 class="m-b-20"> Add Courses </h6>
-            <h2 class="text-right"><i class="fas fa-plus f-left"></i></h2>
-          </div>
-        </div>
-      </a>
-      </div>
-  
-      <div class="col-md-4 col-xl-6">
-        <a href="teacher-view-exam" style="text-decoration: none;color:white;">
-        <div class="card bg-c-gtx order-card">
-          <div class="card-block">
-            <h6 class="m-b-20">View Courses </h6>
-            <h2 class="text-right"><i class="fas fa-eye f-left"></i></h2>
-          </div>
-        </div>
-      </a>
-      </div>
-  
-     
-  
-     
+<div class="container py-5">
+    <div class="dashboard-header">
+        <h2>Course Management</h2>
+        <p>Create and manage your courses</p>
     </div>
-  </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <a href="teacher-add-exam" class="action-link">
+                <div class="card action-card bg-c-blue">
+                    <div class="card-body text-center">
+                        <div class="card-icon mx-auto">
+                            <i class="fa fa-plus"></i>
+                        </div>
+                        <h4 class="card-title">Add New Course</h4>
+                        <p class="text-muted">Create a new course with exams and questions</p>
+                        <button class="btn btn-yellow mt-3">Get Started</button>
+                    </div>
+                </div>
+            </a>
+        </div>
+        
+        <div class="col-md-6">
+            <a href="teacher-view-exam" class="action-link">
+                <div class="card action-card bg-c-dark-blue">
+                    <div class="card-body text-center">
+                        <div class="card-icon mx-auto">
+                            <i class="fa fa-eye"></i>
+                        </div>
+                        <h4 class="card-title">View Courses</h4>
+                        <p>Manage your existing courses and content</p>
+                        <button class="btn btn-yellow mt-3">View All</button>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
 
-
-<br><br><br><br><br><br><br><br><br><br>
-
-<script src="http://netdna.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js"></script>
-
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
 
 {% endblock content %}
