@@ -41,6 +41,7 @@ urlpatterns = [
 
     path('admin-view-examinees/<int:course_id>/', views.admin_view_examinees_view, name='admin-view-examinees'),
     path('admin-report', views.report_view, name = 'report-view'),
+    path('delete-log/<int:pk>/', views.delete_log_entry, name='delete_log'),
 
 
     path('admin-course', views.admin_course_view,name='admin-course'),

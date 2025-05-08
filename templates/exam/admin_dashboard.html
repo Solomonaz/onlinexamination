@@ -12,126 +12,228 @@
       --accent-blue: #4cc9f0;
       --success-green: #38b000;
       --warning-orange: #ff9e00;
+      --danger-red: #ef233c;
       --light-gray: #f8f9fa;
       --dark-gray: #6c757d;
+      --card-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+    }
+    
+    body {
+      background-color: #f5f7fa;
+    }
+    
+    .dashboard-container {
+      max-width: 1400px;
+      margin: 0 auto;
     }
     
     .dashboard-header {
-      margin-bottom: 2rem;
-      padding-bottom: 1rem;
-      border-bottom: 1px solid rgba(0,0,0,0.1);
+      margin-bottom: 2.5rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+    
+    .dashboard-header h2 {
+      font-weight: 700;
+      color: #2b2d42;
+    }
+    
+    .dashboard-header p {
+      color: #6c757d;
+      font-size: 1.05rem;
     }
     
     /* Stats Cards */
     .stats-card {
       border: none;
       border-radius: 12px;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      box-shadow: var(--card-shadow);
       margin-bottom: 1.5rem;
       height: 100%;
       overflow: hidden;
       position: relative;
-    }
-    
-    .stats-card::before {
-      content: '';
-      position: absolute;
-      top: -50px;
-      right: -50px;
-      width: 150px;
-      height: 150px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.1);
-    }
-    
-    .stats-card.blue {
-      background: linear-gradient(135deg, #3186ca, #104f66);
-    }
-    
-    .stats-card.purple {
-      background: linear-gradient(135deg, #4C51BF, #3a0ca3);
-    }
-    
-    .stats-card.teal {
-      background: linear-gradient(135deg, #4895ef, #4361ee);
-    }
-    
-    .stats-card.gray {
-      background: linear-gradient(135deg, #53616e, #2b2d42);
+      border-left: 4px solid transparent;
     }
     
     .stats-card:hover {
       transform: translateY(-5px);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 12px 20px rgba(0, 0, 0, 0.12);
+    }
+    
+    .stats-card.blue {
+      background: white;
+      border-left-color: var(--primary-blue);
+    }
+    
+    .stats-card.purple {
+      background: white;
+      border-left-color: var(--dark-blue);
+    }
+    
+    .stats-card.teal {
+      background: white;
+      border-left-color: var(--accent-blue);
+    }
+    
+    .stats-card.gray {
+      background: white;
+      border-left-color: var(--dark-gray);
     }
     
     .stats-card .card-body {
-      padding: 1.5rem;
-      color: white;
+      padding: 1.75rem 1.5rem;
       position: relative;
       z-index: 1;
     }
     
     .stats-card .card-icon {
-      font-size: 2rem;
+      font-size: 2.25rem;
       margin-bottom: 1rem;
-      opacity: 0.8;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+    }
+    
+    .stats-card.blue .card-icon {
+      background-color: rgba(67, 97, 238, 0.1);
+      color: var(--primary-blue);
+    }
+    
+    .stats-card.purple .card-icon {
+      background-color: rgba(58, 12, 163, 0.1);
+      color: var(--dark-blue);
+    }
+    
+    .stats-card.teal .card-icon {
+      background-color: rgba(76, 201, 240, 0.1);
+      color: var(--accent-blue);
+    }
+    
+    .stats-card.gray .card-icon {
+      background-color: rgba(108, 117, 125, 0.1);
+      color: var(--dark-gray);
     }
     
     .stats-card .card-title {
       font-size: 0.9rem;
-      font-weight: 500;
+      font-weight: 600;
       margin-bottom: 0.5rem;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      opacity: 0.9;
+      color: var(--dark-gray);
     }
     
     .stats-card .card-value {
-      font-size: 1.75rem;
+      font-size: 1.85rem;
       font-weight: 700;
       margin-bottom: 0;
+      color: #2b2d42;
     }
     
-    /* Active Students Cards */
+    .stats-card .card-footer-link {
+      display: block;
+      padding: 0.75rem 1.5rem;
+      background-color: rgba(0,0,0,0.03);
+      color: var(--dark-gray);
+      font-size: 0.85rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    
+    .stats-card .card-footer-link:hover {
+      background-color: rgba(0,0,0,0.05);
+      color: var(--primary-blue);
+    }
+    
+    .stats-card .card-footer-link i {
+      transition: transform 0.2s ease;
+    }
+    
+    .stats-card .card-footer-link:hover i {
+      transform: translateX(3px);
+    }
+    
+    /* Section Headers */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+    
+    .section-header h4 {
+      font-weight: 600;
+      color: #2b2d42;
+      margin-bottom: 0;
+      display: flex;
+      align-items: center;
+    }
+    
+    .section-header h4 i {
+      margin-right: 0.75rem;
+      color: var(--primary-blue);
+    }
+    
+    .section-header .badge {
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 0.5rem 0.9rem;
+      border-radius: 50px;
+    }
+    
+    /* Student Cards */
     .student-card {
       border: none;
       border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      box-shadow: var(--card-shadow);
       transition: all 0.3s ease;
       margin-bottom: 1.5rem;
       overflow: hidden;
+      background: white;
     }
     
     .student-card:hover {
       transform: translateY(-3px);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
     }
     
     .student-card .card-header {
-      background-color: var(--primary-blue);
-      color: white;
-      padding: 0.75rem 1.25rem;
+      background-color: white;
+      color: #2b2d42;
+      padding: 1.25rem 1.5rem;
       font-weight: 600;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     
     .student-card .card-body {
-      padding: 1.25rem;
+      padding: 1.5rem;
     }
     
     .student-card .info-item {
-      margin-bottom: 0.75rem;
+      margin-bottom: 1rem;
+      display: flex;
     }
     
     .student-card .info-label {
       font-weight: 600;
       color: var(--dark-gray);
       font-size: 0.85rem;
+      min-width: 120px;
     }
     
     .student-card .info-value {
       font-size: 0.95rem;
+      color: #2b2d42;
     }
     
     .student-card .status-badge {
@@ -141,6 +243,13 @@
       border-radius: 50px;
       font-size: 0.8rem;
       font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+    }
+    
+    .student-card .status-badge i {
+      font-size: 0.5rem;
+      margin-right: 0.5rem;
     }
     
     .student-card .btn-view {
@@ -148,6 +257,9 @@
       color: var(--primary-blue);
       font-size: 0.85rem;
       font-weight: 500;
+      padding: 0.4rem 0.9rem;
+      border-radius: 6px;
+      transition: all 0.2s ease;
     }
     
     .student-card .btn-view:hover {
@@ -155,141 +267,353 @@
       color: white;
     }
     
+    /* Empty State */
     .empty-state {
-      background-color: var(--light-gray);
+      background-color: white;
       border-radius: 10px;
-      padding: 3rem;
+      padding: 3rem 2rem;
       text-align: center;
+      box-shadow: var(--card-shadow);
     }
     
     .empty-state i {
-      font-size: 3rem;
+      font-size: 3.5rem;
       color: var(--dark-gray);
-      margin-bottom: 1rem;
-      opacity: 0.5;
+      margin-bottom: 1.5rem;
+      opacity: 0.3;
+    }
+    
+    .empty-state h5 {
+      color: #2b2d42;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    
+    .empty-state p {
+      color: var(--dark-gray);
+      margin-bottom: 1.5rem;
+    }
+    
+    /* Horizontal Scroll Container */
+    .scroll-container {
+      display: flex;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      padding-bottom: 1rem;
+      scrollbar-width: thin;
+      scrollbar-color: var(--primary-blue) rgba(0,0,0,0.05);
+    }
+    
+    .scroll-container::-webkit-scrollbar {
+      height: 6px;
+    }
+    
+    .scroll-container::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.05);
+      border-radius: 10px;
+    }
+    
+    .scroll-container::-webkit-scrollbar-thumb {
+      background-color: var(--primary-blue);
+      border-radius: 10px;
+    }
+    
+    .scroll-item {
+      flex: 0 0 auto;
+      width: 300px;
+      margin-right: 1.25rem;
+    }
+    
+    .scroll-item:last-child {
+      margin-right: 0;
+    }
+    
+    /* Recent Activity */
+    .recent-activity {
+      background: white;
+      border-radius: 10px;
+      box-shadow: var(--card-shadow);
+      padding: 1.5rem;
+    }
+    
+    .activity-item {
+      display: flex;
+      padding: 1rem 0;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .activity-item:last-child {
+      border-bottom: none;
+    }
+    
+    .activity-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 1rem;
+      flex-shrink: 0;
+    }
+    
+    .activity-icon.exam {
+      background-color: rgba(67, 97, 238, 0.1);
+      color: var(--primary-blue);
+    }
+    
+    .activity-icon.login {
+      background-color: rgba(56, 176, 0, 0.1);
+      color: var(--success-green);
+    }
+    
+    .activity-icon.warning {
+      background-color: rgba(255, 158, 0, 0.1);
+      color: var(--warning-orange);
+    }
+    
+    .activity-content {
+      flex-grow: 1;
+    }
+    
+    .activity-title {
+      font-weight: 600;
+      color: #2b2d42;
+      margin-bottom: 0.25rem;
+    }
+    
+    .activity-meta {
+      font-size: 0.85rem;
+      color: var(--dark-gray);
+      display: flex;
+      align-items: center;
+    }
+    
+    .activity-meta i {
+      margin-right: 0.5rem;
+      font-size: 0.75rem;
+    }
+    
+    .activity-time {
+      font-size: 0.8rem;
+      color: var(--dark-gray);
+      margin-top: 0.25rem;
+    }
+    
+    /* Responsive Adjustments */
+    @media (max-width: 992px) {
+      .stats-card .card-body {
+        padding: 1.5rem 1.25rem;
+      }
+      
+      .stats-card .card-value {
+        font-size: 1.65rem;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .dashboard-header {
+        margin-bottom: 1.5rem;
+      }
+      
+      .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .section-header .badge {
+        margin-top: 0.5rem;
+      }
+      
+      .student-card .info-item {
+        flex-direction: column;
+      }
+      
+      .student-card .info-label {
+        margin-bottom: 0.25rem;
+      }
     }
   </style>
 </head>
 
-<div class="container py-4">
+<div class="dashboard-container px-3 py-4">
   <!-- Dashboard Header -->
   <div class="dashboard-header">
-    <h2 class="fw-bold mb-2">Examination Dashboard</h2>
-    <p class="text-muted">Monitor and manage examination activities</p>
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <h2 class="mb-2">Examination Dashboard</h2>
+        <p>Monitor and manage all examination activities</p>
+      </div>
+      <div class="text-end">
+        <small class="text-muted">Last updated: {% now "DATETIME_FORMAT" %}</small>
+      </div>
+    </div>
   </div>
 
   <!-- Stats Cards Row -->
-  <div class="row g-4">
+  <div class="row g-4 mb-4">
     <div class="col-md-6 col-lg-3">
-      <a href="admin-view-student" class="text-decoration-none">
-        <div class="stats-card blue">
-          <div class="card-body">
-            <div class="card-icon">
-              <i class="fas fa-user-graduate"></i>
-            </div>
-            <h6 class="card-title">Registered Examinee</h6>
-            <h3 class="card-value">{{ total_student }}</h3>
+      <div class="stats-card blue h-100">
+        <div class="card-body">
+          <div class="card-icon">
+            <i class="fas fa-user-graduate"></i>
           </div>
+          <h6 class="card-title">Registered Examinee</h6>
+          <h3 class="card-value">{{ total_student }}</h3>
         </div>
-      </a>
+        <a href="admin-view-student" class="card-footer-link">
+          View all <i class="fas fa-arrow-right ms-1"></i>
+        </a>
+      </div>
     </div>
 
     <div class="col-md-6 col-lg-3">
-      <a href="admin-view-teacher" class="text-decoration-none">
-        <div class="stats-card purple">
-          <div class="card-body">
-            <div class="card-icon">
-              <i class="fas fa-chalkboard-teacher"></i>
-            </div>
-            <h6 class="card-title">Total Examiner</h6>
-            <h3 class="card-value">{{ total_teacher }}</h3>
+      <div class="stats-card purple h-100">
+        <div class="card-body">
+          <div class="card-icon">
+            <i class="fas fa-chalkboard-teacher"></i>
           </div>
+          <h6 class="card-title">Total Examiner</h6>
+          <h3 class="card-value">{{ total_teacher }}</h3>
         </div>
-      </a>
+        <a href="admin-view-teacher" class="card-footer-link">
+          View all <i class="fas fa-arrow-right ms-1"></i>
+        </a>
+      </div>
     </div>
 
     <div class="col-md-6 col-lg-3">
-      <a href="admin-view-course" class="text-decoration-none">
-        <div class="stats-card teal">
-          <div class="card-body">
-            <div class="card-icon">
-              <i class="fas fa-book"></i>
-            </div>
-            <h6 class="card-title">Exam Courses</h6>
-            <h3 class="card-value">{{ total_course }}</h3>
+      <div class="stats-card teal h-100">
+        <div class="card-body">
+          <div class="card-icon">
+            <i class="fas fa-book"></i>
           </div>
+          <h6 class="card-title">Exam Courses</h6>
+          <h3 class="card-value">{{ total_course }}</h3>
         </div>
-      </a>
+        <a href="admin-view-course" class="card-footer-link">
+          View all <i class="fas fa-arrow-right ms-1"></i>
+        </a>
+      </div>
     </div>
 
     <div class="col-md-6 col-lg-3">
-      <a href="admin-view-question" class="text-decoration-none">
-        <div class="stats-card gray">
-          <div class="card-body">
-            <div class="card-icon">
-              <i class="fas fa-question-circle"></i>
-            </div>
-            <h6 class="card-title">Available Questions</h6>
-            <h3 class="card-value">{{ total_question }}</h3>
+      <div class="stats-card gray h-100">
+        <div class="card-body">
+          <div class="card-icon">
+            <i class="fas fa-question-circle"></i>
           </div>
+          <h6 class="card-title">Available Questions</h6>
+          <h3 class="card-value">{{ total_question }}</h3>
         </div>
-      </a>
+        <a href="admin-view-question" class="card-footer-link">
+          View all <i class="fas fa-arrow-right ms-1"></i>
+        </a>
+      </div>
     </div>
   </div>
 
- <!-- Active Students Section -->
-<div class="mt-5">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="mb-0"><i class="fas fa-user-clock text-primary me-2"></i> Active Examinee</h4>
-    <span class="badge bg-primary" id="active-student-count">{{ active_students|length }} Active</span>
+  <div class="row">
+    <!-- Active Students Section -->
+    <div class="col-lg-8 mb-4">
+      <div class="section-header">
+        <h4><i class="fas fa-user-clock"></i> Active Examinee</h4>
+        <span class="badge bg-primary" id="active-student-count">{{ active_students|length }} Active</span>
+      </div>
+      
+      <div id="active-students-list">
+        {% if active_students %}
+        <div class="scroll-container">
+          {% for student in active_students %}
+          <div class="scroll-item">
+            <div class="student-card h-100">
+              <div class="card-header">
+                <span>{{ student.user.get_full_name }}</span>
+                <span class="status-badge">
+                  <i class="fas fa-circle"></i> Active
+                </span>
+              </div>
+              <div class="card-body">
+                <div class="info-item">
+                  <div class="info-label">Username</div>
+                  <div class="info-value">{{ student.user.username }}</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Course</div>
+                  <div class="info-value">{{ student.course.course_name }}</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Organization</div>
+                  <div class="info-value">{{ student.organization }}</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Started At</div>
+                  <div class="info-value">{% now "H:i" %}</div>
+                </div>
+              </div>
+              <div class="card-footer bg-white text-end border-top-0 pt-0">
+                <a href="#" class="btn btn-sm btn-view">
+                  <i class="fas fa-eye me-1"></i> View Details
+                </a>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <i class="fas fa-user-clock"></i>
+          <h5>No Active Examinee</h5>
+          <p>Currently no students are taking exams</p>
+          <a href="admin-view-student" class="btn btn-sm btn-outline-primary">
+            <i class="fas fa-users me-1"></i> View All Students
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    
+<!-- Recent Activity Section -->
+<div class="col-lg-4 mb-4">
+  <div class="section-header">
+    <h4><i class="fas fa-history"></i> Recent Activity</h4>
   </div>
-  
-  <div id="active-students-list">
-    {% if active_students %}
-    <div class="row g-4">
-      {% for student in active_students %}
-      <div class="col-md-6 col-lg-4">
-        <div class="student-card">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <span>{{ student.user.get_full_name }}</span>
-            <span class="status-badge">
-              <i class="fas fa-circle fa-xs"></i> Active
-            </span>
+
+  <div class="recent-activity">
+    {% for log in recent_logs %}
+    <div class="activity-item d-flex justify-content-between align-items-start">
+      <div class="d-flex">
+        <div class="activity-icon {% if log.action_flag == 1 %}exam{% elif log.action_flag == 2 %}login{% elif log.action_flag == 3 %}warning{% else %}default{% endif %}">
+          <i class="{% if log.action_flag == 1 %}fas fa-file-alt{% elif log.action_flag == 2 %}fas fa-sign-in-alt{% elif log.action_flag == 3 %}fas fa-exclamation-triangle{% else %}fas fa-info-circle{% endif %}"></i>
+        </div>
+        <div class="activity-content ms-2">
+          <div class="activity-title">
+            {{ log.get_action_flag_display }}: {{ log.object_repr }}
           </div>
-          <div class="card-body">
-            <div class="info-item">
-              <div class="info-label">Username</div>
-              <div class="info-value">{{ student.user.username }}</div>
-            </div>
-            <div class="info-item">
-              <div class="info-label">Course</div>
-              <div class="info-value">{{ student.course.course_name }}</div>
-            </div>
-            <div class="info-item">
-              <div class="info-label">Organization</div>
-              <div class="info-value">{{ student.organization }}</div>
-            </div>
-            <!-- <div class="info-item">
-              <div class="info-label">Started At</div>
-              <div class="info-value">{{ student.exam_date|date:"H:i:s" }}</div>
-            </div> -->
+          <div class="activity-meta">
+            <i class="fas fa-user-tie"></i>
+            <span>{{ log.user.get_full_name|default:log.user.username }}</span>
           </div>
-          <div class="card-footer bg-white text-end">
-            <a href="#" class="btn btn-sm btn-view">
-              <i class="fas fa-eye me-1"></i> View Details
-            </a>
-          </div>
+          <div class="activity-time">{{ log.time_ago }}</div>
         </div>
       </div>
-      {% endfor %}
+      <form action="{% url 'delete_log' log.pk %}" method="post" style="margin-left: auto;">
+        {% csrf_token %}
+        <button class="btn btn-sm btn-danger" type="submit" title="Delete Activity">
+          <i class="fas fa-trash-alt"></i>
+        </button>
+      </form>
     </div>
-    {% else %}
-    <div class="empty-state">
-      <i class="fas fa-user-clock"></i>
-      <h5 class="mb-2">No Active Examinee</h5>
-      <p class="text-muted">Currently no students are taking exams</p>
+    {% empty %}
+    <div class="activity-item">
+      <div class="activity-content">
+        <div class="activity-title">No recent activity</div>
+      </div>
     </div>
-    {% endif %}
+    {% endfor %}
+  </div>
+</div>
+
   </div>
 </div>
 
@@ -297,6 +621,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 
 <script>
+  // Function to update active students list
   function fetchActiveStudents() {
     fetch("{% url 'admin-dashboard' %}", {
       method: 'GET',
@@ -316,14 +641,17 @@
       studentsContainer.innerHTML = '';
 
       if (studentList.length > 0) {
+        let scrollContainer = document.createElement('div');
+        scrollContainer.className = 'scroll-container';
+        
         studentList.forEach(student => {
           let studentCard = `
-            <div class="col-md-6 col-lg-4">
-              <div class="student-card">
-                <div class="card-header d-flex justify-content-between align-items-center">
+            <div class="scroll-item">
+              <div class="student-card h-100">
+                <div class="card-header">
                   <span>${student.name}</span>
                   <span class="status-badge">
-                    <i class="fas fa-circle fa-xs"></i> Active
+                    <i class="fas fa-circle"></i> Active
                   </span>
                 </div>
                 <div class="card-body">
@@ -341,10 +669,10 @@
                   </div>
                   <div class="info-item">
                     <div class="info-label">Started At</div>
-                    <div class="info-value">${student.exam_date}</div>
+                    <div class="info-value">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
                   </div>
                 </div>
-                <div class="card-footer bg-white text-end">
+                <div class="card-footer bg-white text-end border-top-0 pt-0">
                   <a href="#" class="btn btn-sm btn-view">
                     <i class="fas fa-eye me-1"></i> View Details
                   </a>
@@ -352,22 +680,31 @@
               </div>
             </div>
           `;
-          studentsContainer.innerHTML += studentCard;
+          scrollContainer.innerHTML += studentCard;
         });
+        
+        studentsContainer.appendChild(scrollContainer);
       } else {
         studentsContainer.innerHTML = `
           <div class="empty-state">
             <i class="fas fa-user-clock"></i>
-            <h5 class="mb-2">No Active Examinee</h5>
-            <p class="text-muted">Currently no students are taking exams</p>
+            <h5>No Active Examinee</h5>
+            <p>Currently no students are taking exams</p>
+            <a href="admin-view-student" class="btn btn-sm btn-outline-primary">
+              <i class="fas fa-users me-1"></i> View All Students
+            </a>
           </div>
         `;
       }
-    });
+    })
+    .catch(error => console.error('Error fetching active students:', error));
   }
 
   // Fetch active students every 30 seconds (or adjust as necessary)
   setInterval(fetchActiveStudents, 1000);
+  
+  // Initial fetch
+  document.addEventListener('DOMContentLoaded', fetchActiveStudents);
 </script>
 
 {% endblock content %}
