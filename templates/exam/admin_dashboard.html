@@ -573,76 +573,47 @@
       </div>
     </div>
     
-    <!-- Recent Activity Section -->
-    <div class="col-lg-4 mb-4">
-      <div class="section-header">
-        <h4><i class="fas fa-history"></i> Recent Activity</h4>
+<!-- Recent Activity Section -->
+<div class="col-lg-4 mb-4">
+  <div class="section-header">
+    <h4><i class="fas fa-history"></i> Recent Activity</h4>
+  </div>
+
+  <div class="recent-activity">
+    {% for log in recent_logs %}
+    <div class="activity-item d-flex justify-content-between align-items-start">
+      <div class="d-flex">
+        <div class="activity-icon {% if log.action_flag == 1 %}exam{% elif log.action_flag == 2 %}login{% elif log.action_flag == 3 %}warning{% else %}default{% endif %}">
+          <i class="{% if log.action_flag == 1 %}fas fa-file-alt{% elif log.action_flag == 2 %}fas fa-sign-in-alt{% elif log.action_flag == 3 %}fas fa-exclamation-triangle{% else %}fas fa-info-circle{% endif %}"></i>
+        </div>
+        <div class="activity-content ms-2">
+          <div class="activity-title">
+            {{ log.get_action_flag_display }}: {{ log.object_repr }}
+          </div>
+          <div class="activity-meta">
+            <i class="fas fa-user-tie"></i>
+            <span>{{ log.user.get_full_name|default:log.user.username }}</span>
+          </div>
+          <div class="activity-time">{{ log.time_ago }}</div>
+        </div>
       </div>
-      
-      <div class="recent-activity">
-        <div class="activity-item">
-          <div class="activity-icon exam">
-            <i class="fas fa-file-alt"></i>
-          </div>
-          <div class="activity-content">
-            <div class="activity-title">New Exam Created</div>
-            <div class="activity-meta">
-              <i class="fas fa-user-tie"></i>
-              <span>By Admin</span>
-            </div>
-            <div class="activity-time">2 minutes ago</div>
-          </div>
-        </div>
-        
-        <div class="activity-item">
-          <div class="activity-icon login">
-            <i class="fas fa-sign-in-alt"></i>
-          </div>
-          <div class="activity-content">
-            <div class="activity-title">Student Login</div>
-            <div class="activity-meta">
-              <i class="fas fa-user-graduate"></i>
-              <span>John Doe</span>
-            </div>
-            <div class="activity-time">15 minutes ago</div>
-          </div>
-        </div>
-        
-        <div class="activity-item">
-          <div class="activity-icon warning">
-            <i class="fas fa-exclamation-triangle"></i>
-          </div>
-          <div class="activity-content">
-            <div class="activity-title">Exam Warning</div>
-            <div class="activity-meta">
-              <i class="fas fa-user-graduate"></i>
-              <span>Jane Smith</span>
-            </div>
-            <div class="activity-time">1 hour ago</div>
-          </div>
-        </div>
-        
-        <div class="activity-item">
-          <div class="activity-icon exam">
-            <i class="fas fa-check-circle"></i>
-          </div>
-          <div class="activity-content">
-            <div class="activity-title">Exam Completed</div>
-            <div class="activity-meta">
-              <i class="fas fa-user-graduate"></i>
-              <span>Michael Johnson</span>
-            </div>
-            <div class="activity-time">3 hours ago</div>
-          </div>
-        </div>
-        
-        <div class="text-center mt-2">
-          <a href="#" class="btn btn-sm btn-link text-primary">
-            View All Activity <i class="fas fa-arrow-right ms-1"></i>
-          </a>
-        </div>
+      <form action="{% url 'delete_log' log.pk %}" method="post" style="margin-left: auto;">
+        {% csrf_token %}
+        <button class="btn btn-sm btn-danger" type="submit" title="Delete Activity">
+          <i class="fas fa-trash-alt"></i>
+        </button>
+      </form>
+    </div>
+    {% empty %}
+    <div class="activity-item">
+      <div class="activity-content">
+        <div class="activity-title">No recent activity</div>
       </div>
     </div>
+    {% endfor %}
+  </div>
+</div>
+
   </div>
 </div>
 

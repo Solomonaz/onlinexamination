@@ -19,9 +19,11 @@ from django.utils.timezone import now
 from django.http import JsonResponse
 from django.core.paginator import Paginator
 
-
-
-
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.admin.models import LogEntry
+from django.utils.timesince import timesince
+from django.utils.timezone import now
+from django.contrib.admin.models import LogEntry, CHANGE
 
 def frontpage(request):
     if request.user.is_authenticated:
@@ -78,9 +80,7 @@ def get_active_students():
 @login_required(login_url='adminlogin')
 def admin_dashboard_view(request):
     active_students = get_active_students()
-
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        # Return active students in JSON format for AJAX requests
         students_data = [{
             "name": student.user.get_full_name(),
             "username": student.user.username,
@@ -88,15 +88,52 @@ def admin_dashboard_view(request):
             "organization": student.organization,
         } for student in active_students]
         return JsonResponse({'active_students': students_data})
-    
+        
+    recent_logs = LogEntry.objects.select_related('user', 'content_type').order_by('-action_time')[:5]
+    for log in recent_logs:
+        log.time_ago = timesince(log.action_time, now()) + " ago"
+
+    # if not request.headers.get('x-requested-with') == 'XMLHttpRequest':
+    #     recent_log = LogEntry.objects.filter(
+    #         user_id=request.user.pk,
+    #         content_type_id=ContentType.objects.get_for_model(request.user.__class__).pk,
+    #         object_id=request.user.pk,
+    #         action_flag=CHANGE,
+    #         change_message="Viewed the custom admin dashboard.",
+    #         action_time__gte=now() - timedelta(minutes=5)
+    #     ).first()
+        
+    #     if not recent_log:
+    #         LogEntry.objects.log_action(
+    #             user_id=request.user.pk,
+    #             content_type_id=ContentType.objects.get_for_model(request.user.__class__).pk,
+    #             object_id=request.user.pk,
+    #             object_repr=str(request.user),
+    #             action_flag=CHANGE,
+    #             change_message="Viewed the custom admin dashboard.",
+    #         )
+
+    # recent_logs = LogEntry.objects.select_related('user', 'content_type').order_by('-action_time')[:5]
+
+    # for log in recent_logs:
+    #     log.time_ago = timesince(log.action_time, now()) + " ago"
+
     dict={
     'total_student':SMODEL.Student.objects.all().count(),
     'total_teacher':TMODEL.Teacher.objects.all().filter(status=True).count(),
     'total_course':models.Course.objects.all().count(),
     'total_question':models.Question.objects.all().count(),
     'active_students': active_students, 
+    'recent_logs':recent_logs,
     }
     return render(request,'exam/admin_dashboard.html',context=dict)
+
+@login_required(login_url='adminlogin')
+# @user_passes_test(lambda u: u.is_superuser)
+def delete_log_entry(request, pk):
+    if request.method == 'POST':
+        LogEntry.objects.filter(pk=pk).delete()
+    return HttpResponseRedirect(reverse('admin-dashboard'))
 
 @login_required(login_url='adminlogin')
 def admin_teacher_view(request):
