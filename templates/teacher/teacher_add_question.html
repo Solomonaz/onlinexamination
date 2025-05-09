@@ -29,71 +29,189 @@
     color: #fff;
   }
 
+  .btn-import {
+    background-color: #28a745;
+    color: #fff;
+    font-weight: 600;
+    border: none;
+  }
+
+  .btn-import:hover {
+    background-color: #218838;
+    color: #fff;
+  }
+
   .form-section {
     margin-top: 30px;
+  }
+
+  .import-section {
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    padding: 20px;
+    margin-bottom: 30px;
+    border: 1px dashed #0078C9;
+  }
+
+  .tab-content {
+    padding: 20px 0;
+  }
+
+  .nav-tabs .nav-link {
+    color: #495057;
+    font-weight: 500;
+  }
+
+  .nav-tabs .nav-link.active {
+    color: #0078C9;
+    font-weight: 600;
+    border-bottom: 3px solid #0078C9;
+  }
+
+  .file-upload-info {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-top: 5px;
+  }
+
+  .template-download {
+    display: inline-block;
+    margin-top: 10px;
+    color: #0078C9;
+    text-decoration: none;
+  }
+
+  .template-download:hover {
+    text-decoration: underline;
   }
 </style>
 
 <div class="py-5">
   <div class="row justify-content-center">
-    <div class="col-md-8">
+    <div class="col-md-10">
       <div class="card shadow-sm">
         <div class="card-header">
-          Add Question
+          Add Questions
         </div>
         <div class="card-body">
-          <form method="POST" autocomplete="off">
-            {% csrf_token %}
+          <ul class="nav nav-tabs" id="questionTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="single-tab" data-bs-toggle="tab" data-bs-target="#single" type="button" role="tab" aria-controls="single" aria-selected="true">
+                Single Question
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="import-tab" data-bs-toggle="tab" data-bs-target="#import" type="button" role="tab" aria-controls="import" aria-selected="false">
+                Bulk Import
+              </button>
+            </li>
+          </ul>
 
-            <div class="form-section">
-              <label class="form-label" for="courseID">Course</label>
-              {% render_field questionForm.courseID|attr:'required:true' class="form-control" %}
+          <div class="tab-content" id="questionTabsContent">
+            <!-- Single Question Tab -->
+            <div class="tab-pane fade show active" id="single" role="tabpanel" aria-labelledby="single-tab">
+              <form method="POST" autocomplete="off">
+                {% csrf_token %}
+
+                <div class="form-section">
+                  <label class="form-label" for="courseID">Course</label>
+                  {% render_field questionForm.courseID|attr:'required:true' class="form-control" %}
+                </div>
+
+                <div class="form-section">
+                  <label class="form-label" for="question">Question</label>
+                  {% render_field questionForm.question|attr:'required:true' class="form-control" placeholder="Example: What is the relation calculus?" %}
+                </div>
+
+                <div class="form-section">
+                  <label class="form-label" for="marks">Marks</label>
+                  {% render_field questionForm.marks|attr:'required:true' class="form-control" placeholder="Example: 5" %}
+                </div>
+
+                <div class="form-section">
+                  <label class="form-label" for="option1">Option 1</label>
+                  {% render_field questionForm.option1|attr:'required:true' class="form-control" placeholder="Example: It is a kind of procedural language" %}
+                </div>
+
+                <div class="form-section">
+                  <label class="form-label" for="option2">Option 2</label>
+                  {% render_field questionForm.option2|attr:'required:true' class="form-control" placeholder="Example: It is a non-procedural language" %}
+                </div>
+
+                <div class="form-section">
+                  <label class="form-label" for="option3">Option 3</label>
+                  {% render_field questionForm.option3|attr:'required:true' class="form-control" placeholder="Example: It is a high-level language" %}
+                </div>
+
+                <div class="form-section">
+                  <label class="form-label" for="option4">Option 4</label>
+                  {% render_field questionForm.option4|attr:'required:true' class="form-control" placeholder="Example: It is Data Definition language" %}
+                </div>
+
+                <div class="form-section">
+                  <label class="form-label" for="answer">Correct Answer</label>
+                  {% render_field questionForm.answer|attr:'required:true' class="form-control" %}
+                </div>
+
+                <div class="d-grid mt-4">
+                  <button type="submit" class="btn btn-custom btn-lg">Submit Question</button>
+                </div>
+              </form>
             </div>
 
-            <div class="form-section">
-              <label class="form-label" for="question">Question</label>
-              {% render_field questionForm.question|attr:'required:true' class="form-control" placeholder="Example: What is the relation calculus?" %}
+            <!-- Bulk Import Tab -->
+            <div class="tab-pane fade" id="import" role="tabpanel" aria-labelledby="import-tab">
+              <div class="import-section">
+                <h5 class="mb-4">Import Questions from Excel/CSV</h5>
+                
+                <form method="POST" enctype="multipart/form-data">
+                  {% csrf_token %}
+                  
+                  <div class="mb-3">
+                    <label for="courseIDImport" class="form-label">Course</label>
+                    {% render_field questionForm.courseID class="form-control" id="courseIDImport" %}
+                  </div>
+                  
+                  <div class="mb-3">
+                    <label for="fileUpload" class="form-label">Select File</label>
+                    <input type="file" class="form-control" id="fileUpload" name="question_file" accept=".xlsx,.xls,.csv" required>
+                    <div class="file-upload-info">
+                      Supported formats: Excel (.xlsx, .xls) or CSV (.csv)
+                    </div>
+                  </div>
+                  
+                  <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <a href="#" class="template-download">
+                      <i class="fas fa-download"></i> Download Template File
+                    </a>
+                    <button type="submit" class="btn btn-import btn-lg">
+                      <i class="fas fa-upload"></i> Import Questions
+                    </button>
+                  </div>
+                </form>
+              </div>
+              
+              <div class="mt-4">
+                <h5>Import Instructions</h5>
+                <ol>
+                  <li>Download and use the provided template file</li>
+                  <li>Ensure all required fields are filled</li>
+                  <li>Correct answer should be one of the option numbers (1-4)</li>
+                  <li>Do not modify the column headers in the template</li>
+                  <li>For CSV files, use comma as delimiter</li>
+                </ol>
+              </div>
             </div>
-
-            <div class="form-section">
-              <label class="form-label" for="marks">Marks</label>
-              {% render_field questionForm.marks|attr:'required:true' class="form-control" placeholder="Example: 5" %}
-            </div>
-
-            <div class="form-section">
-              <label class="form-label" for="option1">Option 1</label>
-              {% render_field questionForm.option1|attr:'required:true' class="form-control" placeholder="Example: It is a kind of procedural language" %}
-            </div>
-
-            <div class="form-section">
-              <label class="form-label" for="option2">Option 2</label>
-              {% render_field questionForm.option2|attr:'required:true' class="form-control" placeholder="Example: It is a non-procedural language" %}
-            </div>
-
-            <div class="form-section">
-              <label class="form-label" for="option3">Option 3</label>
-              {% render_field questionForm.option3|attr:'required:true' class="form-control" placeholder="Example: It is a high-level language" %}
-            </div>
-
-            <div class="form-section">
-              <label class="form-label" for="option4">Option 4</label>
-              {% render_field questionForm.option4|attr:'required:true' class="form-control" placeholder="Example: It is Data Definition language" %}
-            </div>
-
-            <div class="form-section">
-              <label class="form-label" for="answer">Correct Answer</label>
-              {% render_field questionForm.answer|attr:'required:true' class="form-control" %}
-            </div>
-
-            <div class="d-grid mt-4">
-              <button type="submit" class="btn btn-custom btn-lg">Submit Question</button>
-            </div>
-
-          </form>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </div>
+
+<!-- Bootstrap JS Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Font Awesome for icons -->
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 
 {% endblock content %}
