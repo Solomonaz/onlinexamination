@@ -3,6 +3,7 @@
 {% block content %}
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
   .card-header {
@@ -84,11 +85,30 @@
   .template-download:hover {
     text-decoration: underline;
   }
+
+  .alert {
+    margin-top: 20px;
+  }
+
+  .error-list {
+    max-height: 200px;
+    overflow-y: auto;
+  }
 </style>
 
 <div class="py-5">
   <div class="row justify-content-center">
     <div class="col-md-10">
+      <!-- Display Messages -->
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+
       <div class="card shadow-sm">
         <div class="card-header">
           Add Questions
@@ -97,12 +117,12 @@
           <ul class="nav nav-tabs" id="questionTabs" role="tablist">
             <li class="nav-item" role="presentation">
               <button class="nav-link active" id="single-tab" data-bs-toggle="tab" data-bs-target="#single" type="button" role="tab" aria-controls="single" aria-selected="true">
-                Single Question
+                <i class="fas fa-plus-circle me-2"></i>Single Question
               </button>
             </li>
             <li class="nav-item" role="presentation">
               <button class="nav-link" id="import-tab" data-bs-toggle="tab" data-bs-target="#import" type="button" role="tab" aria-controls="import" aria-selected="false">
-                Bulk Import
+                <i class="fas fa-file-import me-2"></i>Bulk Import
               </button>
             </li>
           </ul>
@@ -154,7 +174,9 @@
                 </div>
 
                 <div class="d-grid mt-4">
-                  <button type="submit" class="btn btn-custom btn-lg">Submit Question</button>
+                  <button type="submit" class="btn btn-custom btn-lg">
+                    <i class="fas fa-save me-2"></i>Submit Question
+                  </button>
                 </div>
               </form>
             </div>
@@ -162,44 +184,62 @@
             <!-- Bulk Import Tab -->
             <div class="tab-pane fade" id="import" role="tabpanel" aria-labelledby="import-tab">
               <div class="import-section">
-                <h5 class="mb-4">Import Questions from Excel/CSV</h5>
+                <h5 class="mb-4"><i class="fas fa-file-import me-2"></i>Import Questions from Excel/CSV</h5>
                 
-                <form method="POST" enctype="multipart/form-data">
+                <form method="POST" enctype="multipart/form-data" id="importForm">
                   {% csrf_token %}
                   
                   <div class="mb-3">
                     <label for="courseIDImport" class="form-label">Course</label>
-                    {% render_field questionForm.courseID class="form-control" id="courseIDImport" %}
+                    {% render_field questionForm.courseID class="form-control" id="courseIDImport" required="true" %}
                   </div>
                   
                   <div class="mb-3">
                     <label for="fileUpload" class="form-label">Select File</label>
                     <input type="file" class="form-control" id="fileUpload" name="question_file" accept=".xlsx,.xls,.csv" required>
                     <div class="file-upload-info">
-                      Supported formats: Excel (.xlsx, .xls) or CSV (.csv)
+                      Supported formats: Excel (.xlsx, .xls) or CSV (.csv). Max file size: 5MB.
                     </div>
                   </div>
                   
                   <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                    <a href="#" class="template-download">
-                      <i class="fas fa-download"></i> Download Template File
+                    <a href="{% url 'download_question_template' %}" class="template-download">
+                      <i class="fas fa-file-download me-2"></i>Download Template
                     </a>
-                    <button type="submit" class="btn btn-import btn-lg">
-                      <i class="fas fa-upload"></i> Import Questions
+                    <button type="submit" class="btn btn-import btn-lg" id="importBtn">
+                      <i class="fas fa-upload me-2"></i>Import Questions
                     </button>
                   </div>
                 </form>
               </div>
               
               <div class="mt-4">
-                <h5>Import Instructions</h5>
+                <h5><i class="fas fa-info-circle me-2"></i>Import Instructions</h5>
                 <ol>
                   <li>Download and use the provided template file</li>
-                  <li>Ensure all required fields are filled</li>
-                  <li>Correct answer should be one of the option numbers (1-4)</li>
-                  <li>Do not modify the column headers in the template</li>
-                  <li>For CSV files, use comma as delimiter</li>
+                  <li>Required columns: <code>question, marks, option1, option2, option3, option4, answer</code></li>
+                  <li>For answer column, use either:
+                    <ul>
+                      <li>Option number (1-4)</li>
+                      <li>Full option text (must match exactly)</li>
+                    </ul>
+                  </li>
+                  <li>Marks must be positive integers</li>
+                  <li>Do not modify the column headers</li>
                 </ol>
+
+                {% if import_errors %}
+                <div class="alert alert-danger mt-4">
+                  <h6><i class="fas fa-exclamation-triangle me-2"></i>Import Errors</h6>
+                  <div class="error-list">
+                    <ul class="mb-0">
+                      {% for error in import_errors %}
+                        <li>{{ error }}</li>
+                      {% endfor %}
+                    </ul>
+                  </div>
+                </div>
+                {% endif %}
               </div>
             </div>
           </div>
@@ -211,7 +251,34 @@
 
 <!-- Bootstrap JS Bundle with Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<!-- Font Awesome for icons -->
-<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+<!-- Custom JS for import functionality -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Handle file size validation
+    const fileUpload = document.getElementById('fileUpload');
+    const importForm = document.getElementById('importForm');
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    
+    fileUpload.addEventListener('change', function() {
+      if(this.files[0] && this.files[0].size > maxSize) {
+        alert('File size exceeds 5MB limit');
+        this.value = '';
+      }
+    });
+
+    // Show loading state during import
+    importForm.addEventListener('submit', function() {
+      const importBtn = document.getElementById('importBtn');
+      importBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Importing...';
+      importBtn.disabled = true;
+    });
+
+    // Activate tab from URL hash
+    if(window.location.hash) {
+      const tabTrigger = new bootstrap.Tab(document.querySelector(window.location.hash + '-tab'));
+      tabTrigger.show();
+    }
+  });
+</script>
 
 {% endblock content %}

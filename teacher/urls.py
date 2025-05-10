@@ -18,4 +18,7 @@ path('teacher-add-question', views.teacher_add_question_view,name='teacher-add-q
 path('teacher-view-question', views.teacher_view_question_view,name='teacher-view-question'),
 path('see-question/<int:pk>', views.see_question_view,name='see-question'),
 path('remove-question/<int:pk>', views.remove_question_view,name='remove-question'),
+
+path('download-question-template/', views.download_question_template, name='download_question_template'),
+# path('update-question/<int:pk>/', views.update_question_view, name='update-question'),
 ]
