@@ -125,12 +125,12 @@
           <ul class="nav nav-tabs" id="questionTabs" role="tablist">
             <li class="nav-item" role="presentation">
               <button class="nav-link active" id="mcq-tab" data-bs-toggle="tab" data-bs-target="#mcq" type="button" role="tab" aria-controls="mcq" aria-selected="true">
-                <i class="fas fa-list-ol me-2"></i>Multiple Choice
+                <i class="fas fa-list-ol me-2"></i>Multiple Choice Questions
               </button>
             </li>
             <li class="nav-item" role="presentation">
               <button class="nav-link" id="fib-tab" data-bs-toggle="tab" data-bs-target="#fib" type="button" role="tab" aria-controls="fib" aria-selected="false">
-                <i class="fas fa-pencil-alt me-2"></i>Fill in the Blank
+                <i class="fas fa-pencil-alt me-2"></i>Explanation / Subjective Questions
               </button>
             </li>
             <li class="nav-item" role="presentation">
