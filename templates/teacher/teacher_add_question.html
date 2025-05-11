@@ -86,6 +86,14 @@
     text-decoration: underline;
   }
 
+  .question-type-fields {
+    display: none;
+  }
+
+  .question-type-fields.active {
+    display: block;
+  }
+
   .fib-input {
     position: relative;
   }
@@ -101,6 +109,13 @@
     transform: translateY(-50%);
     color: #0078C9;
     font-weight: bold;
+  }
+
+  .question-type-selector {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
   }
 </style>
 
@@ -124,13 +139,8 @@
         <div class="card-body">
           <ul class="nav nav-tabs" id="questionTabs" role="tablist">
             <li class="nav-item" role="presentation">
-              <button class="nav-link active" id="mcq-tab" data-bs-toggle="tab" data-bs-target="#mcq" type="button" role="tab" aria-controls="mcq" aria-selected="true">
-                <i class="fas fa-list-ol me-2"></i>Multiple Choice
-              </button>
-            </li>
-            <li class="nav-item" role="presentation">
-              <button class="nav-link" id="fib-tab" data-bs-toggle="tab" data-bs-target="#fib" type="button" role="tab" aria-controls="fib" aria-selected="false">
-                <i class="fas fa-pencil-alt me-2"></i>Fill in the Blank
+              <button class="nav-link active" id="single-tab" data-bs-toggle="tab" data-bs-target="#single" type="button" role="tab" aria-controls="single" aria-selected="true">
+                <i class="fas fa-plus-circle me-2"></i>Single Question
               </button>
             </li>
             <li class="nav-item" role="presentation">
@@ -141,9 +151,18 @@
           </ul>
 
           <div class="tab-content" id="questionTabsContent">
-            <!-- Multiple Choice Question Tab -->
-            <div class="tab-pane fade show active" id="mcq" role="tabpanel" aria-labelledby="mcq-tab">
-              <form method="POST" autocomplete="off">
+            <!-- Single Question Tab -->
+            <div class="tab-pane fade show active" id="single" role="tabpanel" aria-labelledby="single-tab">
+              <div class="question-type-selector">
+                <label class="form-label">Question Type</label>
+                <select id="questionTypeSelect" class="form-select">
+                  <option value="MCQ">Multiple Choice Question</option>
+                  <option value="FIB">Explanation Question</option>
+                </select>
+              </div>
+
+              <!-- Multiple Choice Form (initially visible) -->
+              <form method="POST" autocomplete="off" id="mcqForm" class="question-type-fields active">
                 {% csrf_token %}
                 <input type="hidden" name="question_type" value="MCQ">
 
@@ -187,22 +206,15 @@
                   {% render_field questionForm.answer|attr:'required:true' class="form-control" %}
                 </div>
 
-                <div class="form-section">
-                  <label class="form-label" for="explanation">Explanation (Optional)</label>
-                  <textarea name="explanation" id="explanation" class="form-control" rows="2" placeholder="Explanation for the correct answer"></textarea>
-                </div>
-
                 <div class="d-grid mt-4">
                   <button type="submit" class="btn btn-custom btn-lg">
                     <i class="fas fa-save me-2"></i>Submit Question
                   </button>
                 </div>
               </form>
-            </div>
 
-            <!-- Fill in the Blank Tab -->
-            <div class="tab-pane fade" id="fib" role="tabpanel" aria-labelledby="fib-tab">
-              <form method="POST" autocomplete="off">
+              <!-- Fill in the Blank Form (initially hidden) -->
+              <form method="POST" autocomplete="off" id="fibForm" class="question-type-fields">
                 {% csrf_token %}
                 <input type="hidden" name="question_type" value="FIB">
 
@@ -212,13 +224,12 @@
                 </div>
 
                 <div class="form-section">
-                  <label class="form-label" for="fib_question">Question</label>
-                  <textarea name="question" id="fib_question" class="form-control" rows="3" required placeholder="Example: The capital of France is ______."></textarea>
-                </div>
+                  <label class="form-label" for="fib_question">Question Text</label>
+                  {% render_field questionForm.question class="form-control" rows="3" required="true" placeholder="Write the question here" %}                </div>
 
                 <div class="form-section">
                   <label class="form-label" for="fib_marks">Marks</label>
-                  <input type="number" name="marks" id="fib_marks" class="form-control" min="1" required>
+                  {% render_field questionForm.marks class="form-control" %}
                 </div>
 
                 <div class="form-section">
@@ -238,11 +249,6 @@
                   </div>
                 </div>
 
-                <div class="form-section">
-                  <label class="form-label" for="fib_explanation">Explanation (Optional)</label>
-                  <textarea name="explanation" id="fib_explanation" class="form-control" rows="2" placeholder="Explanation for the correct answer"></textarea>
-                </div>
-
                 <div class="d-grid mt-4">
                   <button type="submit" class="btn btn-custom btn-lg">
                     <i class="fas fa-save me-2"></i>Submit Question
@@ -254,10 +260,20 @@
             <!-- Bulk Import Tab -->
             <div class="tab-pane fade" id="import" role="tabpanel" aria-labelledby="import-tab">
               <div class="import-section">
-                <h5 class="mb-4"><i class="fas fa-file-import me-2"></i>Import Questions from Excel/CSV</h5>
+                <h5 class="mb-4"><i class="fas fa-file-import me-2"></i>Import Questions</h5>
                 
-                <form method="POST" enctype="multipart/form-data" id="importForm">
+                <div class="mb-3">
+                  <label class="form-label">Import Type</label>
+                  <select id="importTypeSelect" class="form-select mb-3">
+                    <option value="MCQ">Multiple Choice Questions</option>
+                    <option value="FIB">Explanation Questions</option>
+                  </select>
+                </div>
+                
+                <!-- MCQ Import Form -->
+                <form method="POST" enctype="multipart/form-data" id="mcqImportForm" class="import-type-form">
                   {% csrf_token %}
+                  <input type="hidden" name="import_type" value="MCQ">
                   
                   <div class="mb-3">
                     <label for="courseIDImport" class="form-label">Course</label>
@@ -265,19 +281,45 @@
                   </div>
                   
                   <div class="mb-3">
-                    <label for="fileUpload" class="form-label">Select File</label>
+                    <label for="fileUpload" class="form-label">Select MCQ Template File</label>
                     <input type="file" class="form-control" id="fileUpload" name="question_file" accept=".xlsx,.xls,.csv" required>
                     <div class="file-upload-info">
-                      Supported formats: Excel (.xlsx, .xls) or CSV (.csv). Max file size: 5MB.
+                      <a href="{% url 'download_template' type='mcq' %}" class="template-download">
+                        <i class="fas fa-file-download me-2"></i>Download MCQ Template
+                      </a>
                     </div>
                   </div>
                   
                   <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                    <a href="{% url 'download_question_template' %}" class="template-download">
-                      <i class="fas fa-file-download me-2"></i>Download Template
-                    </a>
-                    <button type="submit" class="btn btn-import btn-lg" id="importBtn">
-                      <i class="fas fa-upload me-2"></i>Import Questions
+                    <button type="submit" class="btn btn-import btn-lg">
+                      <i class="fas fa-upload me-2"></i>Import MCQs
+                    </button>
+                  </div>
+                </form>
+                
+                <!-- FIB Import Form -->
+                <form method="POST" enctype="multipart/form-data" id="fibImportForm" class="import-type-form" style="display: none;">
+                  {% csrf_token %}
+                  <input type="hidden" name="import_type" value="FIB">
+                  
+                  <div class="mb-3">
+                    <label for="fibCourseIDImport" class="form-label">Course</label>
+                    {% render_field questionForm.courseID class="form-control" id="fibCourseIDImport" required="true" %}
+                  </div>
+                  
+                  <div class="mb-3">
+                    <label for="fibFileUpload" class="form-label">Select Explanation Template File</label>
+                    <input type="file" class="form-control" id="fibFileUpload" name="question_file" accept=".xlsx,.xls,.csv" required>
+                    <div class="file-upload-info">
+                      <a href="{% url 'download_template' type='fib' %}" class="template-download">
+                        <i class="fas fa-file-download me-2"></i>Download Explanation Template
+                      </a>
+                    </div>
+                  </div>
+                  
+                  <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="submit" class="btn btn-import btn-lg">
+                      <i class="fas fa-upload me-2"></i>Import Explanation
                     </button>
                   </div>
                 </form>
@@ -285,31 +327,22 @@
               
               <div class="mt-4">
                 <h5><i class="fas fa-info-circle me-2"></i>Import Instructions</h5>
-                <ol>
-                  <li>Download and use the provided template file</li>
-                  <li>Required columns: <code>question, marks, option1, option2, option3, option4, answer</code></li>
-                  <li>For answer column, use either:
-                    <ul>
-                      <li>Option number (1-4)</li>
-                      <li>Full option text (must match exactly)</li>
-                    </ul>
-                  </li>
-                  <li>Marks must be positive integers</li>
-                  <li>Do not modify the column headers</li>
-                </ol>
-
-                {% if import_errors %}
-                <div class="alert alert-danger mt-4">
-                  <h6><i class="fas fa-exclamation-triangle me-2"></i>Import Errors</h6>
-                  <div class="error-list">
-                    <ul class="mb-0">
-                      {% for error in import_errors %}
-                        <li>{{ error }}</li>
-                      {% endfor %}
-                    </ul>
-                  </div>
+                <div id="mcqImportInstructions">
+                  <h6>For Multiple Choice Questions:</h6>
+                  <ol>
+                    <li>Required columns: <code>question, marks, option1, option2, option3, option4, answer</code></li>
+                    <li>Answer should be either option number (1-4) or exact option text</li>
+                    <li>Optional column: <code>explanation</code></li>
+                  </ol>
                 </div>
-                {% endif %}
+                <div id="fibImportInstructions" style="display: none;">
+                  <h6>For Explanation Questions:</h6>
+                  <ol>
+                    <li>Required columns: <code>question_text, marks, blank_answer</code></li>
+                    <li>Optional columns: <code>case_sensitive (true/false), explanation</code></li>
+                    <li>Mark blanks in questions with '_____' (5 underscores)</li>
+                  </ol>
+                </div>
               </div>
             </div>
           </div>
@@ -321,34 +354,69 @@
 
 <!-- Bootstrap JS Bundle with Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<!-- Custom JS for import functionality -->
+
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // Handle file size validation
-    const fileUpload = document.getElementById('fileUpload');
-    const importForm = document.getElementById('importForm');
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    
-    fileUpload.addEventListener('change', function() {
-      if(this.files[0] && this.files[0].size > maxSize) {
-        alert('File size exceeds 5MB limit');
-        this.value = '';
-      }
-    });
-
-    // Show loading state during import
-    importForm.addEventListener('submit', function() {
-      const importBtn = document.getElementById('importBtn');
-      importBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Importing...';
-      importBtn.disabled = true;
-    });
-
-    // Activate tab from URL hash
-    if(window.location.hash) {
-      const tabTrigger = new bootstrap.Tab(document.querySelector(window.location.hash + '-tab'));
-      tabTrigger.show();
+document.addEventListener('DOMContentLoaded', function() {
+  // Single Question Type Switching
+  const questionTypeSelect = document.getElementById('questionTypeSelect');
+  const mcqForm = document.getElementById('mcqForm');
+  const fibForm = document.getElementById('fibForm');
+  
+  questionTypeSelect.addEventListener('change', function() {
+    if (this.value === 'MCQ') {
+      mcqForm.classList.add('active');
+      fibForm.classList.remove('active');
+    } else {
+      mcqForm.classList.remove('active');
+      fibForm.classList.add('active');
     }
   });
+  
+  // Import Type Switching
+  const importTypeSelect = document.getElementById('importTypeSelect');
+  const mcqImportForm = document.getElementById('mcqImportForm');
+  const fibImportForm = document.getElementById('fibImportForm');
+  const mcqImportInstructions = document.getElementById('mcqImportInstructions');
+  const fibImportInstructions = document.getElementById('fibImportInstructions');
+  
+  importTypeSelect.addEventListener('change', function() {
+    if (this.value === 'MCQ') {
+      mcqImportForm.style.display = 'block';
+      fibImportForm.style.display = 'none';
+      mcqImportInstructions.style.display = 'block';
+      fibImportInstructions.style.display = 'none';
+    } else {
+      mcqImportForm.style.display = 'none';
+      fibImportForm.style.display = 'block';
+      mcqImportInstructions.style.display = 'none';
+      fibImportInstructions.style.display = 'block';
+    }
+  });
+  
+  // File upload validation
+  const fileUpload = document.getElementById('fileUpload');
+  const fibFileUpload = document.getElementById('fibFileUpload');
+  const maxSize = 5 * 1024 * 1024; // 5MB
+  
+  function validateFileSize(input) {
+    if (input.files[0] && input.files[0].size > maxSize) {
+      alert('File size exceeds 5MB limit');
+      input.value = '';
+    }
+  }
+  
+  fileUpload.addEventListener('change', function() { validateFileSize(this); });
+  fibFileUpload.addEventListener('change', function() { validateFileSize(this); });
+  
+  // Show loading state during import
+  document.querySelectorAll('.import-type-form').forEach(form => {
+    form.addEventListener('submit', function() {
+      const submitBtn = this.querySelector('button[type="submit"]');
+      submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Importing...';
+      submitBtn.disabled = true;
+    });
+  });
+});
 </script>
 
 {% endblock content %}

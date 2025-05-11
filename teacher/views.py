@@ -91,22 +91,85 @@ def delete_exam_view(request,pk):
 def teacher_question_view(request):
     return render(request,'teacher/teacher_question.html')
 
+
 # @login_required(login_url='teacherlogin')
 # @user_passes_test(is_teacher)
 # def teacher_add_question_view(request):
-#     questionForm=QFORM.QuestionForm()
-#     if request.method=='POST':
-#         questionForm=QFORM.QuestionForm(request.POST)
-#         if questionForm.is_valid():
-#             question=questionForm.save(commit=False)
-#             course=QMODEL.Course.objects.get(id=request.POST.get('courseID'))
-#             question.course=course
-#             question.save()       
+#     questionForm = QFORM.QuestionForm()
+    
+#     if request.method == 'POST':
+#         if 'question_file' in request.FILES:
+#             return handle_bulk_import(request)
 #         else:
-#             print("form is invalid")
-#         return HttpResponseRedirect('/teacher/teacher-view-question')
-#     return render(request,'teacher/teacher_add_question.html',{'questionForm':questionForm})
+#             questionForm = QFORM.QuestionForm(request.POST)
+#             if questionForm.is_valid():
+#                 question = questionForm.save(commit=False)
+#                 course = QMODEL.Course.objects.get(id=request.POST.get('courseID'))
+#                 question.course = course
+#                 question.save()
+#                 messages.success(request, "Question added successfully!")
+#             else:
+#                 messages.error(request, "Form is invalid. Please check your inputs.")
+#             return HttpResponseRedirect('/teacher/teacher-add-question')
+    
+#     return render(request, 'teacher/teacher_add_question.html', {'questionForm': questionForm})
 
+# def handle_bulk_import(request):
+#     try:
+#         course_id = request.POST.get('courseID')
+#         course = QMODEL.Course.objects.get(id=course_id)
+#         file = request.FILES['question_file']
+        
+#         if file.name.endswith('.csv'):
+#             df = pd.read_csv(BytesIO(file.read()))
+#         else:  
+#             df = pd.read_excel(BytesIO(file.read()))
+        
+#         success_count = 0
+#         error_messages = []
+        
+#         for index, row in df.iterrows():
+#             try:
+#                 required_fields = ['question', 'marks', 'option1', 'option2', 'option3', 'option4', 'answer']
+#                 if not all(field in row for field in required_fields):
+#                     raise ValueError("Missing required columns in the file")
+                
+#                 QMODEL.Question.objects.create(
+#                     course=course,
+#                     question=row['question'],
+#                     marks=int(row['marks']),
+#                     option1=row['option1'],
+#                     option2=row['option2'],
+#                     option3=row['option3'],
+#                     option4=row['option4'],
+#                     answer=f"Option{row['answer']}" if str(row['answer']).isdigit() else row['answer']
+#                 )
+#                 success_count += 1
+                
+#             except Exception as e:
+#                 error_messages.append(f"Row {index+2}: {str(e)}")
+        
+#         if success_count > 0:
+#             messages.success(request, f"Successfully imported {success_count} questions!")
+#         if error_messages:
+#             messages.warning(request, f"Completed with {len(error_messages)} errors")
+#             request.session['import_errors'] = error_messages
+        
+#         return HttpResponseRedirect('/teacher/teacher-add-question')
+    
+#     except Exception as e:
+#         messages.error(request, f"Import failed: {str(e)}")
+#         return HttpResponseRedirect('/teacher/teacher-add-question')
+
+# def download_question_template(request):
+#     response = HttpResponse(content_type='text/csv')
+#     response['Content-Disposition'] = 'attachment; filename="question_import_template.csv"'
+    
+#     writer = csv.writer(response)
+#     writer.writerow(['question', 'marks', 'option1', 'option2', 'option3', 'option4', 'answer'])
+#     writer.writerow(['Sample question text?', '5', 'Option 1 text', 'Option 2 text', 'Option 3 text', 'Option 4 text', '1'])
+    
+#     return response
 
 @login_required(login_url='teacherlogin')
 @user_passes_test(is_teacher)
@@ -119,22 +182,43 @@ def teacher_add_question_view(request):
             return handle_bulk_import(request)
         else:
             # Handle single question form submission
+            question_type = request.POST.get('question_type', 'MCQ')
             questionForm = QFORM.QuestionForm(request.POST)
+            
             if questionForm.is_valid():
                 question = questionForm.save(commit=False)
                 course = QMODEL.Course.objects.get(id=request.POST.get('courseID'))
                 question.course = course
+                
+                # Handle question type specific logic
+                if question_type == 'FIB':
+                    # For explanation questions, ensure the question_type is set to FIB
+                    question.question_type = 'FIB'
+                    # The form should handle the field mapping, so no need for manual field setting
+                    question = questionForm.save(commit=False)
+                    course = QMODEL.Course.objects.get(id=request.POST.get('courseID'))
+                    question.course = course
+                    question.save()
+                
                 question.save()
-                messages.success(request, "Question added successfully!")
+                messages.success(request, f"{question.get_question_type_display()} question added successfully!")
+                return HttpResponseRedirect('/teacher/teacher-add-question')
             else:
+                # Pass the form with errors back to template
                 messages.error(request, "Form is invalid. Please check your inputs.")
-            return HttpResponseRedirect('/teacher/teacher-add-question')
+                return render(request, 'teacher/teacher_add_question.html', {
+                    'questionForm': questionForm,
+                    'import_errors': request.session.pop('import_errors', None)
+                })
     
-    return render(request, 'teacher/teacher_add_question.html', {'questionForm': questionForm})
-
+    return render(request, 'teacher/teacher_add_question.html', {
+        'questionForm': questionForm,
+        'import_errors': request.session.pop('import_errors', None)
+    })
 def handle_bulk_import(request):
     try:
         course_id = request.POST.get('courseID')
+        import_type = request.POST.get('import_type', 'MCQ')  # Default to MCQ
         course = QMODEL.Course.objects.get(id=course_id)
         file = request.FILES['question_file']
         
@@ -149,50 +233,73 @@ def handle_bulk_import(request):
         
         for index, row in df.iterrows():
             try:
-                # Validate required fields
-                required_fields = ['question', 'marks', 'option1', 'option2', 'option3', 'option4', 'answer']
-                if not all(field in row for field in required_fields):
-                    raise ValueError("Missing required columns in the file")
+                if import_type == 'MCQ':
+                    # Validate MCQ required fields
+                    required_fields = ['question', 'marks', 'option1', 'option2', 'answer']
+                    if not all(field in row for field in required_fields):
+                        raise ValueError("Missing required columns for MCQ import")
+                    
+                    QMODEL.Question.objects.create(
+                        course=course,
+                        question_type='MCQ',
+                        question=row['question'],
+                        marks=int(row['marks']),
+                        option1=row['option1'],
+                        option2=row['option2'],
+                        option3=row.get('option3', ''),
+                        option4=row.get('option4', ''),
+                        answer=f"Option{row['answer']}" if str(row['answer']).isdigit() else row['answer'],
+                        explanation=row.get('explanation', '')
+                    )
+                    
+                elif import_type == 'FIB':
+                    # Validate FIB required fields
+                    required_fields = ['question_text', 'marks', 'blank_answer']
+                    if not all(field in row for field in required_fields):
+                        raise ValueError("Missing required columns for FIB import")
+                    
+                    QMODEL.Question.objects.create(
+                        course=course,
+                        question_type='FIB',
+                        question=row['question_text'],
+                        marks=int(row['marks']),
+                        blank_answer=row['blank_answer'],
+                        answer=row['blank_answer'],  # Set answer to blank_answer
+                        case_sensitive=str(row.get('case_sensitive', 'false')).lower() == 'true',
+                        explanation=row.get('explanation', '')
+                    )
                 
-                # Create question
-                QMODEL.Question.objects.create(
-                    course=course,
-                    question=row['question'],
-                    marks=int(row['marks']),
-                    option1=row['option1'],
-                    option2=row['option2'],
-                    option3=row['option3'],
-                    option4=row['option4'],
-                    answer=f"Option{row['answer']}" if str(row['answer']).isdigit() else row['answer']
-                )
                 success_count += 1
                 
             except Exception as e:
                 error_messages.append(f"Row {index+2}: {str(e)}")
         
         if success_count > 0:
-            messages.success(request, f"Successfully imported {success_count} questions!")
+            messages.success(request, f"Successfully imported {success_count} {import_type} questions!")
         if error_messages:
             messages.warning(request, f"Completed with {len(error_messages)} errors")
-            # Store errors in session to display on next page
             request.session['import_errors'] = error_messages
         
-        return HttpResponseRedirect('/teacher/teacher-add-question')
-    
     except Exception as e:
         messages.error(request, f"Import failed: {str(e)}")
-        return HttpResponseRedirect('/teacher/teacher-add-question')
-
-def download_question_template(request):
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="question_import_template.csv"'
     
-    writer = csv.writer(response)
-    writer.writerow(['question', 'marks', 'option1', 'option2', 'option3', 'option4', 'answer'])
-    writer.writerow(['Sample question text?', '5', 'Option 1 text', 'Option 2 text', 'Option 3 text', 'Option 4 text', '1'])
+    return HttpResponseRedirect('/teacher/teacher-add-question')
+
+def download_question_template(request, type):
+    response = HttpResponse(content_type='text/csv')
+    
+    if type == 'mcq':
+        response['Content-Disposition'] = 'attachment; filename="mcq_import_template.csv"'
+        writer = csv.writer(response)
+        writer.writerow(['question', 'marks', 'option1', 'option2', 'option3', 'option4', 'answer', 'explanation'])
+        writer.writerow(['What is 2+2?', '2', '3', '4', '5', '6', 'Option2', 'Basic addition'])
+    elif type == 'fib':
+        response['Content-Disposition'] = 'attachment; filename="fib_import_template.csv"'
+        writer = csv.writer(response)
+        writer.writerow(['question_text', 'marks', 'blank_answer', 'case_sensitive', 'explanation'])
+        writer.writerow(['The capital of France is _____.', '2', 'Paris', 'false', 'Paris has been capital since 508 AD'])
     
     return response
-
 
 @login_required(login_url='teacherlogin')
 @user_passes_test(is_teacher)

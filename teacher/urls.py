@@ -19,6 +19,6 @@ path('teacher-view-question', views.teacher_view_question_view,name='teacher-vie
 path('see-question/<int:pk>', views.see_question_view,name='see-question'),
 path('remove-question/<int:pk>', views.remove_question_view,name='remove-question'),
 
-path('download-question-template/', views.download_question_template, name='download_question_template'),
+path('download-template/<str:type>/', views.download_question_template, name='download_template'),
 # path('update-question/<int:pk>/', views.update_question_view, name='update-question'),
 ]
