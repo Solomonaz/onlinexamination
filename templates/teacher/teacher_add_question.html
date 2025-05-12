@@ -157,7 +157,7 @@
                 <label class="form-label">Question Type</label>
                 <select id="questionTypeSelect" class="form-select">
                   <option value="MCQ">Multiple Choice Question</option>
-                  <option value="FIB">Explanation Question</option>
+                  <!-- <option value="FIB">Explanation Question</option> -->
                 </select>
               </div>
 
@@ -214,39 +214,34 @@
               </form>
 
               <!-- Fill in the Blank Form (initially hidden) -->
+<!-- 
               <form method="POST" autocomplete="off" id="fibForm" class="question-type-fields">
                 {% csrf_token %}
                 <input type="hidden" name="question_type" value="FIB">
 
                 <div class="form-section">
-                  <label class="form-label" for="fib_courseID">Course</label>
-                  {% render_field questionForm.courseID|attr:'required:true' class="form-control" id="fib_courseID" %}
+                  <label class="form-label" for="id_courseID">Course</label>
+                  {% render_field questionForm.courseID|attr:'required:true' class="form-control" %}
                 </div>
 
                 <div class="form-section">
-                  <label class="form-label" for="fib_question">Question Text</label>
-                  {% render_field questionForm.question class="form-control" rows="3" required="true" placeholder="Write the question here" %}                </div>
+                  <label class="form-label" for="id_question">Question Text</label>
+                  {% render_field questionForm.question class="form-control" rows="3" required="true" placeholder="Write the question here" %}
+                </div>
 
                 <div class="form-section">
-                  <label class="form-label" for="fib_marks">Marks</label>
+                  <label class="form-label" for="id_marks">Marks</label>
                   {% render_field questionForm.marks class="form-control" %}
                 </div>
 
                 <div class="form-section">
-                  <label class="form-label" for="blank_answer">Correct Answer</label>
-                  <div class="fib-input">
-                    <span class="blank-indicator">____</span>
-                    <input type="text" name="blank_answer" id="blank_answer" class="form-control" required placeholder="Enter the correct answer">
-                  </div>
+                  <label class="form-label" for="id_blank_answer">Correct Answer</label>
+                  {% render_field questionForm.blank_answer class="form-control" placeholder="Enter the correct answer" %}
                 </div>
 
-                <div class="form-section">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="case_sensitive" id="case_sensitive">
-                    <label class="form-check-label" for="case_sensitive">
-                      Case sensitive answer
-                    </label>
-                  </div>
+                <div class="form-section form-check">
+                  {% render_field questionForm.case_sensitive class="form-check-input" %}
+                  <label class="form-check-label" for="id_case_sensitive">Case Sensitive</label>
                 </div>
 
                 <div class="d-grid mt-4">
@@ -254,7 +249,7 @@
                     <i class="fas fa-save me-2"></i>Submit Question
                   </button>
                 </div>
-              </form>
+              </form> -->
             </div>
 
             <!-- Bulk Import Tab -->

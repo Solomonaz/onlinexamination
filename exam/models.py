@@ -41,17 +41,15 @@ class Question(models.Model):
     option2 = models.CharField(max_length=200, blank=True, null=True,verbose_name="Option 2")
     option3 = models.CharField(max_length=200, blank=True, null=True,verbose_name="Option 3")
     option4 = models.CharField(max_length=200, blank=True, null=True,verbose_name="Option 4")
+    cat = (('Option1', 'Option1'),('Option2', 'Option2'),('Option3', 'Option3'),('Option4', 'Option4'))
     
     # Answer Field (Handles both MCQ and FIB)
-    answer = models.CharField(max_length=200, blank=True, null=True,verbose_name="Correct Answer")
+    answer = models.CharField(max_length=200, blank=True, null=True,verbose_name="Correct Answer", choices=cat)
     
     # For Fill-in-the-Blank Questions
     blank_answer = models.CharField(max_length=200, blank=True, null=True,verbose_name="Blank Answer",help_text="Correct answer for explanation questions")
     case_sensitive = models.BooleanField(default=False,verbose_name="Case Sensitive",help_text="Should the answer be case sensitive?")
-    
-    # Choices for Multiple Choice Answers (kept for backward compatibility)
-    cat = (('Option1', 'Option1'),('Option2', 'Option2'),('Option3', 'Option3'),('Option4', 'Option4'))
-    
+        
     class Meta:
         verbose_name = "Question"
         verbose_name_plural = "Questions"
@@ -78,7 +76,7 @@ class Question(models.Model):
         elif self.question_type == 'FIB':
             # Validate FIB fields
             if not self.blank_answer:
-                raise ValidationError("Fill-in-the-blank questions require a blank answer")
+                raise ValidationError("Explanation questions require a blank answer")
             
             # Set the answer field to the blank answer
             self.answer = self.blank_answer
