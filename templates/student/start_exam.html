@@ -140,6 +140,34 @@
       box-shadow: 0 6px 15px rgba(74, 111, 220, 0.3);
     }
 
+    /* Navigation buttons styling */
+    .nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      padding: 0 1rem;
+      margin: 2rem 0;
+    }
+
+    .nav-btn {
+      padding: 0.5rem 1.5rem;
+      border: 1px solid #4a6fdc;
+      color: #4a6fdc;
+      background-color: white;
+      border-radius: 6px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .nav-btn:hover {
+      background-color: #4a6fdc;
+      color: white;
+    }
+
+    .nav-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
     @media (max-width: 768px) {
       .question-header {
         flex-direction: column;
@@ -161,6 +189,35 @@
         margin-top: 0.5rem;
         display: inline-block;
       }
+      .nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      padding: 0 1rem;
+      margin: 2rem 0;
+    }
+
+    .nav-btn {
+      padding: 0.5rem 1.5rem;
+      border: 1px solid #4a6fdc;
+      color: #4a6fdc;
+      background-color: white;
+      border-radius: 6px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .nav-btn:hover:not(:disabled) {
+      background-color: #4a6fdc;
+      color: white;
+    }
+
+    .nav-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      border-color: #e2e8f0;
+      color: #e2e8f0;
+    }
     }
   </style>
 </head>
@@ -206,17 +263,16 @@
       </div>
       {% endfor %}
 
-      <div class="d-flex justify-content-between px-4">
-        <button type="button" class="btn btn-outline-primary" id="prevBtn">Previous</button>
-        <button type="button" class="btn btn-outline-primary" id="nextBtn">Next</button>
+      <div class="nav-buttons">
+        <button type="button" class="nav-btn" id="prevBtn" disabled>Previous</button>
+        <button type="button" class="nav-btn" id="nextBtn">Next</button>
       </div>
-
-      <button type="submit" class="submit-btn">
+  
+      <button type="submit" class="submit-btn" id="submitBtn" style="display: none;">
         <i class="fas fa-paper-plane me-2"></i>Submit Answers
       </button>
-    </div>
-  </form>
-</div>
+    </form>
+  </div>
 
 <script>
   // Timer Setup
@@ -244,11 +300,16 @@
     if (timeLeft <= 0) {
       clearInterval(timerInterval);
       document.getElementById('timer').textContent = "00:00";
+      // Show submit button when time is up
+      const submitBtn = document.getElementById("submitBtn");
+      if (submitBtn) {
+        submitBtn.style.display = "block";
+      }
       saveAns();
       localStorage.removeItem(examKey);
       localStorage.removeItem(currentQuestionKey);
       document.getElementById('examForm').submit();
-    } else {
+    }else {
       timeLeft--;
       localStorage.setItem(examKey, timeLeft);
     }
@@ -267,6 +328,7 @@
         }
       }
     }
+    return true;
   }
 
   function setCookie(cname, cvalue, exdays) {
@@ -281,54 +343,76 @@
   const totalQuestions = {{ questions|length }};
   const currentQuestionKey = "currentQuestion_{{ course.id }}";
 
+  // Initialize from localStorage if available
   if (localStorage.getItem(currentQuestionKey)) {
-    currentQuestion = parseInt(localStorage.getItem(currentQuestionKey));
+    const storedQuestion = parseInt(localStorage.getItem(currentQuestionKey));
+    if (!isNaN(storedQuestion) && storedQuestion >= 1 && storedQuestion <= totalQuestions) {
+      currentQuestion = storedQuestion;
+    }
   }
 
   function showQuestion(index) {
-      for (let i = 1; i <= totalQuestions; i++) {
-        const q = document.getElementById(`question${i}`);
-        if (q) q.style.display = i === index ? "block" : "none";
-      }
+  // Validate index
+  if (index < 1 || index > totalQuestions) return;
 
-      localStorage.setItem(currentQuestionKey, index);
+  // Hide all questions
+  document.querySelectorAll('.single-question').forEach(q => {
+    q.style.display = 'none';
+  });
 
-      // Hide/show Previous button
-      if (index === 1) {
-        document.getElementById("prevBtn").style.display = "none";
-      } else {
-        document.getElementById("prevBtn").style.display = "inline-block";
-      }
+  // Show current question
+  const currentQ = document.getElementById(`question${index}`);
+  if (currentQ) {
+    currentQ.style.display = 'block';
+  }
 
-      // Hide Next button on final question
-      if (index === totalQuestions) {
-        document.getElementById("nextBtn").style.display = "none";
-      } else {
-        document.getElementById("nextBtn").style.display = "inline-block";
-      }
-    }
+  // Update navigation buttons
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  const submitBtn = document.getElementById("submitBtn");
+  
+  if (prevBtn) {
+    prevBtn.disabled = index === 1;
+  }
+  
+  if (nextBtn) {
+    nextBtn.disabled = index === totalQuestions;
+  }
 
+  // Show submit button only on last question
+  if (submitBtn) {
+    submitBtn.style.display = index === totalQuestions ? "block" : "none";
+  }
 
+  // Save current question
+  localStorage.setItem(currentQuestionKey, index);
+  currentQuestion = index;
+}
 
-  document.getElementById("prevBtn").addEventListener("click", function () {
-    if (currentQuestion > 1) {
-      currentQuestion--;
+  // Initialize navigation
+  document.addEventListener('DOMContentLoaded', function() {
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    
+    if (prevBtn && nextBtn) {
+      prevBtn.addEventListener("click", function() {
+        if (currentQuestion > 1) {
+          saveAns();
+          showQuestion(currentQuestion - 1);
+        }
+      });
+
+      nextBtn.addEventListener("click", function() {
+        if (currentQuestion < totalQuestions) {
+          saveAns();
+          showQuestion(currentQuestion + 1);
+        }
+      });
+      
+      // Initial display
       showQuestion(currentQuestion);
     }
   });
-
-  document.getElementById("nextBtn").addEventListener("click", function () {
-    if (currentQuestion < totalQuestions) {
-      currentQuestion++;
-      showQuestion(currentQuestion);
-    }
-  });
-
-  // Initial render
-  showQuestion(currentQuestion);
 </script>
-
- 
-
 
 {% endblock content %}
