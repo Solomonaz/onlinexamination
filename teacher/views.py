@@ -91,86 +91,6 @@ def delete_exam_view(request,pk):
 def teacher_question_view(request):
     return render(request,'teacher/teacher_question.html')
 
-
-# @login_required(login_url='teacherlogin')
-# @user_passes_test(is_teacher)
-# def teacher_add_question_view(request):
-#     questionForm = QFORM.QuestionForm()
-    
-#     if request.method == 'POST':
-#         if 'question_file' in request.FILES:
-#             return handle_bulk_import(request)
-#         else:
-#             questionForm = QFORM.QuestionForm(request.POST)
-#             if questionForm.is_valid():
-#                 question = questionForm.save(commit=False)
-#                 course = QMODEL.Course.objects.get(id=request.POST.get('courseID'))
-#                 question.course = course
-#                 question.save()
-#                 messages.success(request, "Question added successfully!")
-#             else:
-#                 messages.error(request, "Form is invalid. Please check your inputs.")
-#             return HttpResponseRedirect('/teacher/teacher-add-question')
-    
-#     return render(request, 'teacher/teacher_add_question.html', {'questionForm': questionForm})
-
-# def handle_bulk_import(request):
-#     try:
-#         course_id = request.POST.get('courseID')
-#         course = QMODEL.Course.objects.get(id=course_id)
-#         file = request.FILES['question_file']
-        
-#         if file.name.endswith('.csv'):
-#             df = pd.read_csv(BytesIO(file.read()))
-#         else:  
-#             df = pd.read_excel(BytesIO(file.read()))
-        
-#         success_count = 0
-#         error_messages = []
-        
-#         for index, row in df.iterrows():
-#             try:
-#                 required_fields = ['question', 'marks', 'option1', 'option2', 'option3', 'option4', 'answer']
-#                 if not all(field in row for field in required_fields):
-#                     raise ValueError("Missing required columns in the file")
-                
-#                 QMODEL.Question.objects.create(
-#                     course=course,
-#                     question=row['question'],
-#                     marks=int(row['marks']),
-#                     option1=row['option1'],
-#                     option2=row['option2'],
-#                     option3=row['option3'],
-#                     option4=row['option4'],
-#                     answer=f"Option{row['answer']}" if str(row['answer']).isdigit() else row['answer']
-#                 )
-#                 success_count += 1
-                
-#             except Exception as e:
-#                 error_messages.append(f"Row {index+2}: {str(e)}")
-        
-#         if success_count > 0:
-#             messages.success(request, f"Successfully imported {success_count} questions!")
-#         if error_messages:
-#             messages.warning(request, f"Completed with {len(error_messages)} errors")
-#             request.session['import_errors'] = error_messages
-        
-#         return HttpResponseRedirect('/teacher/teacher-add-question')
-    
-#     except Exception as e:
-#         messages.error(request, f"Import failed: {str(e)}")
-#         return HttpResponseRedirect('/teacher/teacher-add-question')
-
-# def download_question_template(request):
-#     response = HttpResponse(content_type='text/csv')
-#     response['Content-Disposition'] = 'attachment; filename="question_import_template.csv"'
-    
-#     writer = csv.writer(response)
-#     writer.writerow(['question', 'marks', 'option1', 'option2', 'option3', 'option4', 'answer'])
-#     writer.writerow(['Sample question text?', '5', 'Option 1 text', 'Option 2 text', 'Option 3 text', 'Option 4 text', '1'])
-    
-#     return response
-
 @login_required(login_url='teacherlogin')
 @user_passes_test(is_teacher)
 def teacher_add_question_view(request):
@@ -320,22 +240,43 @@ def remove_question_view(request,pk):
     question.delete()
     return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
-# @login_required(login_url='teacherlogin')
-# @user_passes_test(is_teacher)
-# def update_question_view(request, pk):
-#     question = QMODEL.Question.objects.get(id=pk)
-#     questionForm = QFORM.QuestionForm(instance=question)
+
+from datetime import datetime  # Add this import at the top
+from django.utils import timezone  # Also helpful for timezone-aware datetimes
+@login_required(login_url='teacherlogin')
+@user_passes_test(is_teacher)
+def teacher_view_examinees_view(request, course_id):
+    course = QMODEL.Course.objects.get(id=course_id)
+    results = QMODEL.Result.objects.filter(exam=course).select_related('student')
+    organizations = QMODEL.Student.objects.values_list('organization', flat=True).distinct()
     
-#     if request.method == 'POST':
-#         questionForm = QFORM.QuestionForm(request.POST, instance=question)
-#         if questionForm.is_valid():
-#             question = questionForm.save(commit=False)
-#             course = QMODEL.Course.objects.get(id=request.POST.get('course'))
-#             question.course = course
-#             question.save()       
-#             messages.success(request, "Question updated successfully!")
-#             return HttpResponseRedirect('/teacher/teacher-view-question')
-#         else:
-#             messages.error(request, "Error updating question. Please check your inputs.")
-    
-#     return HttpResponseRedirect('/teacher/teacher-view-question')
+    # GET parameters
+    organization = request.GET.get('organization')
+    min_mark = request.GET.get('min_mark')
+    max_mark = request.GET.get('max_mark')
+    exam_date = request.GET.get('exam_date')  # Changed from 'date' to match template
+
+    # Apply filters
+    if organization:
+        results = results.filter(student__organization=organization)
+    if min_mark:
+        results = results.filter(marks__gte=min_mark)
+    if max_mark:
+        results = results.filter(marks__lte=max_mark)
+    if exam_date:
+        # Parse the date and filter for that specific day
+        try:
+            date_obj = datetime.strptime(exam_date, '%Y-%m-%d').date()
+            results = results.filter(date__date=date_obj)
+        except ValueError:
+            pass  # Ignore invalid dates
+
+    return render(request, 'teacher/teacher-view-examinee.html', {        
+        'course': course,
+        'results': results,
+        'organizations': organizations,
+        'selected_org': organization,
+        'exam_date': exam_date,  # Changed to match template
+        'min_mark': min_mark,
+        'max_mark': max_mark,
+    })

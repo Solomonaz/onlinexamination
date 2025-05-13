@@ -1,334 +1,201 @@
-{% extends 'student/studentbase.html' %}
+{% extends 'teacher/teacherbase.html' %}
 {% block content %}
-{% load static %}
 
-<head>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    .exam-container {
-      max-width: 800px;
-      margin: 2rem auto;
-      padding: 0 15px;
-    }
-
-    .exam-card {
-      border: none;
-      border-radius: 12px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-      overflow: hidden;
-      background: white;
-    }
-
-    .exam-header {
-      background: linear-gradient(135deg, #4a6fdc 0%, #3a5bc7 100%);
-      color: white;
-      padding: 1.5rem;
-      text-align: center;
-      font-weight: 600;
-      font-size: 1.25rem;
-      position: relative;
-    }
-
-    .timer-container {
-      position: absolute;
-      right: 20px;
-      top: 50%;
-      transform: translateY(-50%);
-      background-color: rgba(0, 0, 0, 0.2);
-      padding: 0.5rem 1rem;
-      border-radius: 20px;
-      font-weight: 600;
-    }
-
-    .timer-warning {
-      color: #ffcc00;
-    }
-
-    .timer-danger {
-      color: #ff3333;
-      animation: pulse 1s infinite;
-    }
-
-    @keyframes pulse {
-      0% { opacity: 1; }
-      50% { opacity: 0.5; }
-      100% { opacity: 1; }
-    }
-
-    .question-container {
-      padding: 1.5rem;
-    }
-
-    .question-card {
-      margin-bottom: 2rem;
-      padding: 1.5rem;
-      border-radius: 10px;
-      background-color: #f8fafc;
-      border-left: 4px solid #4a6fdc;
-    }
-
-    .question-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.25rem;
-    }
-
-    .question-text {
-      font-weight: 500;
-      font-size: 1.1rem;
-      color: #2d3748;
-      margin: 0;
-    }
-
-    .question-marks {
-      background-color: #e2e8f0;
-      color: #4a5568;
-      padding: 0.35rem 0.8rem;
-      border-radius: 20px;
-      font-weight: 600;
-      font-size: 0.9rem;
-    }
-
-    .option-item {
-      display: flex;
-      align-items: center;
-      padding: 0.75rem 1rem;
-      margin-bottom: 0.75rem;
-      border-radius: 8px;
-      background-color: white;
-      border: 1px solid #e2e8f0;
-      transition: all 0.2s ease;
-      cursor: pointer;
-    }
-
-    .option-item:hover {
-      border-color: #4a6fdc;
-      background-color: #f8fafc;
-    }
-
-    .option-input {
-      margin-right: 1rem;
-      width: 18px;
-      height: 18px;
-      cursor: pointer;
-    }
-
-    .option-label {
-      margin: 0;
-      cursor: pointer;
-      color: #4a5568;
-    }
-
-    .submit-btn {
-      background: linear-gradient(135deg, #4a6fdc 0%, #3a5bc7 100%);
-      border: none;
-      border-radius: 8px;
-      padding: 0.75rem 2rem;
-      color: white;
-      font-weight: 600;
-      font-size: 1rem;
-      transition: all 0.3s ease;
-      display: block;
-      margin: 2rem auto 1rem;
-      width: fit-content;
-    }
-
-    .submit-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 15px rgba(74, 111, 220, 0.3);
-    }
-
-    @media (max-width: 768px) {
-      .question-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-      }
-
-      .question-container {
-        padding: 1rem;
-      }
-
-      .question-card {
-        padding: 1.25rem;
-      }
-
-      .timer-container {
-        position: static;
-        transform: none;
-        margin-top: 0.5rem;
-        display: inline-block;
-      }
-    }
-  </style>
-</head>
-
-<div class="exam-container">
-  <form class="exam-card" autocomplete="off" onsubmit="return saveAns()" action="/student/calculate-marks" method="POST" id="examForm">
-    {% csrf_token %}
-    <div class="exam-header">
-      <i class="fas fa-book-open me-2"></i>Course: {{course.course_name}}
-      <div class="timer-container">
-        <i class="fas fa-clock me-2"></i>
-        <span id="timer">00:00</span>
+<div class="container mt-4">
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
+      <div>
+        <h5 class="mb-0"><i class="fas fa-users mr-2"></i>Examinees - {{ course.course_name }}</h5>
+        <small class="d-block mt-1">{{ results.count }} examinee{{ results.count|pluralize }}</small>
+      </div>
+      <div>
+        <button class="btn btn-light btn-sm mr-2" onclick="printExaminees()">
+          <i class="fas fa-print mr-1"></i> Print
+        </button>
+        <button class="btn btn-light btn-sm" data-toggle="collapse" data-target="#filterCollapse">
+          <i class="fas fa-filter mr-1"></i> Filter
+        </button>
       </div>
     </div>
-
-    <div class="question-container">
-      {% for q in questions %}
-      <div class="question-card single-question" id="question{{ forloop.counter }}" style="display: none;">
-        <div class="question-header">
-          <h3 class="question-text">{{ forloop.counter }}. {{q.question}}</h3>
-          <span class="question-marks">{{q.marks}} Marks</span>
-        </div>
-
-        <div class="option-item">
-          <input class="option-input" type="radio" name="{{ forloop.counter }}" id="{{q.id}}_option1" value="Option1">
-          <label class="option-label" for="{{q.id}}_option1">{{q.option1}}</label>
-        </div>
-
-        <div class="option-item">
-          <input class="option-input" type="radio" name="{{ forloop.counter }}" id="{{q.id}}_option2" value="Option2">
-          <label class="option-label" for="{{q.id}}_option2">{{q.option2}}</label>
-        </div>
-
-        <div class="option-item">
-          <input class="option-input" type="radio" name="{{ forloop.counter }}" id="{{q.id}}_option3" value="Option3">
-          <label class="option-label" for="{{q.id}}_option3">{{q.option3}}</label>
-        </div>
-
-        <div class="option-item">
-          <input class="option-input" type="radio" name="{{ forloop.counter }}" id="{{q.id}}_option4" value="Option4">
-          <label class="option-label" for="{{q.id}}_option4">{{q.option4}}</label>
-        </div>
+    
+    <!-- Filter Section -->
+    <div class="collapse" id="filterCollapse">
+      <div class="card-body border-bottom py-3">
+        <form method="GET" class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">From Date</label>
+            <input type="date" class="form-control" name="start_date" value="{{ request.GET.start_date }}">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">To Date</label>
+            <input type="date" class="form-control" name="end_date" value="{{ request.GET.end_date }}">
+          </div>
+          <div class="col-md-4 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary mr-2">
+              <i class="fas fa-search mr-1"></i> Apply
+            </button>
+            <a href="?" class="btn btn-outline-secondary">
+              <i class="fas fa-times mr-1"></i> Clear
+            </a>
+          </div>
+        </form>
       </div>
-      {% endfor %}
-
-      <div class="d-flex justify-content-between px-4">
-        <button type="button" class="btn btn-outline-primary" id="prevBtn">Previous</button>
-        <button type="button" class="btn btn-outline-primary" id="nextBtn">Next</button>
-      </div>
-
-      <button type="submit" class="submit-btn">
-        <i class="fas fa-paper-plane me-2"></i>Submit Answers
-      </button>
     </div>
-  </form>
+    
+    <div class="card-body p-0" id="print-section">
+      {% if results %}
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="thead-light">
+            <tr>
+              <th class="border-top-0">#</th>
+              <th class="border-top-0">Student Name</th>
+              <th class="border-top-0">Username</th>
+              <th class="border-top-0">Mobile</th>
+              <th class="border-top-0 text-center">Marks</th>
+              <th class="border-top-0">Date Taken</th>
+              <th class="border-top-0 text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for result in results %}
+            <tr>
+              <td>{{ forloop.counter }}</td>
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="avatar-sm bg-light rounded-circle d-flex align-items-center justify-content-center mr-2">
+                    <span class="text-primary font-weight-bold">{{ result.student.get_name|first|upper }}</span>
+                  </div>
+                  {{ result.student.get_name }}
+                </div>
+              </td>
+              <td>{{ result.student.user.username }}</td>
+              <td>{{ result.student.mobile }}</td>
+              <td class="text-center">
+                <span class="badge badge-pill {% if result.marks >= 80 %}badge-success{% elif result.marks >= 50 %}badge-warning{% else %}badge-danger{% endif %}">
+                  {{ result.marks }}%
+                </span>
+              </td>
+              <td>{{ result.date|date:"M d, Y H:i" }}</td>
+              <td class="text-center">
+                {% if result.marks >= 50 %}
+                  <span class="badge badge-success">Passed</span>
+                {% else %}
+                  <span class="badge badge-danger">Failed</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="text-center py-5">
+        <i class="fas fa-user-graduate fa-3x text-muted mb-3"></i>
+        <h5 class="text-muted">No examinees have taken this exam yet</h5>
+        <p class="text-muted">Try adjusting your filters or check back later</p>
+      </div>
+      {% endif %}
+    </div>
+    
+    {% if results.has_other_pages %}
+    <div class="card-footer d-flex justify-content-between align-items-center">
+      <div>
+        <p class="mb-0 text-muted">Showing {{ results.start_index }} to {{ results.end_index }} of {{ results.paginator.count }} entries</p>
+      </div>
+      <ul class="pagination mb-0">
+        {% if results.has_previous %}
+          <li class="page-item"><a class="page-link" href="?page=1{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}">&laquo; First</a></li>
+          <li class="page-item"><a class="page-link" href="?page={{ results.previous_page_number }}{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}">Previous</a></li>
+        {% endif %}
+        
+        {% for i in results.paginator.page_range %}
+          {% if results.number == i %}
+            <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+          {% elif i > results.number|add:'-3' and i < results.number|add:'3' %}
+            <li class="page-item"><a class="page-link" href="?page={{ i }}{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}">{{ i }}</a></li>
+          {% endif %}
+        {% endfor %}
+        
+        {% if results.has_next %}
+          <li class="page-item"><a class="page-link" href="?page={{ results.next_page_number }}{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}">Next</a></li>
+          <li class="page-item"><a class="page-link" href="?page={{ results.paginator.num_pages }}{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}">Last &raquo;</a></li>
+        {% endif %}
+      </ul>
+    </div>
+    {% endif %}
+  </div>
 </div>
 
+<style>
+  .avatar-sm {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+  
+  .table-hover tbody tr:hover {
+    background-color: rgba(0, 120, 201, 0.05);
+  }
+  
+  .badge-pill {
+    min-width: 60px;
+    padding: 5px 10px;
+    font-weight: 500;
+  }
+  
+  @media print {
+    .card-header, .collapse, .card-footer {
+      display: none !important;
+    }
+    
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .table th, .table td {
+      border: 1px solid #dee2e6;
+      padding: 8px;
+    }
+    
+    .badge {
+      border: 1px solid #000;
+      color: #000 !important;
+      background-color: transparent !important;
+    }
+  }
+</style>
+
 <script>
-  // Timer Setup
-  const examDurationMinutes = {{ exam_duration_seconds }};
-  const examKey = "examTimer_{{ course.id }}";
-  let timeLeft;
-
-  if (localStorage.getItem(examKey)) {
-    timeLeft = parseInt(localStorage.getItem(examKey));
-  } else {
-    timeLeft = examDurationMinutes * 60;
-    localStorage.setItem(examKey, timeLeft);
-  }
-
-  function updateTimer() {
-    const minutes = Math.floor(timeLeft / 60);
-    const seconds = timeLeft % 60;
-    document.getElementById('timer').textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-
-    const timerElement = document.getElementById('timer');
-    timerElement.classList.remove('timer-warning', 'timer-danger');
-    if (timeLeft <= 300) timerElement.classList.add('timer-warning');
-    if (timeLeft <= 60) timerElement.classList.add('timer-danger');
-
-    if (timeLeft <= 0) {
-      clearInterval(timerInterval);
-      document.getElementById('timer').textContent = "00:00";
-      saveAns();
-      localStorage.removeItem(examKey);
-      localStorage.removeItem(currentQuestionKey);
-      document.getElementById('examForm').submit();
-    } else {
-      timeLeft--;
-      localStorage.setItem(examKey, timeLeft);
-    }
-  }
-
-  updateTimer();
-  const timerInterval = setInterval(updateTimer, 1000);
-
-  // Save Answers
-  function saveAns() {
-    var ele = document.getElementsByTagName('input');
-    for (i = 0; i < ele.length; i++) {
-      if (ele[i].type == "radio") {
-        if (ele[i].checked) {
-          setCookie(ele[i].name, ele[i].value, 3)
-        }
-      }
-    }
-  }
-
-  function setCookie(cname, cvalue, exdays) {
-    var d = new Date();
-    d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
-    var expires = "expires=" + d.toUTCString();
-    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
-  }
-
-  // Question Navigation
-  let currentQuestion = 1;
-  const totalQuestions = {{ questions|length }};
-  const currentQuestionKey = "currentQuestion_{{ course.id }}";
-
-  if (localStorage.getItem(currentQuestionKey)) {
-    currentQuestion = parseInt(localStorage.getItem(currentQuestionKey));
-  }
-
-  function showQuestion(index) {
-      for (let i = 1; i <= totalQuestions; i++) {
-        const q = document.getElementById(`question${i}`);
-        if (q) q.style.display = i === index ? "block" : "none";
-      }
-
-      localStorage.setItem(currentQuestionKey, index);
-
-      // Hide/show Previous button
-      if (index === 1) {
-        document.getElementById("prevBtn").style.display = "none";
-      } else {
-        document.getElementById("prevBtn").style.display = "inline-block";
-      }
-
-      // Hide Next button on final question
-      if (index === totalQuestions) {
-        document.getElementById("nextBtn").style.display = "none";
-      } else {
-        document.getElementById("nextBtn").style.display = "inline-block";
-      }
-    }
-
-
-
-  document.getElementById("prevBtn").addEventListener("click", function () {
-    if (currentQuestion > 1) {
-      currentQuestion--;
-      showQuestion(currentQuestion);
-    }
-  });
-
-  document.getElementById("nextBtn").addEventListener("click", function () {
-    if (currentQuestion < totalQuestions) {
-      currentQuestion++;
-      showQuestion(currentQuestion);
-    }
-  });
-
-  // Initial render
-  showQuestion(currentQuestion);
+function printExaminees() {
+  const printContents = document.getElementById('print-section').innerHTML;
+  const originalContents = document.body.innerHTML;
+  
+  // Create a print-specific stylesheet
+  const printStyles = `
+    <style>
+      @page { size: auto; margin: 5mm; }
+      body { font-family: Arial, sans-serif; font-size: 12px; }
+      h5 { font-size: 16px; margin-bottom: 10px; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { border: 1px solid #ddd; padding: 6px; text-align: left; }
+      th { background-color: #f2f2f2; }
+      .badge { border: 1px solid #000; color: #000 !important; background-color: transparent !important; }
+    </style>
+  `;
+  
+  document.body.innerHTML = `
+    <h5>Examinees - {{ course.course_name }}</h5>
+    <p>Generated on: ${new Date().toLocaleString()}</p>
+    ${printContents}
+    ${printStyles}
+  `;
+  
+  window.print();
+  document.body.innerHTML = originalContents;
+  window.location.reload();
+}
 </script>
 
- 
-
-
-{% endblock content %}
+{% endblock %}

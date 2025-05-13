@@ -1,10 +1,10 @@
-{% extends 'exam/adminbase.html' %}
+{% extends 'teacher/teacherbase.html' %}
 {% block content %}
+{% load static %}
 <div class="container py-4">
   <div class="card shadow-sm border-0 overflow-hidden">
     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
       <div>
-        <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i> Examinee Performance Report</h5>
         <small class="opacity-75">Detailed analysis of examination results</small>
       </div>
       <div>
@@ -19,16 +19,6 @@
 
     <div class="card-body">
       <form id="filter-form" method="get" class="row g-3 mb-4">
-        <div class="col-md-3">
-          <label class="form-label fw-semibold small mb-1">Course</label>
-          <select name="course" class="form-select form-select-sm auto-submit">
-            <option value="">All Courses</option>
-            {% for course in courses %}
-              <option value="{{ course.id }}" {% if course.id|stringformat:"s" == selected_course %}selected{% endif %}>{{ course.course_name }}</option>
-            {% endfor %}
-          </select>
-        </div>
-
         <div class="col-md-3">
           <label class="form-label fw-semibold small mb-1">Organization</label>
           <select name="organization" class="form-select form-select-sm auto-submit">
@@ -47,10 +37,10 @@
             <input type="number" name="max_mark" value="{{ max_mark }}" class="form-control auto-submit" placeholder="Max" min="0" max="100">
           </div>
         </div>
-
+        
         <div class="col-md-2">
-          <label class="form-label fw-semibold small mb-1">Date Range</label>
-          <input type="date" name="exam_date" class="form-control form-control-sm" value="{{ selected_date }}">
+          <label class="form-label fw-semibold small mb-1">Exam Date</label>
+          <input type="date" name="exam_date" class="form-control form-control-sm auto-submit" value="{{ exam_date }}">
         </div>
 
         <div class="col-md-2 d-flex align-items-end">
@@ -86,7 +76,6 @@
                 <th>Student Name</th>
                 <th>Username</th>
                 <th>Organization</th>
-                <th>Course</th>
                 <th width="120">Score</th>
                 <th width="150">Date</th>
                 <!-- <th width="80">Actions</th> -->
@@ -99,9 +88,8 @@
                 <td>{{ result.student.get_name }}</td>
                 <td>{{ result.student.user.username }}</td>
                 <td>{{ result.student.organization }}</td>
-                <td>{{ result.exam.course_name }}</td>
                 <td>
-                  <div class="progress" style="height: 20px;">
+                  <div style="height: 20px;">
                     <div class="progress-bar {% if result.marks >= 75 %}bg-success{% elif result.marks >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
                          role="progressbar" style="width: {{ result.marks }} %" 
                          aria-valuenow="{{ result.marks }}" aria-valuemin="0" aria-valuemax="100">
@@ -109,7 +97,7 @@
                     </div>
                   </div>
                 </td>
-                <td>{{ result.date|date:"M d, Y H:i" }}</td>
+                <td>{{ result.date|date:"M d, Y" }}</td>
                 </td>
               </tr>
               {% endfor %}

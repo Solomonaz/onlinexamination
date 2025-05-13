@@ -218,6 +218,44 @@
       border-color: #e2e8f0;
       color: #e2e8f0;
     }
+
+    .explanation-prompt {
+  background-color: #f0f7ff;
+  padding: 1rem;
+  border-radius: 8px;
+  border-left: 4px solid #4a6fdc;
+  margin-top: 1.5rem;
+}
+
+.explanation-prompt h5 {
+  color: #2d3748;
+  margin-bottom: 0.75rem;
+}
+
+.form-control {
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 0.75rem;
+  width: 100%;
+  transition: border-color 0.2s ease;
+}
+
+.form-control:focus {
+  border-color: #4a6fdc;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(74, 111, 220, 0.2);
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #4a5568;
+  font-weight: 500;
+}
     }
   </style>
 </head>
@@ -234,34 +272,67 @@
     </div>
 
     <div class="question-container">
-      {% for q in questions %}
-      <div class="question-card single-question" id="question{{ forloop.counter }}" style="display: none;">
-        <div class="question-header">
-          <h3 class="question-text">{{ forloop.counter }}. {{q.question}}</h3>
-          <span class="question-marks">{{q.marks}} Marks</span>
-        </div>
+    {% for q in questions %}
+<div class="question-card single-question" id="question{{ forloop.counter }}" style="display: none;">
+  <div class="question-header">
+    <h3 class="question-text">{{ forloop.counter }}. {{q.question}}</h3>
+    <span class="question-marks">{{q.marks}} Marks</span>
+  </div>
 
-        <div class="option-item">
-          <input class="option-input" type="radio" name="{{ forloop.counter }}" id="{{q.id}}_option1" value="Option1">
-          <label class="option-label" for="{{q.id}}_option1">{{q.option1}}</label>
-        </div>
+  {% if q.question_type == 'MCQ' %}
+    <!-- Multiple Choice Question Options -->
+    {% if q.option1 %}
+    <div class="option-item">
+      <input class="option-input" type="radio" name="{{ forloop.counter }}" id="{{q.id}}_option1" value="Option1">
+      <label class="option-label" for="{{q.id}}_option1">{{q.option1}}</label>
+    </div>
+    {% endif %}
 
-        <div class="option-item">
-          <input class="option-input" type="radio" name="{{ forloop.counter }}" id="{{q.id}}_option2" value="Option2">
-          <label class="option-label" for="{{q.id}}_option2">{{q.option2}}</label>
-        </div>
+    {% if q.option2 %}
+    <div class="option-item">
+      <input class="option-input" type="radio" name="{{ forloop.counter }}" id="{{q.id}}_option2" value="Option2">
+      <label class="option-label" for="{{q.id}}_option2">{{q.option2}}</label>
+    </div>
+    {% endif %}
 
-        <div class="option-item">
-          <input class="option-input" type="radio" name="{{ forloop.counter }}" id="{{q.id}}_option3" value="Option3">
-          <label class="option-label" for="{{q.id}}_option3">{{q.option3}}</label>
-        </div>
+    {% if q.option3 %}
+    <div class="option-item">
+      <input class="option-input" type="radio" name="{{ forloop.counter }}" id="{{q.id}}_option3" value="Option3">
+      <label class="option-label" for="{{q.id}}_option3">{{q.option3}}</label>
+    </div>
+    {% endif %}
 
-        <div class="option-item">
-          <input class="option-input" type="radio" name="{{ forloop.counter }}" id="{{q.id}}_option4" value="Option4">
-          <label class="option-label" for="{{q.id}}_option4">{{q.option4}}</label>
-        </div>
+    {% if q.option4 %}
+    <div class="option-item">
+      <input class="option-input" type="radio" name="{{ forloop.counter }}" id="{{q.id}}_option4" value="Option4">
+      <label class="option-label" for="{{q.id}}_option4">{{q.option4}}</label>
+    </div>
+    {% endif %}
+
+    <!-- Show explanation prompt if it exists -->
+    {% if q.explanation %}
+    <div class="explanation-prompt mt-4">
+      <h5>Explanation:</h5>
+      <p>{{ q.explanation }}</p>
+      <div class="form-group">
+        <textarea class="form-control" name="explanation_{{ q.id }}" rows="4" 
+                  placeholder="Please explain your answer..."></textarea>
       </div>
-      {% endfor %}
+    </div>
+    {% endif %}
+
+  {% elif q.question_type == 'FIB' %}
+    <!-- Fill in the Blank Question -->
+    <div class="form-group mt-3">
+      <label for="fib_{{ q.id }}">Your answer:</label>
+      <input type="text" class="form-control" id="fib_{{ q.id }}" 
+             name="{{ forloop.counter }}" 
+             {% if not q.case_sensitive %}style="text-transform: lowercase;"{% endif %}>
+    </div>
+  {% endif %}
+</div>
+{% endfor %}
+
 
       <div class="nav-buttons">
         <button type="button" class="nav-btn" id="prevBtn" disabled>Previous</button>
@@ -319,17 +390,34 @@
   const timerInterval = setInterval(updateTimer, 1000);
 
   // Save Answers
-  function saveAns() {
-    var ele = document.getElementsByTagName('input');
-    for (i = 0; i < ele.length; i++) {
-      if (ele[i].type == "radio") {
-        if (ele[i].checked) {
-          setCookie(ele[i].name, ele[i].value, 3)
-        }
-      }
+// Update the saveAns function to handle text inputs
+function saveAns() {
+  // Save radio button answers
+  var radios = document.getElementsByTagName('input');
+  for (i = 0; i < radios.length; i++) {
+    if (radios[i].type == "radio" && radios[i].checked) {
+      setCookie(radios[i].name, radios[i].value, 3);
     }
-    return true;
   }
+  
+  // Save text input answers (for FIB questions)
+  var textInputs = document.querySelectorAll('input[type="text"]');
+  textInputs.forEach(input => {
+    if (input.value.trim() !== '') {
+      setCookie(input.name, input.value, 3);
+    }
+  });
+  
+  // Save textarea answers (for explanations)
+  var textareas = document.getElementsByTagName('textarea');
+  for (i = 0; i < textareas.length; i++) {
+    if (textareas[i].value.trim() !== '') {
+      setCookie(textareas[i].name, textareas[i].value, 3);
+    }
+  }
+  
+  return true;
+}
 
   function setCookie(cname, cvalue, exdays) {
     var d = new Date();

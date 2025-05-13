@@ -118,6 +118,7 @@
         <table class="table table-hover mb-0" id="questions-table">
           <thead>
             <tr>
+              <th>#</th>
               <th>Question</th>
               <th class="text-center">Marks</th>
               <th class="text-center">Correct Answer</th>
@@ -128,6 +129,9 @@
             {% if questions %}
               {% for question in questions %}
               <tr>
+                <td>
+                  {{forloop.counter}}
+                </td>
                 <td>
                   <div class="question-text" title="{{ question.question }}">
                     {{ question.question }}

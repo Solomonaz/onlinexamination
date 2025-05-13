@@ -36,6 +36,13 @@ class Question(models.Model):
     marks = models.PositiveIntegerField()
     explanation = models.TextField(blank=True, null=True,verbose_name="Explanation",help_text="Explanation for the correct answer")
     
+    # Link to parent question for explanation questions
+    related_question = models.ForeignKey('self', on_delete=models.SET_NULL, 
+                                       blank=True, null=True,
+                                       verbose_name="Related Question",
+                                       help_text="For explanation questions, link to the main question",
+                                       related_name='explanations')
+    
     # Fields Specific to Multiple Choice Questions
     option1 = models.CharField(max_length=200, blank=True, null=True,verbose_name="Option 1")
     option2 = models.CharField(max_length=200, blank=True, null=True,verbose_name="Option 2")
@@ -48,8 +55,7 @@ class Question(models.Model):
     
     # For Fill-in-the-Blank Questions
     blank_answer = models.CharField(max_length=200, blank=True, null=True,verbose_name="Blank Answer",help_text="Correct answer for explanation questions")
-    case_sensitive = models.BooleanField(default=False,verbose_name="Case Sensitive",help_text="Should the answer be case sensitive?")
-        
+    case_sensitive = models.BooleanField(default=False,verbose_name="Case Sensitive",help_text="Should the answer be case sensitive?") 
     class Meta:
         verbose_name = "Question"
         verbose_name_plural = "Questions"

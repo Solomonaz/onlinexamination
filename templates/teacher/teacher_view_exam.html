@@ -118,16 +118,13 @@
 <div class="container">
   <div class="d-flex justify-content-between align-items-center">
     <h3 class="mt-4" style="color: var(--primary-blue); font-weight: 600;">
-      <i class="fas fa-book-open me-2"></i>Course Management
+      <i class="fas fa-book-open me-2"></i>Examination result Management
     </h3>
-    <a href="{% url 'teacher-add-exam' %}" class="add-course-btn">
-      <i class="fas fa-plus"></i> Add New Course
-    </a>
   </div>
   
   <div class="dashboard-card">
     <div class="card-header">
-      <h6 class="card-title"><i class="fas fa-list-alt me-2"></i>Available Courses</h6>
+      <h6 class="card-title"><i class="fas fa-list-alt me-2"></i>Available Courses with result</h6>
     </div>
     
     <div class="table-responsive">
@@ -137,7 +134,7 @@
             <th>Course Name</th>
             <th>Questions</th>
             <th>Total Marks</th>
-            <th class="action-cell">Actions</th>
+            <th>Examinee</th>
           </tr>
         </thead>
         <tbody>
@@ -147,9 +144,11 @@
               <td>{{ t.course_name }}</td>
               <td>{{ t.question_number }}</td>
               <td>{{ t.total_marks }}</td>
-              <td class="action-cell">
-                <a class="btn btn-danger btn-sm" href="{% url 'delete-exam' t.id %}" title="Delete Course">
-                  <i class="fas fa-trash-alt"></i>
+              <td>
+                <a href="{% url 'teacher-view-examinee' t.id %}"
+                  class="btn btn-outline-info btn-sm d-flex justify-content-between align-items-center px-3">
+                  <span>{{ t.result_set.count }} <i class="fas fa-user"></i></span>
+                  <i class="fas fa-eye"></i>
                 </a>
               </td>
             </tr>
@@ -158,11 +157,7 @@
             <tr>
               <td colspan="4" class="empty-state">
                 <i class="fas fa-book"></i>
-                <h5>No Courses Available</h5>
-                <p>You haven't created any courses yet</p>
-                <a href="{% url 'teacher-add-exam' %}" class="add-course-btn">
-                  <i class="fas fa-plus"></i> Create Your First Course
-                </a>
+                <h5>Not Courses Available</h5>
               </td>
             </tr>
           {% endif %}
