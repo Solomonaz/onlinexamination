@@ -1,354 +1,40 @@
-{% extends 'teacher/teacherbase.html' %}
-{% load widget_tweaks %}
-{% block content %}
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-<style>
-  .card-header {
-    background-color: #0078C9;
-    color: #fff;
-    font-weight: bold;
-    text-align: center;
-    font-size: 1.4rem;
-  }
-
-  .form-label {
-    font-weight: 500;
-  }
-
-  .btn-custom {
-    background-color: #FFF200;
-    color: #000;
-    font-weight: 600;
-    border: none;
-  }
-
-  .btn-custom:hover {
-    background-color: #0078C9;
-    color: #fff;
-  }
-
-  .btn-import {
-    background-color: #28a745;
-    color: #fff;
-    font-weight: 600;
-    border: none;
-  }
-
-  .btn-import:hover {
-    background-color: #218838;
-    color: #fff;
-  }
-
-  .form-section {
-    margin-top: 30px;
-  }
-
-  .import-section {
-    background-color: #f8f9fa;
-    border-radius: 5px;
-    padding: 20px;
-    margin-bottom: 30px;
-    border: 1px dashed #0078C9;
-  }
-
-  .tab-content {
-    padding: 20px 0;
-  }
-
-  .nav-tabs .nav-link {
-    color: #495057;
-    font-weight: 500;
-  }
-
-  .nav-tabs .nav-link.active {
-    color: #0078C9;
-    font-weight: 600;
-    border-bottom: 3px solid #0078C9;
-  }
-
-  .file-upload-info {
-    font-size: 0.9rem;
-    color: #6c757d;
-    margin-top: 5px;
-  }
-
-  .template-download {
-    display: inline-block;
-    margin-top: 10px;
-    color: #0078C9;
-    text-decoration: none;
-  }
-
-  .template-download:hover {
-    text-decoration: underline;
-  }
-
-  .fib-input {
-    position: relative;
-  }
-  
-  .fib-input input {
-    padding-left: 30px;
-  }
-  
-  .fib-input .blank-indicator {
-    position: absolute;
-    left: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #0078C9;
-    font-weight: bold;
-  }
-</style>
-
-<div class="py-5">
-  <div class="row justify-content-center">
-    <div class="col-md-10">
-      <!-- Display Messages -->
-      {% if messages %}
-        {% for message in messages %}
-          <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-          </div>
-        {% endfor %}
-      {% endif %}
-
-      <div class="card shadow-sm">
-        <div class="card-header">
-          Add Questions
-        </div>
-        <div class="card-body">
-          <ul class="nav nav-tabs" id="questionTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-              <button class="nav-link active" id="mcq-tab" data-bs-toggle="tab" data-bs-target="#mcq" type="button" role="tab" aria-controls="mcq" aria-selected="true">
-                <i class="fas fa-list-ol me-2"></i>Multiple Choice Questions
-              </button>
-            </li>
-            <li class="nav-item" role="presentation">
-              <button class="nav-link" id="fib-tab" data-bs-toggle="tab" data-bs-target="#fib" type="button" role="tab" aria-controls="fib" aria-selected="false">
-                <i class="fas fa-pencil-alt me-2"></i>Explanation / Subjective Questions
-              </button>
-            </li>
-            <li class="nav-item" role="presentation">
-              <button class="nav-link" id="import-tab" data-bs-toggle="tab" data-bs-target="#import" type="button" role="tab" aria-controls="import" aria-selected="false">
-                <i class="fas fa-file-import me-2"></i>Bulk Import
-              </button>
-            </li>
-          </ul>
-
-          <div class="tab-content" id="questionTabsContent">
-            <!-- Multiple Choice Question Tab -->
-            <div class="tab-pane fade show active" id="mcq" role="tabpanel" aria-labelledby="mcq-tab">
-              <form method="POST" autocomplete="off">
-                {% csrf_token %}
-                <input type="hidden" name="question_type" value="MCQ">
-
-                <div class="form-section">
-                  <label class="form-label" for="courseID">Course</label>
-                  {% render_field questionForm.courseID|attr:'required:true' class="form-control" %}
-                </div>
-
-                <div class="form-section">
-                  <label class="form-label" for="question">Question</label>
-                  {% render_field questionForm.question|attr:'required:true' class="form-control" placeholder="Example: What is the relation calculus?" %}
-                </div>
-
-                <div class="form-section">
-                  <label class="form-label" for="marks">Marks</label>
-                  {% render_field questionForm.marks|attr:'required:true' class="form-control" placeholder="Example: 5" %}
-                </div>
-
-                <div class="form-section">
-                  <label class="form-label" for="option1">Option 1</label>
-                  {% render_field questionForm.option1|attr:'required:true' class="form-control" placeholder="Example: It is a kind of procedural language" %}
-                </div>
-
-                <div class="form-section">
-                  <label class="form-label" for="option2">Option 2</label>
-                  {% render_field questionForm.option2|attr:'required:true' class="form-control" placeholder="Example: It is a non-procedural language" %}
-                </div>
-
-                <div class="form-section">
-                  <label class="form-label" for="option3">Option 3</label>
-                  {% render_field questionForm.option3|attr:'required:true' class="form-control" placeholder="Example: It is a high-level language" %}
-                </div>
-
-                <div class="form-section">
-                  <label class="form-label" for="option4">Option 4</label>
-                  {% render_field questionForm.option4|attr:'required:true' class="form-control" placeholder="Example: It is Data Definition language" %}
-                </div>
-
-                <div class="form-section">
-                  <label class="form-label" for="answer">Correct Answer</label>
-                  {% render_field questionForm.answer|attr:'required:true' class="form-control" %}
-                </div>
-
-                <div class="form-section">
-                  <label class="form-label" for="explanation">Explanation (Optional)</label>
-                  <textarea name="explanation" id="explanation" class="form-control" rows="2" placeholder="Explanation for the correct answer"></textarea>
-                </div>
-
-                <div class="d-grid mt-4">
-                  <button type="submit" class="btn btn-custom btn-lg">
-                    <i class="fas fa-save me-2"></i>Submit Question
-                  </button>
-                </div>
-              </form>
-            </div>
-
-            <!-- Fill in the Blank Tab -->
-            <div class="tab-pane fade" id="fib" role="tabpanel" aria-labelledby="fib-tab">
-              <form method="POST" autocomplete="off">
-                {% csrf_token %}
-                <input type="hidden" name="question_type" value="FIB">
-
-                <div class="form-section">
-                  <label class="form-label" for="fib_courseID">Course</label>
-                  {% render_field questionForm.courseID|attr:'required:true' class="form-control" id="fib_courseID" %}
-                </div>
-
-                <div class="form-section">
-                  <label class="form-label" for="fib_question">Question</label>
-                  <textarea name="question" id="fib_question" class="form-control" rows="3" required placeholder="Example: The capital of France is ______."></textarea>
-                </div>
-
-                <div class="form-section">
-                  <label class="form-label" for="fib_marks">Marks</label>
-                  <input type="number" name="marks" id="fib_marks" class="form-control" min="1" required>
-                </div>
-
-                <div class="form-section">
-                  <label class="form-label" for="blank_answer">Correct Answer</label>
-                  <div class="fib-input">
-                    <span class="blank-indicator">____</span>
-                    <input type="text" name="blank_answer" id="blank_answer" class="form-control" required placeholder="Enter the correct answer">
-                  </div>
-                </div>
-
-                <div class="form-section">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="case_sensitive" id="case_sensitive">
-                    <label class="form-check-label" for="case_sensitive">
-                      Case sensitive answer
-                    </label>
-                  </div>
-                </div>
-
-                <div class="form-section">
-                  <label class="form-label" for="fib_explanation">Explanation (Optional)</label>
-                  <textarea name="explanation" id="fib_explanation" class="form-control" rows="2" placeholder="Explanation for the correct answer"></textarea>
-                </div>
-
-                <div class="d-grid mt-4">
-                  <button type="submit" class="btn btn-custom btn-lg">
-                    <i class="fas fa-save me-2"></i>Submit Question
-                  </button>
-                </div>
-              </form>
-            </div>
-
-            <!-- Bulk Import Tab -->
-            <div class="tab-pane fade" id="import" role="tabpanel" aria-labelledby="import-tab">
-              <div class="import-section">
-                <h5 class="mb-4"><i class="fas fa-file-import me-2"></i>Import Questions from Excel/CSV</h5>
-                
-                <form method="POST" enctype="multipart/form-data" id="importForm">
-                  {% csrf_token %}
-                  
-                  <div class="mb-3">
-                    <label for="courseIDImport" class="form-label">Course</label>
-                    {% render_field questionForm.courseID class="form-control" id="courseIDImport" required="true" %}
-                  </div>
-                  
-                  <div class="mb-3">
-                    <label for="fileUpload" class="form-label">Select File</label>
-                    <input type="file" class="form-control" id="fileUpload" name="question_file" accept=".xlsx,.xls,.csv" required>
-                    <div class="file-upload-info">
-                      Supported formats: Excel (.xlsx, .xls) or CSV (.csv). Max file size: 5MB.
-                    </div>
-                  </div>
-                  
-                  <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                    <a href="{% url 'download_question_template' %}" class="template-download">
-                      <i class="fas fa-file-download me-2"></i>Download Template
-                    </a>
-                    <button type="submit" class="btn btn-import btn-lg" id="importBtn">
-                      <i class="fas fa-upload me-2"></i>Import Questions
-                    </button>
-                  </div>
-                </form>
-              </div>
-              
-              <div class="mt-4">
-                <h5><i class="fas fa-info-circle me-2"></i>Import Instructions</h5>
-                <ol>
-                  <li>Download and use the provided template file</li>
-                  <li>Required columns: <code>question, marks, option1, option2, option3, option4, answer</code></li>
-                  <li>For answer column, use either:
-                    <ul>
-                      <li>Option number (1-4)</li>
-                      <li>Full option text (must match exactly)</li>
-                    </ul>
-                  </li>
-                  <li>Marks must be positive integers</li>
-                  <li>Do not modify the column headers</li>
-                </ol>
-
-                {% if import_errors %}
-                <div class="alert alert-danger mt-4">
-                  <h6><i class="fas fa-exclamation-triangle me-2"></i>Import Errors</h6>
-                  <div class="error-list">
-                    <ul class="mb-0">
-                      {% for error in import_errors %}
-                        <li>{{ error }}</li>
-                      {% endfor %}
-                    </ul>
-                  </div>
-                </div>
-                {% endif %}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Bootstrap JS Bundle with Popper -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<!-- Custom JS for import functionality -->
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // Handle file size validation
-    const fileUpload = document.getElementById('fileUpload');
-    const importForm = document.getElementById('importForm');
-    const maxSize = 5 * 1024 * 1024; // 5MB
+from datetime import datetime  # Add this import at the top
+from django.utils import timezone  # Also helpful for timezone-aware datetimes
+@login_required(login_url='teacherlogin')
+@user_passes_test(is_teacher)
+def teacher_view_examinees_view(request, course_id):
+    course = QMODEL.Course.objects.get(id=course_id)
+    results = QMODEL.Result.objects.filter(exam=course).select_related('student')
+    organizations = QMODEL.Student.objects.values_list('organization', flat=True).distinct()
     
-    fileUpload.addEventListener('change', function() {
-      if(this.files[0] && this.files[0].size > maxSize) {
-        alert('File size exceeds 5MB limit');
-        this.value = '';
-      }
-    });
+    # GET parameters
+    organization = request.GET.get('organization')
+    min_mark = request.GET.get('min_mark')
+    max_mark = request.GET.get('max_mark')
+    exam_date = request.GET.get('exam_date')
 
-    // Show loading state during import
-    importForm.addEventListener('submit', function() {
-      const importBtn = document.getElementById('importBtn');
-      importBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Importing...';
-      importBtn.disabled = true;
-    });
+    # Apply filters
+    if organization:
+        results = results.filter(student__organization=organization)
+    if min_mark:
+        results = results.filter(marks__gte=min_mark)
+    if max_mark:
+        results = results.filter(marks__lte=max_mark)
+    if exam_date:
+        # Parse the date and filter for that specific day
+        try:
+            date_obj = datetime.strptime(exam_date, '%Y-%m-%d').date()
+            results = results.filter(date__date=date_obj)
+        except ValueError:
+            pass  # Ignore invalid dates
 
-    // Activate tab from URL hash
-    if(window.location.hash) {
-      const tabTrigger = new bootstrap.Tab(document.querySelector(window.location.hash + '-tab'));
-      tabTrigger.show();
-    }
-  });
-</script>
-
-{% endblock content %}
+    return render(request, 'teacher/teacher_view_examinee.html', {        
+        'course': course,
+        'results': results,
+        'organizations': organizations,
+        'selected_org': organization,
+        'exam_date': exam_date,
+        'min_mark': min_mark,
+        'max_mark': max_mark,
+    })

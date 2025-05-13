@@ -103,4 +103,20 @@ class Result(models.Model):
     marks = models.PositiveIntegerField()
     date = models.DateTimeField(auto_now=True)
 
+class StudentAnswer(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    answer = models.TextField(blank=True, null=True)
+    marks_obtained = models.PositiveIntegerField(default=0)
+    feedback = models.TextField(blank=True, null=True)
+    is_graded = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        unique_together = ('student', 'question')
+        verbose_name = "Student Answer"
+        verbose_name_plural = "Student Answers"
+
+    def __str__(self):
+        return f"{self.student.user.username} - {self.question.question[:50]}..."

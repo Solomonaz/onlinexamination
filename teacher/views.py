@@ -13,6 +13,10 @@ from django.contrib import messages
 import pandas as pd
 from io import BytesIO
 import csv
+import json
+from datetime import datetime
+from django.http import JsonResponse
+from django.db.models import Sum, Prefetch
 
 #for showing signup/login button for teacher
 def teacherclick_view(request):
@@ -240,43 +244,182 @@ def remove_question_view(request,pk):
     question.delete()
     return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
-
-from datetime import datetime  # Add this import at the top
-from django.utils import timezone  # Also helpful for timezone-aware datetimes
+from django.shortcuts import get_object_or_404
 @login_required(login_url='teacherlogin')
 @user_passes_test(is_teacher)
 def teacher_view_examinees_view(request, course_id):
-    course = QMODEL.Course.objects.get(id=course_id)
+    course = get_object_or_404(QMODEL.Course, id=course_id)
     results = QMODEL.Result.objects.filter(exam=course).select_related('student')
     organizations = QMODEL.Student.objects.values_list('organization', flat=True).distinct()
     
-    # GET parameters
-    organization = request.GET.get('organization')
-    min_mark = request.GET.get('min_mark')
-    max_mark = request.GET.get('max_mark')
-    exam_date = request.GET.get('exam_date')  # Changed from 'date' to match template
+    # Initialize filter variables
+    organization = request.GET.get('organization', '')
+    min_mark = request.GET.get('min_mark', '')
+    max_mark = request.GET.get('max_mark', '')
+    exam_date = request.GET.get('exam_date', '')
 
     # Apply filters
     if organization:
         results = results.filter(student__organization=organization)
-    if min_mark:
-        results = results.filter(marks__gte=min_mark)
-    if max_mark:
-        results = results.filter(marks__lte=max_mark)
+    
+    if min_mark and min_mark.isdigit():
+        results = results.filter(marks__gte=int(min_mark))
+    
+    if max_mark and max_mark.isdigit():
+        results = results.filter(marks__lte=int(max_mark))
+    
     if exam_date:
-        # Parse the date and filter for that specific day
         try:
             date_obj = datetime.strptime(exam_date, '%Y-%m-%d').date()
             results = results.filter(date__date=date_obj)
         except ValueError:
-            pass  # Ignore invalid dates
+            exam_date = ''  # Reset invalid date
 
-    return render(request, 'teacher/teacher-view-examinee.html', {        
+    return render(request, 'teacher/teacher_view_examinee.html', {        
         'course': course,
         'results': results,
         'organizations': organizations,
         'selected_org': organization,
-        'exam_date': exam_date,  # Changed to match template
+        'exam_date': exam_date,
         'min_mark': min_mark,
         'max_mark': max_mark,
     })
+
+from django.http import JsonResponse
+from django.db.models import Prefetch
+from django.contrib.auth.decorators import login_required, user_passes_test
+
+from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
+from django.db.models import Prefetch
+import json
+
+@login_required(login_url='teacherlogin')
+@user_passes_test(is_teacher)
+def get_student_explanation_answers(request, course_id, student_id):
+    try:
+        # Convert IDs to integers
+        course_id = int(course_id)
+        student_id = int(student_id)
+        
+        # Get objects or return 404
+        course = get_object_or_404(QMODEL.Course, id=course_id)
+        student = get_object_or_404(QMODEL.Student, id=student_id)
+        
+        # Get questions and answers
+        questions = QMODEL.Question.objects.filter(
+            course=course,
+            question_type='FIB'
+        ).prefetch_related(
+            Prefetch('studentanswer_set',
+                   queryset=QMODEL.StudentAnswer.objects.filter(student=student),
+                   to_attr='student_answer'
+            )
+        )
+        
+        questions_data = []
+        for question in questions:
+            answer_data = {
+                'id': question.id,
+                'question_text': question.question,
+                'max_marks': question.marks,
+                'student_answer': "No answer provided",
+                'graded_marks': 0
+            }
+            
+            # Check if student answered this question
+            if hasattr(question, 'student_answer') and question.student_answer:
+                answer = question.student_answer[0]
+                answer_data['student_answer'] = answer.answer or "No answer provided"
+                answer_data['graded_marks'] = answer.marks_obtained if answer.marks_obtained is not None else 0
+            
+            questions_data.append(answer_data)
+        
+        return JsonResponse({
+            'success': True,
+            'student_name': student.get_name(),
+            'course_name': course.course_name,
+            'questions': questions_data
+        })
+        
+    except ValueError as e:
+        return JsonResponse({
+            'success': False,
+            'error': f"Invalid ID format: {str(e)}"
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=400)
+import json
+from django.db.models import Sum
+
+@login_required(login_url='teacherlogin')
+@user_passes_test(is_teacher)
+def save_explanation_grades(request, course_id, student_id):
+    if request.method == 'POST':
+        try:
+            # Parse JSON data from request body
+            try:
+                data = json.loads(request.body.decode('utf-8'))
+            except json.JSONDecodeError:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Invalid JSON data'
+                }, status=400)
+            
+            student = QMODEL.Student.objects.get(id=student_id)
+            course = QMODEL.Course.objects.get(id=course_id)
+            
+            # Save each graded question
+            for graded_question in data.get('grades', []):
+                question = QMODEL.Question.objects.get(id=graded_question['question_id'])
+                
+                # Update or create the StudentAnswer record
+                student_answer, created = QMODEL.StudentAnswer.objects.update_or_create(
+                    student=student,
+                    question=question,
+                    defaults={
+                        'marks_obtained': graded_question['marks'],
+                        'feedback': graded_question['feedback'],
+                        'is_graded': True
+                    }
+                )
+            
+            # Update the total marks in the Result table
+            total_marks = QMODEL.StudentAnswer.objects.filter(
+                student=student,
+                question__course=course,
+                is_graded=True
+            ).aggregate(total_marks=Sum('marks_obtained'))['total_marks'] or 0
+            
+            # Update the result record
+            result = QMODEL.Result.objects.get(student=student, exam=course)
+            result.marks = total_marks
+            result.save()
+            
+            return JsonResponse({'success': True})
+            
+        except QMODEL.Student.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'error': 'Student not found'
+            }, status=404)
+        except QMODEL.Course.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'error': 'Course not found'
+            }, status=404)
+        except QMODEL.Question.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'error': 'Question not found'
+            }, status=404)
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=400)
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)

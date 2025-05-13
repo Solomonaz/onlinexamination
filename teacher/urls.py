@@ -13,8 +13,11 @@ path('teacher-view-exam', views.teacher_view_exam_view,name='teacher-view-exam')
 path('delete-exam/<int:pk>', views.delete_exam_view,name='delete-exam'),
 
 path('teacher-view-examinee/<int:course_id>', views.teacher_view_examinees_view,name='teacher-view-examinee'),
-
-
+# path('view-examinees/<int:course_id>/', views.teacher_view_examinees_view, name='teacher-view-examinees'),
+path('get-explanation-answers/<int:course_id>/<int:student_id>/', views.get_student_explanation_answers, name='get-explanation-answers'),
+    path('get-explanation-answers/<int:course_id>/<int:student_id>/', 
+         views.get_student_explanation_answers, 
+         name='get-explanation-answers'),
 
 path('teacher-question', views.teacher_question_view,name='teacher-question'),
 path('teacher-add-question', views.teacher_add_question_view,name='teacher-add-question'),
