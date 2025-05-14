@@ -1,9 +1,12 @@
 from django.contrib import admin
-from . models import Question, Course, Result
+from . models import Question, Course, Result, StudentAnswer
 
 
 admin.site.register(Course)
 admin.site.register(Result)
+admin.site.register(StudentAnswer)
+
+
 
 from django.contrib import admin
 from .models import Question
@@ -14,7 +17,7 @@ class QuestionAdmin(admin.ModelAdmin):
     list_filter = ('question_type', 'course')
     fieldsets = (
         (None, {
-            'fields': ('question_type', 'course', 'question', 'marks', 'explanation')
+            'fields': ('question_type', 'course', 'question', 'marks')
         }),
         ('Multiple Choice Options', {
             'fields': ('option1', 'option2', 'option3', 'option4', 'answer'),

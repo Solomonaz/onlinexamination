@@ -5,7 +5,7 @@
 <div class="container-fluid">
   <div class="row mb-4">
     <div class="col">
-      <h2>Fill-in-the-Blank Questions Grading</h2>
+      <h2>Explanation Questions Grading</h2>
       <div class="card">
         <div class="card-body">
           <h5 class="card-title">Student: {{ student.user.get_full_name }}</h5>
@@ -32,11 +32,22 @@
               <div class="mb-3">
                 <label class="form-label fw-bold">Student's Answer:</label>
                 <div class="p-3 bg-light rounded border">
-                  {{ answer.answer|default:"No answer provided" }}
+                  {% if answer.answer %}
+                    {{ answer.answer }}
+                    {% if question.case_sensitive %}
+                      <small class="text-muted">(Case-sensitive)</small>
+                    {% endif %}
+                  {% else %}
+                    <span class="text-danger">No answer provided</span>
+                  {% endif %}
                 </div>
               </div>
-              
-              <div class="row mt-3">
+              {% if request.user.is_teacher %}
+              <div class="mt-2 text-muted">
+                <small>Correct answer: {{ question.blank_answer }}</small>
+              </div>
+            {% endif %}
+                          <div class="row mt-3">
                 <div class="col-md-6">
                   <label for="marks_{{ question.id }}" class="form-label fw-bold">Marks Awarded</label>
                   <input type="number" class="form-control" 

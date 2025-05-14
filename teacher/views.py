@@ -13,10 +13,8 @@ from django.contrib import messages
 import pandas as pd
 from io import BytesIO
 import csv
-import json
 from datetime import datetime
-from django.http import JsonResponse
-from django.db.models import Sum, Prefetch
+from django.db.models import Prefetch
 
 #for showing signup/login button for teacher
 def teacherclick_view(request):
@@ -173,7 +171,6 @@ def handle_bulk_import(request):
                         option3=row.get('option3', ''),
                         option4=row.get('option4', ''),
                         answer=f"Option{row['answer']}" if str(row['answer']).isdigit() else row['answer'],
-                        explanation=row.get('explanation', '')
                     )
                     
                 elif import_type == 'FIB':
@@ -188,9 +185,7 @@ def handle_bulk_import(request):
                         question=row['question_text'],
                         marks=int(row['marks']),
                         blank_answer=row['blank_answer'],
-                        answer=row['blank_answer'],  # Set answer to blank_answer
                         case_sensitive=str(row.get('case_sensitive', 'false')).lower() == 'true',
-                        explanation=row.get('explanation', '')
                     )
                 
                 success_count += 1
@@ -215,13 +210,13 @@ def download_question_template(request, type):
     if type == 'mcq':
         response['Content-Disposition'] = 'attachment; filename="mcq_import_template.csv"'
         writer = csv.writer(response)
-        writer.writerow(['question', 'marks', 'option1', 'option2', 'option3', 'option4', 'answer', 'explanation'])
-        writer.writerow(['What is 2+2?', '2', '3', '4', '5', '6', 'Option2', 'Basic addition'])
+        writer.writerow(['question', 'marks', 'option1', 'option2', 'option3', 'option4', 'answer'])
+        writer.writerow(['What is 2+2?', '2', '3', '4', '5', '6', 'Option2'])
     elif type == 'fib':
         response['Content-Disposition'] = 'attachment; filename="fib_import_template.csv"'
         writer = csv.writer(response)
-        writer.writerow(['question_text', 'marks', 'blank_answer', 'case_sensitive', 'explanation'])
-        writer.writerow(['The capital of France is _____.', '2', 'Paris', 'false', 'Paris has been capital since 508 AD'])
+        writer.writerow(['question_text', 'marks', 'blank_answer', 'case_sensitive'])
+        writer.writerow(['The capital of France is _____.', '2', 'Paris', 'false'])
     
     return response
 
@@ -287,47 +282,65 @@ def teacher_view_examinees_view(request, course_id):
 
 
 def teacher_explanation_grading_view(request, student_id, course_id):
-    # Get student and course objects
     student = get_object_or_404(SMODEL.Student, pk=student_id)
     course = get_object_or_404(QMODEL.Course, pk=course_id)
     
-    # Get all FIB questions for this course
+    # Get all questions and answers separately
     fib_questions = QMODEL.Question.objects.filter(
         course=course,
-        question_type='FIB'  # Only get Fill-in-the-Blank questions
+        question_type='FIB'
     )
     
-    # Get or create student answers for these questions
-    student_answers = []
+    # Get all existing answers in one query
+    existing_answers = QMODEL.StudentAnswer.objects.filter(
+        student=student,
+        question__in=fib_questions
+    )
+    
+    # Create a mapping of question_id to answer
+    answer_map = {a.question_id: a for a in existing_answers}
+    
+    questions_answers = []
     for question in fib_questions:
-        answer, created = QMODEL.StudentAnswer.objects.get_or_create(
-            student=student,
-            question=question,
-            defaults={
-                'answer': '',  # Default empty answer if creating new
-                'marks_obtained': 0,
-                'feedback': ''
-            }
-        )
-        student_answers.append(answer)
+        answer = answer_map.get(question.id)
+        if not answer:
+            answer = QMODEL.StudentAnswer.objects.create(
+                student=student,
+                question=question,
+                answer='',
+                marks_obtained=0,
+                feedback=''
+            )
+        questions_answers.append((question, answer))
+    
+    # Rest of your view...
     
     if request.method == 'POST':
-        # Process form submission
-        for answer in student_answers:
-            marks_key = f'marks_{answer.question.id}'
-            feedback_key = f'feedback_{answer.question.id}'
+        for question, answer in questions_answers:
+            marks_key = f'marks_{question.id}'
+            feedback_key = f'feedback_{question.id}'
             
-            answer.marks_obtained = request.POST.get(marks_key, 0)
+            # answer.marks_obtained = request.POST.get(marks_key, 0)
+            try:
+                answer.marks_obtained = min(max(0, int(request.POST.get(marks_key, 0))), question.marks)
+            except ValueError:
+                messages.error(request, f"Invalid marks for question {question.id}")
             answer.feedback = request.POST.get(feedback_key, '')
+            answer.is_graded = True
             answer.save()
         
-        messages.success(request, 'Grades and feedback saved successfully!')
-        return redirect(request.META.get('HTTP_REFERER'))
+        messages.success(request, 'Grades saved successfully!')
+        return redirect(request.META.get('HTTP_REFERER') or 
+               reverse('teacher:teacher-view-examinee', args=[course.id]))
+    
+    # Get submission time from the first answer
+    submission_time = questions_answers[0][1].created_at if questions_answers else None
     
     context = {
         'student': student,
         'course': course,
-        'questions_answers': zip(fib_questions, student_answers),
+        'questions_answers': questions_answers,
+        'submission_time': submission_time
     }
     
     return render(request, 'teacher/teacher_explanation_grading.html', context)

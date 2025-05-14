@@ -140,6 +140,7 @@
                 <td class="text-center">
                   <span class="badge-mark">{{ question.marks }} pts</span>
                 </td>
+                {% if question.question_type == 'MCQ' %}
                 <td class="text-center">
                   {% if question.answer == 'Option1' %}
                     <span class="badge bg-success">{{ question.option1|truncatechars:20 }}</span>
@@ -151,6 +152,11 @@
                     <span class="badge bg-success">{{ question.option4|truncatechars:20 }}</span>
                   {% endif %}
                 </td>
+                {% else %}
+                <td class="text-center">
+                  {{question.blank_answer|truncatechars:20}}
+                </td>
+                {% endif %}
                 <td class="text-center">
                   <!-- <a href="#" class="btn btn-sm btn-outline-primary action-btn me-1" title="Edit">
                     <i class="fas fa-edit"></i>
