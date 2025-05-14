@@ -5,7 +5,7 @@ from django.contrib.auth.views import LogoutView,LoginView
 urlpatterns = [
    
     path('admin/', admin.site.urls),
-    path('teacher/',include('teacher.urls')),
+    path('teacher/',include('teacher.urls', namespace='teacher')),
     path('student/',include('student.urls')),
     
 

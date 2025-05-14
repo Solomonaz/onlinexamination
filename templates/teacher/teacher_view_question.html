@@ -101,7 +101,7 @@
             <td>{{ c.question_number }}</td>
             <td>{{ c.total_marks }}</td>
             <td class="text-center">
-              <a href="{% url 'see-question' c.id %}" class="btn btn-view">
+              <a href="{% url 'teacher:see-question' c.id %}" class="btn btn-view">
                 <i class="fas fa-eye me-1"></i> View
               </a>
             </td>

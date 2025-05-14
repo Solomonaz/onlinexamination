@@ -279,7 +279,7 @@
                     <label for="fileUpload" class="form-label">Select MCQ Template File</label>
                     <input type="file" class="form-control" id="fileUpload" name="question_file" accept=".xlsx,.xls,.csv" required>
                     <div class="file-upload-info">
-                      <a href="{% url 'download_template' type='mcq' %}" class="template-download">
+                      <a href="{% url 'teacher:download_template' type='mcq' %}" class="template-download">
                         <i class="fas fa-file-download me-2"></i>Download MCQ Template
                       </a>
                     </div>
@@ -306,7 +306,7 @@
                     <label for="fibFileUpload" class="form-label">Select Explanation Template File</label>
                     <input type="file" class="form-control" id="fibFileUpload" name="question_file" accept=".xlsx,.xls,.csv" required>
                     <div class="file-upload-info">
-                      <a href="{% url 'download_template' type='fib' %}" class="template-download">
+                      <a href="{% url 'teacher:download_template' type='fib' %}" class="template-download">
                         <i class="fas fa-file-download me-2"></i>Download Explanation Template
                       </a>
                     </div>

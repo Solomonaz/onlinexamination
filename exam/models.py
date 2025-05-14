@@ -34,15 +34,7 @@ class Question(models.Model):
     question_type = models.CharField(max_length=3, choices=QUESTION_TYPES, default='MCQ',verbose_name="Question Type")
     question = models.CharField(max_length=600)
     marks = models.PositiveIntegerField()
-    explanation = models.TextField(blank=True, null=True,verbose_name="Explanation",help_text="Explanation for the correct answer")
-    
-    # Link to parent question for explanation questions
-    related_question = models.ForeignKey('self', on_delete=models.SET_NULL, 
-                                       blank=True, null=True,
-                                       verbose_name="Related Question",
-                                       help_text="For explanation questions, link to the main question",
-                                       related_name='explanations')
-    
+
     # Fields Specific to Multiple Choice Questions
     option1 = models.CharField(max_length=200, blank=True, null=True,verbose_name="Option 1")
     option2 = models.CharField(max_length=200, blank=True, null=True,verbose_name="Option 2")

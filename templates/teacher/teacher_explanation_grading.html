@@ -1,0 +1,74 @@
+{% extends 'teacher/teacherbase.html' %}
+{% block content %}
+{% load static %}
+
+<div class="container-fluid">
+  <div class="row mb-4">
+    <div class="col">
+      <h2>Fill-in-the-Blank Questions Grading</h2>
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Student: {{ student.user.get_full_name }}</h5>
+          <h6 class="card-subtitle mb-2 text-muted">Exam: {{ course.course_name }}</h6>
+          <p class="card-text">Submitted on: {{ submission_time|date:"F j, Y H:i" }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <form method="post" id="gradingForm">
+        {% csrf_token %}
+        
+        <div id="explanationQuestionsContainer">
+          {% for question, answer in questions_answers %}
+          <div class="card mb-4">
+            <div class="card-header bg-light">
+              <h5 class="mb-0">Question {{ forloop.counter }}: {{ question.question }}</h5>
+              <small class="text-muted">Maximum marks: {{ question.marks }}</small>
+            </div>
+            <div class="card-body">
+              <div class="mb-3">
+                <label class="form-label fw-bold">Student's Answer:</label>
+                <div class="p-3 bg-light rounded border">
+                  {{ answer.answer|default:"No answer provided" }}
+                </div>
+              </div>
+              
+              <div class="row mt-3">
+                <div class="col-md-6">
+                  <label for="marks_{{ question.id }}" class="form-label fw-bold">Marks Awarded</label>
+                  <input type="number" class="form-control" 
+                         id="marks_{{ question.id }}" 
+                         name="marks_{{ question.id }}"
+                         min="0" max="{{ question.marks }}" 
+                         value="{{ answer.marks_obtained }}" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="feedback_{{ question.id }}" class="form-label fw-bold">Feedback</label>
+                  <textarea class="form-control" 
+                            id="feedback_{{ question.id }}" 
+                            name="feedback_{{ question.id }}"
+                            rows="3">{{ answer.feedback }}</textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="d-flex justify-content-between mt-4">
+          <a href="{% url 'teacher:teacher-view-examinee' course.id %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Back to Submissions
+          </a>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save me-1"></i> Save Grades
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

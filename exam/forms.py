@@ -36,10 +36,9 @@ class QuestionForm(forms.ModelForm):
     class Meta:
         model = models.Question
         fields = ['question_type', 'marks', 'question', 'option1', 'option2', 
-                 'option3', 'option4', 'answer', 'blank_answer', 'case_sensitive', 'explanation']
+                 'option3', 'option4', 'answer', 'blank_answer', 'case_sensitive']
         widgets = {
             'question': forms.Textarea(attrs={'rows': 3, 'cols': 50}),
-            'explanation': forms.Textarea(attrs={'rows': 2, 'cols': 50}),
             'question_type': forms.Select(attrs={'id': 'questionTypeSelect'}),
             'blank_answer': forms.TextInput(attrs={'placeholder': 'Enter the correct answer'}),
         }
@@ -49,7 +48,6 @@ class QuestionForm(forms.ModelForm):
         }
         help_texts = {
             'case_sensitive': 'Check this if the answer should be case sensitive',
-            'explanation': 'Explanation for the correct answer (optional)',
         }
 
     def __init__(self, *args, **kwargs):
