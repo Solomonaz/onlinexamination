@@ -78,24 +78,11 @@
                 <th>Student Name</th>
                 <th>Username</th>
                 <th>Organization</th>
-                {% if has_fib_questions %}
                 <th width="120">MCQ Score</th>
-                {% else %}
-                <th width="120">Total Score</th>
-                {% endif %}
-                {% if has_fib_questions %}
                 <th width="120">FIB Score</th>
-                {% else %}
-                {% endif %}
-                {% if has_fib_questions %}
                 <th width="120">Total Score</th>
-                {% else %}
-                {% endif %}
                 <th width="150">Date</th>
-                {% if has_fib_questions %}
                 <th width="120">Actions</th>
-                {% else %}
-                {% endif %}
               </tr>
             </thead>
                           
@@ -118,7 +105,6 @@
                   </td>
                   
                   <!-- FIB Score -->
-                  {% if has_fib_questions %}
                   <td>  
                     <div class="progress" style="height: 20px;">
                       <div class="progress-bar {% if result.fib_score >= 75 %}bg-success{% elif result.fib_score >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
@@ -129,10 +115,7 @@
                     </div>
 
                   </td>
-                  {% else %}
-                  {% endif %}
                   <!-- Total Score -->
-                   {% if has_fib_questions %}
                   <td>
                     <div class="progress" style="height: 20px;">
                       <div class="progress-bar {% if result.total_score >= 75 %}bg-success{% elif result.total_score >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
@@ -142,17 +125,12 @@
                       </div>
                     </div>
                   </td>
-                  {% else %}
-                  {% endif %}
                   <td>{{ result.date|date:"M d, Y" }}</td>
-                  {% if has_fib_questions %}
                   <td class="text-center">
                       <a href="{% url 'teacher:teacher-view-grading' result.student.id course.id %}" class="btn btn-primary btn-sm">
                         <i class="fas fa-check-circle me-1"></i> Grade FIB
                       </a>
                   </td>
-                   {% else %}
-                    {% endif %}
                 </tr>
                 {% endfor %}
               </tbody>
