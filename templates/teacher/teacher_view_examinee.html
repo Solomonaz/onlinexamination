@@ -78,36 +78,84 @@
                 <th>Student Name</th>
                 <th>Username</th>
                 <th>Organization</th>
-                <th width="120">Score</th>
+                {% if has_fib_questions %}
+                <th width="120">MCQ Score</th>
+                {% else %}
+                <th width="120">Total Score</th>
+                {% endif %}
+                {% if has_fib_questions %}
+                <th width="120">FIB Score</th>
+                {% else %}
+                {% endif %}
+                {% if has_fib_questions %}
+                <th width="120">Total Score</th>
+                {% else %}
+                {% endif %}
                 <th width="150">Date</th>
-                <th width="120">Explanation Questions</th>
+                {% if has_fib_questions %}
+                <th width="120">Actions</th>
+                {% else %}
+                {% endif %}
               </tr>
             </thead>
-            <tbody>
-              {% for result in results %}
-              <tr>
-                <td>{{ forloop.counter }}</td>
-                <td>{{ result.student.get_name }}</td>
-                <td>{{ result.student.user.username }}</td>
-                <td>{{ result.student.organization }}</td>
-                <td>
-                  <div style="height: 20px;">
-                    <div class="progress-bar {% if result.marks >= 75 %}bg-success{% elif result.marks >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
-                         role="progressbar" style="width: {{ result.marks }} %" 
-                         aria-valuenow="{{ result.marks }}" aria-valuemin="0" aria-valuemax="100">
-                      {{ result.marks }}%
+                          
+              <tbody>
+                {% for result in results %}
+                <tr>
+                  <td>{{ forloop.counter }}</td>
+                  <td>{{ result.student.get_name }}</td>
+                  <td>{{ result.student.user.username }}</td>
+                  <td>{{ result.student.organization }}</td>
+                  
+                  <!-- MCQ Score -->
+                  <td>
+                    <div class="progress" style="height: 20px;">
+                      <div class="progress-bar {% if result.marks >= 75 %}bg-success{% elif result.marks >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
+                          role="progressbar" style="width: 100%" aria-valuenow="{{ result.marks }}" aria-valuemin="0" aria-valuemax="100">
+                        {{ result.marks }}%
+                      </div>
                     </div>
-                  </div>
-                </td>
-                <td>{{ result.date|date:"M d, Y" }}</td>
-                <td class="text-center">
-                  <a href="{% url 'teacher:teacher-view-grading' result.student.id course.id %}" class="btn btn-primary">
-                    <i class="fas fa-check-circle me-1"></i> Grade
-                  </a>
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
+                  </td>
+                  
+                  <!-- FIB Score -->
+                  {% if has_fib_questions %}
+                  <td>  
+                    <div class="progress" style="height: 20px;">
+                      <div class="progress-bar {% if result.fib_score >= 75 %}bg-success{% elif result.fib_score >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
+                          role="progressbar" style="width: 100%" 
+                          aria-valuenow="{{ result.fib_score }}" aria-valuemin="0" aria-valuemax="100">
+                        {{ result.fib_score }}%
+                      </div>
+                    </div>
+
+                  </td>
+                  {% else %}
+                  {% endif %}
+                  <!-- Total Score -->
+                   {% if has_fib_questions %}
+                  <td>
+                    <div class="progress" style="height: 20px;">
+                      <div class="progress-bar {% if result.total_score >= 75 %}bg-success{% elif result.total_score >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
+                          role="progressbar" style="width: 100%" 
+                          aria-valuenow="{{ result.total_score }}" aria-valuemin="0" aria-valuemax="100">
+                        {{ result.total_score }}%
+                      </div>
+                    </div>
+                  </td>
+                  {% else %}
+                  {% endif %}
+                  <td>{{ result.date|date:"M d, Y" }}</td>
+                  {% if has_fib_questions %}
+                  <td class="text-center">
+                      <a href="{% url 'teacher:teacher-view-grading' result.student.id course.id %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-check-circle me-1"></i> Grade FIB
+                      </a>
+                  </td>
+                   {% else %}
+                    {% endif %}
+                </tr>
+                {% endfor %}
+              </tbody>
           </table>
         </div>
       </div>

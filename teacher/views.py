@@ -240,11 +240,70 @@ def remove_question_view(request,pk):
     return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
 from django.shortcuts import get_object_or_404
+# @login_required(login_url='teacherlogin')
+# @user_passes_test(is_teacher)
+# def teacher_view_examinees_view(request, course_id):
+#     course = get_object_or_404(QMODEL.Course, id=course_id)
+#     results = QMODEL.Result.objects.filter(exam=course).select_related('student')
+#     organizations = QMODEL.Student.objects.values_list('organization', flat=True).distinct()
+    
+#     # Initialize filter variables
+#     organization = request.GET.get('organization', '')
+#     min_mark = request.GET.get('min_mark', '')
+#     max_mark = request.GET.get('max_mark', '')
+#     exam_date = request.GET.get('exam_date', '')
+
+#     # Apply filters
+#     if organization:
+#         results = results.filter(student__organization=organization)
+    
+#     if min_mark and min_mark.isdigit():
+#         results = results.filter(marks__gte=int(min_mark))
+    
+#     if max_mark and max_mark.isdigit():
+#         results = results.filter(marks__lte=int(max_mark))
+    
+#     if exam_date:
+#         try:
+#             date_obj = datetime.strptime(exam_date, '%Y-%m-%d').date()
+#             results = results.filter(date__date=date_obj)
+#         except ValueError:
+#             exam_date = ''  # Reset invalid date
+
+#     return render(request, 'teacher/teacher_view_examinee.html', {        
+#         'course': course,
+#         'results': results,
+#         'organizations': organizations,
+#         'selected_org': organization,
+#         'exam_date': exam_date,
+#         'min_mark': min_mark,
+#         'max_mark': max_mark,
+#     })
+
 @login_required(login_url='teacherlogin')
 @user_passes_test(is_teacher)
 def teacher_view_examinees_view(request, course_id):
     course = get_object_or_404(QMODEL.Course, id=course_id)
+    
+    # Get all results with prefetching for better performance
     results = QMODEL.Result.objects.filter(exam=course).select_related('student')
+    
+    # Prefetch FIB answers for all students in one query
+    student_ids = [result.student.id for result in results]
+    fib_answers = QMODEL.StudentAnswer.objects.filter(
+        student_id__in=student_ids,
+        question__course=course,
+        question__question_type='FIB'
+    ).values('student').annotate(fib_score=Sum('marks_obtained'))
+    
+    # Create a mapping of student_id to fib_score
+    fib_scores = {answer['student']: answer['fib_score'] or 0 for answer in fib_answers}
+    
+    # Add fib_score and total_score to each result
+    for result in results:
+        result.fib_score = fib_scores.get(result.student.id, 0)
+        result.total_score = result.marks + result.fib_score
+    
     organizations = QMODEL.Student.objects.values_list('organization', flat=True).distinct()
     
     # Initialize filter variables
@@ -280,12 +339,11 @@ def teacher_view_examinees_view(request, course_id):
         'max_mark': max_mark,
     })
 
-
 def teacher_explanation_grading_view(request, student_id, course_id):
     student = get_object_or_404(SMODEL.Student, pk=student_id)
     course = get_object_or_404(QMODEL.Course, pk=course_id)
     
-    # Get all questions and answers separately
+    # Get all FIB questions and answers
     fib_questions = QMODEL.Question.objects.filter(
         course=course,
         question_type='FIB'
@@ -301,6 +359,9 @@ def teacher_explanation_grading_view(request, student_id, course_id):
     answer_map = {a.question_id: a for a in existing_answers}
     
     questions_answers = []
+    total_fib_marks = 0
+    current_fib_score = 0
+    
     for question in fib_questions:
         answer = answer_map.get(question.id)
         if not answer:
@@ -312,24 +373,27 @@ def teacher_explanation_grading_view(request, student_id, course_id):
                 feedback=''
             )
         questions_answers.append((question, answer))
-    
-    # Rest of your view...
+        total_fib_marks += question.marks
+        current_fib_score += answer.marks_obtained
     
     if request.method == 'POST':
+        new_fib_score = 0
         for question, answer in questions_answers:
             marks_key = f'marks_{question.id}'
             feedback_key = f'feedback_{question.id}'
             
-            # answer.marks_obtained = request.POST.get(marks_key, 0)
             try:
-                answer.marks_obtained = min(max(0, int(request.POST.get(marks_key, 0))), question.marks)
+                marks = min(max(0, int(request.POST.get(marks_key, 0))), question.marks)
+                answer.marks_obtained = marks
+                new_fib_score += marks
             except ValueError:
                 messages.error(request, f"Invalid marks for question {question.id}")
+            
             answer.feedback = request.POST.get(feedback_key, '')
             answer.is_graded = True
             answer.save()
         
-        messages.success(request, 'Grades saved successfully!')
+        messages.success(request, 'FIB grades saved successfully!')
         return redirect(request.META.get('HTTP_REFERER') or 
                reverse('teacher:teacher-view-examinee', args=[course.id]))
     
@@ -340,7 +404,9 @@ def teacher_explanation_grading_view(request, student_id, course_id):
         'student': student,
         'course': course,
         'questions_answers': questions_answers,
-        'submission_time': submission_time
+        'submission_time': submission_time,
+        'total_fib_marks': total_fib_marks,
+        'current_fib_score': current_fib_score
     }
     
     return render(request, 'teacher/teacher_explanation_grading.html', context)

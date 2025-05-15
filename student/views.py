@@ -154,28 +154,70 @@ def start_exam_view(request, pk):
     response.set_cookie('course_id', course.id, httponly=True, samesite='Lax')
     return response
 
+# @login_required(login_url='studentlogin')
+# @user_passes_test(is_student)
+# def calculate_marks_view(request):
+#     if request.COOKIES.get('course_id') is not None:
+#         course_id = request.COOKIES.get('course_id')
+#         course=QMODEL.Course.objects.get(id=course_id)
+        
+#         total_marks=0
+#         questions=QMODEL.Question.objects.all().filter(course=course)
+#         for i in range(len(questions)):
+            
+#             selected_ans = request.COOKIES.get(str(i+1))
+#             actual_answer = questions[i].answer
+#             if selected_ans == actual_answer:
+#                 total_marks = total_marks + questions[i].marks
+#         student = models.Student.objects.get(user_id=request.user.id)
+#         result = QMODEL.Result()
+#         result.marks=total_marks
+#         result.exam=course
+#         result.student=student
+#         result.save()
+
+#         return HttpResponseRedirect('view-result')
+
 @login_required(login_url='studentlogin')
 @user_passes_test(is_student)
 def calculate_marks_view(request):
-    if request.COOKIES.get('course_id') is not None:
+    if request.COOKIES.get('course_id'):
         course_id = request.COOKIES.get('course_id')
-        course=QMODEL.Course.objects.get(id=course_id)
-        
-        total_marks=0
-        questions=QMODEL.Question.objects.all().filter(course=course)
-        for i in range(len(questions)):
-            
-            selected_ans = request.COOKIES.get(str(i+1))
-            actual_answer = questions[i].answer
-            if selected_ans == actual_answer:
-                total_marks = total_marks + questions[i].marks
+        course = QMODEL.Course.objects.get(id=course_id)
         student = models.Student.objects.get(user_id=request.user.id)
+        
+        total_marks = 0
+        questions = QMODEL.Question.objects.filter(course=course)
+        
+        for i, question in enumerate(questions):
+            selected_ans = request.COOKIES.get(str(i+1))
+            actual_answer = question.answer
+            
+            # Create StudentAnswer record for each question
+            student_answer, created = QMODEL.StudentAnswer.objects.get_or_create(
+                student=student,
+                question=question
+            )
+            
+            # Save the student's answer
+            student_answer.answer = selected_ans
+            
+            # Auto-grade if possible (for MCQ/FIB)
+            if selected_ans == actual_answer:
+                marks_obtained = question.marks
+                total_marks += marks_obtained
+                student_answer.marks_obtained = marks_obtained
+                student_answer.is_graded = True
+            
+            student_answer.save()
+        
+        # Save overall result
         result = QMODEL.Result()
-        result.marks=total_marks
-        result.exam=course
-        result.student=student
+        result.marks = total_marks
+        result.exam = course
+        result.student = student
         result.save()
-
+        
         return HttpResponseRedirect('view-result')
 
 

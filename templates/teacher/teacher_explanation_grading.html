@@ -11,6 +11,14 @@
           <h5 class="card-title">Student: {{ student.user.get_full_name }}</h5>
           <h6 class="card-subtitle mb-2 text-muted">Exam: {{ course.course_name }}</h6>
           <p class="card-text">Submitted on: {{ submission_time|date:"F j, Y H:i" }}</p>
+          
+          <!-- Explanation Score Summary -->
+          <div class="alert alert-info mt-3">
+            <h5 class="alert-heading">Explanation Score Summary</h5>
+              <strong>Score:</strong> 
+              <span id="fibTotalScore">{{ current_fib_score }}</span> / {{ total_fib_marks }}
+            <div id="marksError" class="text-danger mt-2" style="display: none;"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -21,40 +29,41 @@
       <form method="post" id="gradingForm">
         {% csrf_token %}
         
-        <div id="explanationQuestionsContainer">
+        <div id="fibQuestionsContainer">
           {% for question, answer in questions_answers %}
           <div class="card mb-4">
             <div class="card-header bg-light">
               <h5 class="mb-0">Question {{ forloop.counter }}: {{ question.question }}</h5>
-              <small class="text-muted">Maximum marks: {{ question.marks }}</small>
+              <small class="text-muted">Max marks: <span id="maxMarks_{{ question.id }}">{{ question.marks }}</span></small>
             </div>
             <div class="card-body">
               <div class="mb-3">
                 <label class="form-label fw-bold">Student's Answer:</label>
                 <div class="p-3 bg-light rounded border">
-                  {% if answer.answer %}
-                    {{ answer.answer }}
-                    {% if question.case_sensitive %}
-                      <small class="text-muted">(Case-sensitive)</small>
-                    {% endif %}
-                  {% else %}
-                    <span class="text-danger">No answer provided</span>
+                  {{ answer.answer|default:"No answer provided" }}
+                  {% if question.case_sensitive %}
+                    <small class="text-muted">(Case-sensitive)</small>
                   {% endif %}
                 </div>
               </div>
-              {% if request.user.is_teacher %}
+              
               <div class="mt-2 text-muted">
                 <small>Correct answer: {{ question.blank_answer }}</small>
               </div>
-            {% endif %}
-                          <div class="row mt-3">
+              
+              <div class="row mt-3">
                 <div class="col-md-6">
                   <label for="marks_{{ question.id }}" class="form-label fw-bold">Marks Awarded</label>
-                  <input type="number" class="form-control" 
+                  <input type="number" class="form-control fib-marks-input" 
                          id="marks_{{ question.id }}" 
                          name="marks_{{ question.id }}"
                          min="0" max="{{ question.marks }}" 
-                         value="{{ answer.marks_obtained }}" required>
+                         value="{{ answer.marks_obtained }}" 
+                         data-max-marks="{{ question.marks }}"
+                         required>
+                  <div class="invalid-feedback" id="error_{{ question.id }}">
+                    Marks cannot exceed {{ question.marks }}
+                  </div>
                 </div>
                 <div class="col-md-6">
                   <label for="feedback_{{ question.id }}" class="form-label fw-bold">Feedback</label>
@@ -73,13 +82,103 @@
           <a href="{% url 'teacher:teacher-view-examinee' course.id %}" class="btn btn-secondary">
             <i class="fas fa-arrow-left me-1"></i> Back to Submissions
           </a>
-          <button type="submit" class="btn btn-primary">
-            <i class="fas fa-save me-1"></i> Save Grades
+          <button type="submit" class="btn btn-primary" id="submitBtn">
+            <i class="fas fa-save me-1"></i> Save FIB Grades
           </button>
         </div>
       </form>
     </div>
   </div>
 </div>
+
+<script>
+// Update FIB total score in real-time as marks are changed
+document.querySelectorAll('.fib-marks-input').forEach(input => {
+  input.addEventListener('input', function() {
+    const maxMarks = parseInt(this.dataset.maxMarks);
+    const enteredMarks = parseInt(this.value) || 0;
+    
+    // Validate individual input
+    if (enteredMarks > maxMarks) {
+      this.classList.add('is-invalid');
+      document.getElementById(`error_${this.id.split('_')[1]}`).style.display = 'block';
+    } else {
+      this.classList.remove('is-invalid');
+      document.getElementById(`error_${this.id.split('_')[1]}`).style.display = 'none';
+    }
+    
+    updateFibTotal();
+  });
+});
+
+function updateFibTotal() {
+  let total = 0;
+  let hasErrors = false;
+  const errorContainer = document.getElementById('marksError');
+  
+  document.querySelectorAll('.fib-marks-input').forEach(input => {
+    const max = parseInt(input.dataset.maxMarks);
+    let value = parseInt(input.value) || 0;
+    
+    // Ensure value doesn't exceed max marks
+    if (value > max) {
+      value = max;
+      input.value = max;
+      hasErrors = true;
+    }
+    
+    total += value;
+  });
+  
+  document.getElementById('fibTotalScore').textContent = total;
+  
+  // Disable submit button if there are errors
+  const submitBtn = document.getElementById('submitBtn');
+  if (hasErrors) {
+    errorContainer.textContent = "Some marks exceed maximum allowed values. They have been adjusted to the maximum.";
+    errorContainer.style.display = 'block';
+    submitBtn.disabled = true;
+  } else {
+    errorContainer.style.display = 'none';
+    submitBtn.disabled = false;
+  }
+}
+
+// Form submission validation
+document.getElementById('gradingForm').addEventListener('submit', function(e) {
+  let isValid = true;
+  
+  document.querySelectorAll('.fib-marks-input').forEach(input => {
+    const max = parseInt(input.dataset.maxMarks);
+    const value = parseInt(input.value) || 0;
+    
+    if (value > max) {
+      input.classList.add('is-invalid');
+      document.getElementById(`error_${input.id.split('_')[1]}`).style.display = 'block';
+      isValid = false;
+    }
+  });
+  
+  if (!isValid) {
+    e.preventDefault();
+    document.getElementById('marksError').textContent = "Please correct the marks that exceed maximum values before submitting.";
+    document.getElementById('marksError').style.display = 'block';
+  }
+});
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', updateFibTotal);
+</script>
+
+<style>
+.invalid-feedback {
+  display: none;
+  color: #dc3545;
+  font-size: 0.875em;
+}
+.is-invalid {
+  border-color: #dc3545;
+}
+</style>
 
 {% endblock %}
