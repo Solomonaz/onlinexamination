@@ -240,46 +240,6 @@ def remove_question_view(request,pk):
     return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
 from django.shortcuts import get_object_or_404
-# @login_required(login_url='teacherlogin')
-# @user_passes_test(is_teacher)
-# def teacher_view_examinees_view(request, course_id):
-#     course = get_object_or_404(QMODEL.Course, id=course_id)
-#     results = QMODEL.Result.objects.filter(exam=course).select_related('student')
-#     organizations = QMODEL.Student.objects.values_list('organization', flat=True).distinct()
-    
-#     # Initialize filter variables
-#     organization = request.GET.get('organization', '')
-#     min_mark = request.GET.get('min_mark', '')
-#     max_mark = request.GET.get('max_mark', '')
-#     exam_date = request.GET.get('exam_date', '')
-
-#     # Apply filters
-#     if organization:
-#         results = results.filter(student__organization=organization)
-    
-#     if min_mark and min_mark.isdigit():
-#         results = results.filter(marks__gte=int(min_mark))
-    
-#     if max_mark and max_mark.isdigit():
-#         results = results.filter(marks__lte=int(max_mark))
-    
-#     if exam_date:
-#         try:
-#             date_obj = datetime.strptime(exam_date, '%Y-%m-%d').date()
-#             results = results.filter(date__date=date_obj)
-#         except ValueError:
-#             exam_date = ''  # Reset invalid date
-
-#     return render(request, 'teacher/teacher_view_examinee.html', {        
-#         'course': course,
-#         'results': results,
-#         'organizations': organizations,
-#         'selected_org': organization,
-#         'exam_date': exam_date,
-#         'min_mark': min_mark,
-#         'max_mark': max_mark,
-#     })
-
 @login_required(login_url='teacherlogin')
 @user_passes_test(is_teacher)
 def teacher_view_examinees_view(request, course_id):

@@ -124,25 +124,71 @@ def take_exam_view(request, pk):
     return render(request, 'student/take_exam.html', context)
 
 
+# from django.utils import timezone
+# @login_required(login_url='studentlogin')
+# @user_passes_test(is_student)
+# def start_exam_view(request, pk):
+#     course = QMODEL.Course.objects.get(id=pk)
+#     given_time = course.given_time
+
+#     exam_start_time_str = request.session.get('exam_start_time')
+#     if not exam_start_time_str:
+#         exam_start_time = timezone.now()
+#         exam_start_time_str = exam_start_time.isoformat()
+#         request.session['exam_start_time'] = exam_start_time_str
+#     else:
+#         exam_start_time = timezone.datetime.fromisoformat(exam_start_time_str)
+
+#     questions = QMODEL.Question.objects.filter(course=course)
+
+#     if request.method == 'POST':
+#         pass 
+
+#     context = {
+#         'exam_duration_seconds': given_time,
+#         'exam_start_time': exam_start_time_str,
+#         'course': course,
+#         'questions': questions,
+#     }
+#     response = render(request, 'student/start_exam.html', context)
+#     response.set_cookie('course_id', course.id, httponly=True, samesite='Lax')
+#     return response
+
 from django.utils import timezone
+import random
+
 @login_required(login_url='studentlogin')
 @user_passes_test(is_student)
 def start_exam_view(request, pk):
-    course = QMODEL.Course.objects.get(id=pk)
+    course = get_object_or_404(QMODEL.Course, id=pk)
     given_time = course.given_time
 
+    # Check if exam has started
     exam_start_time_str = request.session.get('exam_start_time')
     if not exam_start_time_str:
         exam_start_time = timezone.now()
         exam_start_time_str = exam_start_time.isoformat()
         request.session['exam_start_time'] = exam_start_time_str
+        request.session['exam_questions'] = None  # Reset questions for new attempt
+
+    # Get or generate random questions
+    if not request.session.get('exam_questions'):
+        # Use active questions if available, otherwise fall back to random selection
+        if hasattr(course, 'active_questions'):
+            active_questions = list(course.active_questions.filter(is_active=True).values_list('question_id', flat=True))
+            questions = list(QMODEL.Question.objects.filter(id__in=active_questions))
+        else:
+            questions = course.get_random_questions()
+
+        # Shuffle questions for this student
+        random.shuffle(questions)
+        request.session['exam_questions'] = [q.id for q in questions]
     else:
-        exam_start_time = timezone.datetime.fromisoformat(exam_start_time_str)
+        # Use previously selected questions
+        questions = list(QMODEL.Question.objects.filter(
+            id__in=request.session['exam_questions']
+        ).order_by('?'))
 
-    questions = QMODEL.Question.objects.filter(course=course)
-
-    if request.method == 'POST':
-        pass  # Handle exam submission here
 
     context = {
         'exam_duration_seconds': given_time,
@@ -153,30 +199,6 @@ def start_exam_view(request, pk):
     response = render(request, 'student/start_exam.html', context)
     response.set_cookie('course_id', course.id, httponly=True, samesite='Lax')
     return response
-
-# @login_required(login_url='studentlogin')
-# @user_passes_test(is_student)
-# def calculate_marks_view(request):
-#     if request.COOKIES.get('course_id') is not None:
-#         course_id = request.COOKIES.get('course_id')
-#         course=QMODEL.Course.objects.get(id=course_id)
-        
-#         total_marks=0
-#         questions=QMODEL.Question.objects.all().filter(course=course)
-#         for i in range(len(questions)):
-            
-#             selected_ans = request.COOKIES.get(str(i+1))
-#             actual_answer = questions[i].answer
-#             if selected_ans == actual_answer:
-#                 total_marks = total_marks + questions[i].marks
-#         student = models.Student.objects.get(user_id=request.user.id)
-#         result = QMODEL.Result()
-#         result.marks=total_marks
-#         result.exam=course
-#         result.student=student
-#         result.save()
-
-#         return HttpResponseRedirect('view-result')
 
 @login_required(login_url='studentlogin')
 @user_passes_test(is_student)

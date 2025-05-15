@@ -1,3 +1,543 @@
-tomorrow:(teacher-view-grading)
-  - get answers insead of No answer provided 
-  - save changes and add the result to the mcq result 
+{% extends 'student/studentbase.html' %}
+{% block content %}
+{% load static %}
+
+<head>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .exam-container {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 0 15px;
+    }
+
+    .exam-card {
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      background: white;
+    }
+
+    .exam-header {
+      background: linear-gradient(135deg, #4a6fdc 0%, #3a5bc7 100%);
+      color: white;
+      padding: 1.5rem;
+      text-align: center;
+      font-weight: 600;
+      font-size: 1.25rem;
+      position: relative;
+    }
+
+    .timer-container {
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      background-color: rgba(0, 0, 0, 0.2);
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+
+    .timer-warning {
+      color: #ffcc00;
+    }
+
+    .timer-danger {
+      color: #ff3333;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+
+    .question-container {
+      padding: 1.5rem;
+    }
+
+    .question-card {
+      margin-bottom: 2rem;
+      padding: 1.5rem;
+      border-radius: 10px;
+      background-color: #f8fafc;
+      border-left: 4px solid #4a6fdc;
+    }
+
+    .question-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .question-text {
+      font-weight: 500;
+      font-size: 1.1rem;
+      color: #2d3748;
+      margin: 0;
+    }
+
+    .question-marks {
+      background-color: #e2e8f0;
+      color: #4a5568;
+      padding: 0.35rem 0.8rem;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .option-item {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.75rem;
+      border-radius: 8px;
+      background-color: white;
+      border: 1px solid #e2e8f0;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .option-item:hover {
+      border-color: #4a6fdc;
+      background-color: #f8fafc;
+    }
+
+    .option-input {
+      margin-right: 1rem;
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    .option-label {
+      margin: 0;
+      cursor: pointer;
+      color: #4a5568;
+    }
+
+    .submit-btn {
+      background: linear-gradient(135deg, #4a6fdc 0%, #3a5bc7 100%);
+      border: none;
+      border-radius: 8px;
+      padding: 0.75rem 2rem;
+      color: white;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      display: block;
+      margin: 2rem auto 1rem;
+      width: fit-content;
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(74, 111, 220, 0.3);
+    }
+
+    /* Navigation buttons styling */
+    .nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      padding: 0 1rem;
+      margin: 2rem 0;
+    }
+
+    .nav-btn {
+      padding: 0.5rem 1.5rem;
+      border: 1px solid #4a6fdc;
+      color: #4a6fdc;
+      background-color: white;
+      border-radius: 6px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .nav-btn:hover {
+      background-color: #4a6fdc;
+      color: white;
+    }
+
+    .nav-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .progress-container {
+    max-width: 800px;
+    margin: 0 auto 2rem;
+  }
+  .progress {
+    background-color: #e9ecef;
+    border-radius: 4px;
+  }
+
+    @media (max-width: 768px) {
+      .question-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+
+      .question-container {
+        padding: 1rem;
+      }
+
+      .question-card {
+        padding: 1.25rem;
+      }
+
+      .timer-container {
+        position: static;
+        transform: none;
+        margin-top: 0.5rem;
+        display: inline-block;
+      }
+      .nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      padding: 0 1rem;
+      margin: 2rem 0;
+    }
+
+    .nav-btn {
+      padding: 0.5rem 1.5rem;
+      border: 1px solid #4a6fdc;
+      color: #4a6fdc;
+      background-color: white;
+      border-radius: 6px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .nav-btn:hover:not(:disabled) {
+      background-color: #4a6fdc;
+      color: white;
+    }
+
+    .nav-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      border-color: #e2e8f0;
+      color: #e2e8f0;
+    }
+
+    .explanation-prompt {
+  background-color: #f0f7ff;
+  padding: 1rem;
+  border-radius: 8px;
+  border-left: 4px solid #4a6fdc;
+  margin-top: 1.5rem;
+}
+
+.explanation-prompt h5 {
+  color: #2d3748;
+  margin-bottom: 0.75rem;
+}
+
+.form-control {
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 0.75rem;
+  width: 100%;
+  transition: border-color 0.2s ease;
+}
+
+.form-control:focus {
+  border-color: #4a6fdc;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(74, 111, 220, 0.2);
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #4a5568;
+  font-weight: 500;
+}
+    }
+  </style>
+</head>
+<div class="exam-container">
+  <form class="exam-card" autocomplete="off" onsubmit="return saveAns()" action="/student/calculate-marks" method="POST" id="examForm">
+    {% csrf_token %}
+    <div class="exam-header">
+      <i class="fas fa-book-open me-2"></i>Course: {{course.course_name}}
+      <div class="timer-container">
+        <i class="fas fa-clock me-2"></i>
+        <span id="timer">00:00</span>
+      </div>
+      <!-- Add total marks display -->
+      <div class="marks-summary" style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%);">
+        Total Marks: <strong>100</strong>
+      </div>
+    </div>
+
+    <div class="question-container">
+      <!-- Add exam instructions -->
+      <div class="alert alert-info mb-4">
+        <i class="fas fa-info-circle me-2"></i>
+        This exam contains {{ questions|length }} randomly ordered questions totaling 100 marks.
+        All students receive the same questions but in different orders.
+      </div>
+      
+      {% for q in questions %}
+      <div class="question-card single-question" id="question{{ forloop.counter }}" style="display: none;">
+        <div class="question-header">
+          <h3 class="question-text">Question {{ forloop.counter }}: {{q.question}}</h3>
+          <span class="question-marks">{{q.marks}} Marks</span>
+        </div>
+
+  {% if q.question_type == 'MCQ' %}
+    <!-- Multiple Choice Question Options -->
+    {% if q.option1 %}
+    <div class="option-item">
+      <input class="option-input" type="radio" name="{{ forloop.counter }}" id="{{q.id}}_option1" value="Option1">
+      <label class="option-label" for="{{q.id}}_option1">{{q.option1}}</label>
+    </div>
+    {% endif %}
+
+    {% if q.option2 %}
+    <div class="option-item">
+      <input class="option-input" type="radio" name="{{ forloop.counter }}" id="{{q.id}}_option2" value="Option2">
+      <label class="option-label" for="{{q.id}}_option2">{{q.option2}}</label>
+    </div>
+    {% endif %}
+
+    {% if q.option3 %}
+    <div class="option-item">
+      <input class="option-input" type="radio" name="{{ forloop.counter }}" id="{{q.id}}_option3" value="Option3">
+      <label class="option-label" for="{{q.id}}_option3">{{q.option3}}</label>
+    </div>
+    {% endif %}
+
+    {% if q.option4 %}
+    <div class="option-item">
+      <input class="option-input" type="radio" name="{{ forloop.counter }}" id="{{q.id}}_option4" value="Option4">
+      <label class="option-label" for="{{q.id}}_option4">{{q.option4}}</label>
+    </div>
+    {% endif %}
+
+    <!-- Show explanation prompt if it exists -->
+    {% if q.explanation %}
+    <div class="explanation-prompt mt-4">
+      <h5>Explanation:</h5>
+      <p>{{ q.explanation }}</p>
+      <div class="form-group">
+        <textarea class="form-control" name="explanation_{{ q.id }}" rows="4" 
+                  placeholder="Please explain your answer..."></textarea>
+      </div>
+    </div>
+    {% endif %}
+
+    {% elif q.question_type == 'FIB' %}
+        <!-- Fill in the Blank Question -->
+        <div class="form-group mt-3">
+            <label for="fib_{{ q.id }}">Your answer:</label>
+            <textarea class="form-control" id="fib_{{ q.id }}" 
+                name="{{ forloop.counter }}"
+                rows="3"
+                {% if not q.case_sensitive %}style="text-transform: lowercase;"{% endif %}>
+            </textarea>
+        </div>
+    {% endif %}
+</div>
+{% endfor %}
+
+
+      <div class="nav-buttons">
+        <button type="button" class="nav-btn" id="prevBtn" disabled>Previous</button>
+        <button type="button" class="nav-btn" id="nextBtn">Next</button>
+      </div>
+  
+      <button type="submit" class="submit-btn" id="submitBtn" style="display: none;">
+        <i class="fas fa-paper-plane me-2"></i>Submit Answers
+      </button>
+    </form>
+  </div>
+
+<script>
+  // Timer Setup
+  const examDurationMinutes = {{ exam_duration_seconds }};
+  const examKey = "examTimer_{{ course.id }}";
+  let timeLeft;
+
+  if (localStorage.getItem(examKey)) {
+    timeLeft = parseInt(localStorage.getItem(examKey));
+  } else {
+    timeLeft = examDurationMinutes * 60;
+    localStorage.setItem(examKey, timeLeft);
+  }
+
+  function updateTimer() {
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    document.getElementById('timer').textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+    const timerElement = document.getElementById('timer');
+    timerElement.classList.remove('timer-warning', 'timer-danger');
+    if (timeLeft <= 300) timerElement.classList.add('timer-warning');
+    if (timeLeft <= 60) timerElement.classList.add('timer-danger');
+
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      document.getElementById('timer').textContent = "00:00";
+      // Show submit button when time is up
+      const submitBtn = document.getElementById("submitBtn");
+      if (submitBtn) {
+        submitBtn.style.display = "block";
+      }
+      saveAns();
+      localStorage.removeItem(examKey);
+      localStorage.removeItem(currentQuestionKey);
+      document.getElementById('examForm').submit();
+    } else {
+      timeLeft--;
+      localStorage.setItem(examKey, timeLeft);
+    }
+  }
+
+  updateTimer();
+  const timerInterval = setInterval(updateTimer, 1000);
+
+  // Save Answers
+  function saveAns() {
+    let allValid = true;
+
+    // Validate all questions have answers
+    document.querySelectorAll('.single-question').forEach(question => {
+      const questionId = question.id.replace('question', '');
+      const hasAnswer =
+        question.querySelector('input[type="radio"]:checked') ||
+        (question.querySelector('textarea') && question.querySelector('textarea').value.trim() !== '');
+
+      if (!hasAnswer) {
+        allValid = false;
+        //  No need to display error message here.  Handled by browser.
+        // document.getElementById(`error-${questionId}`).style.display = 'block';
+      }
+    });
+
+    // if (!allValid && currentQuestion !== totalQuestions) {
+    //   alert('Please answer all questions before proceeding.');
+    //   return false;
+    // }
+
+    // Save answers (keep existing save code)
+    return true;
+  }
+  function setCookie(cname, cvalue, exdays) {
+    var d = new Date();
+    d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+    var expires = "expires=" + d.toUTCString();
+    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+  }
+
+  // Question Navigation
+  let currentQuestion = 1;
+  const totalQuestions = {{ questions|length }};
+  const currentQuestionKey = "currentQuestion_{{ course.id }}";
+
+  // Initialize from localStorage if available
+  if (localStorage.getItem(currentQuestionKey)) {
+    const storedQuestion = parseInt(localStorage.getItem(currentQuestionKey));
+    if (!isNaN(storedQuestion) && storedQuestion >= 1 && storedQuestion <= totalQuestions) {
+      currentQuestion = storedQuestion;
+    }
+  }
+
+  function showQuestion(index) {
+    // Validate index
+    if (index < 1 || index > totalQuestions) return;
+
+    // Hide all questions
+    document.querySelectorAll('.single-question').forEach(q => {
+      q.style.display = 'none';
+    });
+
+    // Show current question
+    const currentQ = document.getElementById(`question${index}`);
+    if (currentQ) {
+      currentQ.style.display = 'block';
+    }
+
+    // Update navigation buttons
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const submitBtn = document.getElementById("submitBtn");
+
+    if (prevBtn) {
+      prevBtn.disabled = index === 1;
+    }
+
+    if (nextBtn) {
+      nextBtn.disabled = index === totalQuestions;
+    }
+
+    // Show submit button only on last question
+    if (submitBtn) {
+      submitBtn.style.display = index === totalQuestions ? "block" : "none";
+    }
+
+    // Save current question
+    localStorage.setItem(currentQuestionKey, index);
+    currentQuestion = index;
+    updateProgress();
+  }
+  function updateProgress() {
+    const progress = Math.round((currentQuestion / totalQuestions) * 100);
+    document.getElementById('progress-bar').style.width = `${progress}%`;
+    document.getElementById('progress-text').textContent = `${currentQuestion}/${totalQuestions}`;
+  }
+
+  // Initialize with progress bar
+  document.addEventListener('DOMContentLoaded', function() {
+    // Add progress bar HTML
+    const progressHTML = `
+      <div class="progress-container" style="margin: 1rem 0;">
+        <div class="d-flex justify-content-between mb-1">
+          <small>Progress</small>
+          <small id="progress-text">0/{{ questions|length }}</small>
+        </div>
+        <div class="progress" style="height: 8px;">
+          <div id="progress-bar" class="progress-bar bg-primary" role="progressbar" style="width: 0%"></div>
+        </div>
+      </div>
+    `;
+    document.querySelector('.question-container').insertAdjacentHTML('afterbegin', progressHTML);
+
+    // Initialize navigation (keep existing code)
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+
+    if (prevBtn && nextBtn) {
+      prevBtn.addEventListener("click", function() {
+        if (currentQuestion > 1) {
+          saveAns();
+          showQuestion(currentQuestion - 1);
+        }
+      });
+
+      nextBtn.addEventListener("click", function() {
+        if (currentQuestion < totalQuestions) {
+          saveAns();
+          showQuestion(currentQuestion + 1);
+        }
+      });
+      updateProgress();
+      showQuestion(currentQuestion); // Show the initial question
+    }
+  });
+</script>
+
+
+{% endblock content %}

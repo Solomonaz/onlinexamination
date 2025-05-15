@@ -2,26 +2,70 @@ from django.db import models
 from student.models import Student
 
 
-class Course(models.Model):
-   course_name = models.CharField(max_length=50)
-   question_number = models.PositiveIntegerField()
-   total_marks = models.PositiveIntegerField()
-   given_time = models.PositiveIntegerField(default=60)
+# class Course(models.Model):
+#    course_name = models.CharField(max_length=50)
+#    question_number = models.PositiveIntegerField()
+#    total_marks = models.PositiveIntegerField()
+#    given_time = models.PositiveIntegerField(default=60)
 
-   def __str__(self):
+#    def __str__(self):
+#         return self.course_name
+
+from django.core.exceptions import ValidationError
+
+class Course(models.Model):
+    course_name = models.CharField(max_length=50)
+    question_number = models.PositiveIntegerField()
+    total_marks = models.PositiveIntegerField(default=100)
+    given_time = models.PositiveIntegerField(default=60)
+
+    def __str__(self):
         return self.course_name
+
+    def get_random_questions(self):
+        """Get random questions ensuring total marks = 100"""
+        all_questions = list(self.questions.all())  # Changed from question_set to questions
+        if not all_questions:
+            return []
+            
+        total_possible = sum(q.marks for q in all_questions)
+        if total_possible == 0:
+            return []
+            
+        selected_questions = []
+        remaining_marks = 100
+        
+        # Try to find combination that sums to exactly 100
+        for attempt in range(100):
+            random.shuffle(all_questions)
+            temp_questions = []
+            temp_total = 0
+            for q in all_questions:
+                if temp_total + q.marks <= 100:
+                    temp_questions.append(q)
+                    temp_total += q.marks
+                    if temp_total == 100:
+                        return temp_questions
+            
+        # If no exact combination, adjust marks proportionally
+        for q in all_questions:
+            adjusted_mark = round((q.marks / total_possible) * 100)
+            q.marks = adjusted_mark
+            selected_questions.append(q)
+            
+        return selected_questions
 
 
 class Question(models.Model):
-    # Question Types
+    # Common Fields for All Question Types
     QUESTION_TYPES = (
         ('MCQ', 'Multiple Choice Question'),
         ('FIB', 'Fill in the Blank'),
     )
     
-    # Common Fields for All Question Types
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    question_type = models.CharField(max_length=3, choices=QUESTION_TYPES, default='MCQ',verbose_name="Question Type")
+    # Changed related_name from default 'question_set' to 'questions'
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='questions')
+    question_type = models.CharField(max_length=3, choices=QUESTION_TYPES, default='MCQ', verbose_name="Question Type")
     question = models.CharField(max_length=600)
     marks = models.PositiveIntegerField()
 
@@ -102,3 +146,12 @@ class StudentAnswer(models.Model):
 
     def __str__(self):
         return f"{self.student.user.username} - {self.question.question[:50]}..."
+
+
+class ActiveQuestion(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='active_questions')
+    question = models.ForeignKey('Question', on_delete=models.CASCADE)
+    is_active = models.BooleanField(default=True)
+    
+    class Meta:
+        unique_together = ('course', 'question')
