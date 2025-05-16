@@ -1,24 +1,18 @@
 from django.db import models
 from student.models import Student
-
-
-# class Course(models.Model):
-#    course_name = models.CharField(max_length=50)
-#    question_number = models.PositiveIntegerField()
-#    total_marks = models.PositiveIntegerField()
-#    given_time = models.PositiveIntegerField(default=60)
-
-#    def __str__(self):
-#         return self.course_name
-
 from django.core.exceptions import ValidationError
+
 
 class Course(models.Model):
     course_name = models.CharField(max_length=50)
     question_number = models.PositiveIntegerField()
     total_marks = models.PositiveIntegerField(default=100)
     given_time = models.PositiveIntegerField(default=60)
-
+    
+    @property
+    def is_fib_only(self):
+        """Returns True if the course contains only FIB questions"""
+        return not self.questions.filter(question_type='MCQ').exists()
     def __str__(self):
         return self.course_name
 
@@ -89,7 +83,8 @@ class Question(models.Model):
     
     def __str__(self):
         return f"{self.question[:50]}... ({self.get_question_type_display()})"
-    
+        
+
     def clean(self):
         """Validate based on question type"""
         from django.core.exceptions import ValidationError

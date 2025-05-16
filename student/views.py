@@ -107,11 +107,6 @@ def take_exam_view(request, pk):
         exam_attempt.attempted = True
         exam_attempt.save()
 
-    # print(student)
-    # print(course)
-    # print(attempted)
-    # print(result.marks)
-
     context = {
         'course': course,
         'total_questions': total_questions,
@@ -124,71 +119,25 @@ def take_exam_view(request, pk):
     return render(request, 'student/take_exam.html', context)
 
 
-# from django.utils import timezone
-# @login_required(login_url='studentlogin')
-# @user_passes_test(is_student)
-# def start_exam_view(request, pk):
-#     course = QMODEL.Course.objects.get(id=pk)
-#     given_time = course.given_time
-
-#     exam_start_time_str = request.session.get('exam_start_time')
-#     if not exam_start_time_str:
-#         exam_start_time = timezone.now()
-#         exam_start_time_str = exam_start_time.isoformat()
-#         request.session['exam_start_time'] = exam_start_time_str
-#     else:
-#         exam_start_time = timezone.datetime.fromisoformat(exam_start_time_str)
-
-#     questions = QMODEL.Question.objects.filter(course=course)
-
-#     if request.method == 'POST':
-#         pass 
-
-#     context = {
-#         'exam_duration_seconds': given_time,
-#         'exam_start_time': exam_start_time_str,
-#         'course': course,
-#         'questions': questions,
-#     }
-#     response = render(request, 'student/start_exam.html', context)
-#     response.set_cookie('course_id', course.id, httponly=True, samesite='Lax')
-#     return response
-
 from django.utils import timezone
-import random
-
 @login_required(login_url='studentlogin')
 @user_passes_test(is_student)
 def start_exam_view(request, pk):
-    course = get_object_or_404(QMODEL.Course, id=pk)
+    course = QMODEL.Course.objects.get(id=pk)
     given_time = course.given_time
 
-    # Check if exam has started
     exam_start_time_str = request.session.get('exam_start_time')
     if not exam_start_time_str:
         exam_start_time = timezone.now()
         exam_start_time_str = exam_start_time.isoformat()
         request.session['exam_start_time'] = exam_start_time_str
-        request.session['exam_questions'] = None  # Reset questions for new attempt
-
-    # Get or generate random questions
-    if not request.session.get('exam_questions'):
-        # Use active questions if available, otherwise fall back to random selection
-        if hasattr(course, 'active_questions'):
-            active_questions = list(course.active_questions.filter(is_active=True).values_list('question_id', flat=True))
-            questions = list(QMODEL.Question.objects.filter(id__in=active_questions))
-        else:
-            questions = course.get_random_questions()
-
-        # Shuffle questions for this student
-        random.shuffle(questions)
-        request.session['exam_questions'] = [q.id for q in questions]
     else:
-        # Use previously selected questions
-        questions = list(QMODEL.Question.objects.filter(
-            id__in=request.session['exam_questions']
-        ).order_by('?'))
+        exam_start_time = timezone.datetime.fromisoformat(exam_start_time_str)
 
+    questions = QMODEL.Question.objects.filter(course=course)
+
+    if request.method == 'POST':
+        pass 
 
     context = {
         'exam_duration_seconds': given_time,
@@ -199,6 +148,52 @@ def start_exam_view(request, pk):
     response = render(request, 'student/start_exam.html', context)
     response.set_cookie('course_id', course.id, httponly=True, samesite='Lax')
     return response
+
+# from django.utils import timezone
+# import random
+
+# @login_required(login_url='studentlogin')
+# @user_passes_test(is_student)
+# def start_exam_view(request, pk):
+#     course = get_object_or_404(QMODEL.Course, id=pk)
+#     given_time = course.given_time
+
+#     # Check if exam has started
+#     exam_start_time_str = request.session.get('exam_start_time')
+#     if not exam_start_time_str:
+#         exam_start_time = timezone.now()
+#         exam_start_time_str = exam_start_time.isoformat()
+#         request.session['exam_start_time'] = exam_start_time_str
+#         request.session['exam_questions'] = None  # Reset questions for new attempt
+
+#     # Get or generate random questions
+#     if not request.session.get('exam_questions'):
+#         # Use active questions if available, otherwise fall back to random selection
+#         if hasattr(course, 'active_questions'):
+#             active_questions = list(course.active_questions.filter(is_active=True).values_list('question_id', flat=True))
+#             questions = list(QMODEL.Question.objects.filter(id__in=active_questions))
+#         else:
+#             questions = course.get_random_questions()
+
+#         # Shuffle questions for this student
+#         random.shuffle(questions)
+#         request.session['exam_questions'] = [q.id for q in questions]
+#     else:
+#         # Use previously selected questions
+#         questions = list(QMODEL.Question.objects.filter(
+#             id__in=request.session['exam_questions']
+#         ).order_by('?'))
+
+
+#     context = {
+#         'exam_duration_seconds': given_time,
+#         'exam_start_time': exam_start_time_str,
+#         'course': course,
+#         'questions': questions,
+#     }
+#     response = render(request, 'student/start_exam.html', context)
+#     response.set_cookie('course_id', course.id, httponly=True, samesite='Lax')
+#     return response
 
 @login_required(login_url='studentlogin')
 @user_passes_test(is_student)
@@ -268,5 +263,3 @@ def student_marks_view(request):
     courses=QMODEL.Course.objects.all()
     return render(request,'student/student_marks.html',{'courses':courses})
   
-# def explanation_question_view(request):
-#     return render(request, 'student/take_explanation_question.html')

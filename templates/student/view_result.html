@@ -101,6 +101,32 @@
       color: #e2e8f0;
       margin-bottom: 1rem;
     }
+
+    /* New styles for FIB-only message */
+    .fib-message {
+      padding: 2rem;
+      text-align: center;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      margin: 1.5rem;
+    }
+    
+    .fib-icon {
+      font-size: 2.5rem;
+      color: #4a6fdc;
+      margin-bottom: 1rem;
+    }
+    
+    .fib-title {
+      color: #2d3748;
+      margin-bottom: 0.75rem;
+    }
+    
+    .fib-text {
+      color: #4a5568;
+      max-width: 600px;
+      margin: 0 auto 1.5rem;
+    }
     
     @media (max-width: 768px) {
       .marks-header {
@@ -118,6 +144,20 @@
 </head>
 
 <div class="marks-container">
+      {% if courses %}
+      {% for t in courses %}
+        {# Check if this is a FIB-only exam #}
+        {% if t.is_fib_only %}
+          <div class="fib-message">
+            <div class="fib-icon">
+              <i class="fas fa-check-circle"></i>
+            </div>
+            <h4 class="fib-title">Exam Completed</h4>
+            <p class="fib-text">
+          Your answers have been submitted successfully.
+            </p>
+          </div>
+        {% else %}
   <div class="marks-card">
     <div class="marks-header">
       <div>
@@ -129,41 +169,39 @@
       </div>
       {% endif %}
     </div>
-    
-    {% if courses %}
-    <div class="table-responsive">
-      <table class="marks-table">
-        <thead>
-          <tr>
-            <th>Exam Name</th>
-            <th class="text-end">Results</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for t in courses %}
-          <tr>
-            <td class="exam-name">
-              <i class="fas fa-book me-2 text-primary"></i>
-              {{ t.course_name }}
-            </td>
-            <td class="text-end">
-              <a class="view-btn" href="{% url 'check-marks' t.id %}">
-                <i class="fas fa-chart-bar me-1"></i> View Results
-              </a>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+          <div class="table-responsive">
+            <table class="marks-table">
+              <thead>
+                <tr>
+                  <th>Exam Name</th>
+                  <th class="text-end">Results</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="exam-name">
+                    <i class="fas fa-book me-2 text-primary"></i>
+                    {{ t.course_name }}
+                  </td>
+                  <td class="text-end">
+                    <a class="view-btn" href="{% url 'check-marks' t.id %}">
+                      <i class="fas fa-chart-bar me-1"></i> View Results
+                    </a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        {% endif %}
+      {% endfor %}
     {% else %}
-    <div class="empty-state">
-      <div class="empty-icon">
-        <i class="fas fa-clipboard-question"></i>
+      <div class="empty-state">
+        <div class="empty-icon">
+          <i class="fas fa-clipboard-question"></i>
+        </div>
+        <h4>No Results Available</h4>
+        <p class="mb-0">You haven't taken any exams yet</p>
       </div>
-      <h4>No Results Available</h4>
-      <p class="mb-0">You haven't taken any exams yet</p>
-    </div>
     {% endif %}
   </div>
 </div>
