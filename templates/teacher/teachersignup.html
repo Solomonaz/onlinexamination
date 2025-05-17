@@ -129,11 +129,24 @@
       </a>
       <h1 class="form-title">
         <i class="fas fa-chalkboard-teacher"></i>
-        Examiner Registration</h1>
+        Examiner Registration
+      </h1>
 
       <form method="POST" autocomplete="off" enctype="multipart/form-data" novalidate>
         {% csrf_token %}
-
+    <!-- Display form errors-->
+        {% if userForm.errors %}
+          <div class="alert alert-danger">
+              {% for field in userForm %}
+                {% for error in field.errors %}
+                  <p>{{ error }}</p>
+                {% endfor %}
+              {% endfor %}
+                {% for error in userForm.non_field_errors %}
+                  <p>{{ error }}</p>
+              {% endfor %}
+          </div>
+        {% endif %}
         <div class="row g-3">
           <!-- Personal Information Section -->
           <div class="col-md-6">
@@ -163,15 +176,17 @@
               <label for="id_address" class="form-label">Address</label>
               {% render_field teacherForm.address|attr:'required:true' class="form-control" placeholder="Your full address" %}
             </div>
-            <div class="form-group">
+            <div class="form-group mb-3">
               <label for="id_department" class="form-label">Department</label>
-              {% render_field teacherForm.department|attr:'required:true' class="form-control" placeholder="Enter your department" %}
-            </div>
-            <div class="form-group">
-              <label for="id_profile_pic" class="form-label">Profile Picture</label>
-              {% render_field teacherForm.profile_pic|attr:'required:true' class="form-control form-control-file" %}
-              <small class="form-note">JPEG or PNG, max 2MB</small>
-            </div>
+              {{ teacherForm.department }}
+              {% if teacherForm.department.errors %}
+                  <div class="text-danger">
+                      {% for error in teacherForm.department.errors %}
+                          {{ error }}
+                      {% endfor %}
+                </div>
+              {% endif %}
+          </div>
           </div>
         </div>
 

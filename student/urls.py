@@ -16,7 +16,7 @@ path('view-result', views.view_result_view,name='view-result'),
 path('check-marks/<int:pk>', views.check_marks_view,name='check-marks'),
 path('student-marks', views.student_marks_view,name='student-marks'),
 
-# path('explnation-questions', views.explanation_question_view,name='explnation-questions'),
+path('ajax/load-courses/', views.load_courses, name='load_courses'),
 
 
 ]

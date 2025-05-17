@@ -6,21 +6,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Admin Dashboard | Online Exam System</title>
   
-  <!-- Modern CSS Libraries -->
+  <!-- CSS Libraries -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
     :root {
-      --primary-color: #4361ee;
-      --primary-hover: #3a56d4;
-      --sidebar-color: #2b2d42;
-      --sidebar-hover: #3a3d5d;
-      --content-bg: #f8f9fa;
-      --text-light: #f8f9fa;
-      --text-dark: #2b2d42;
+      --yellow-primary: #FFFF00;
+      --blue-primary: #007ACC;
+      --blue-dark: #005BAC;
+      --sidebar-color: #156749;
+      --content-bg: #FFFFFF;
+      --card-bg: #F8F9FA;
+      --text-light: #FFFFFF;
+      --text-dark: #2B2D42;
+      --text-muted: #6C757D;
       --border-radius: 8px;
-      --transition: all 0.3s ease;
+      --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     }
     
     body {
@@ -30,34 +32,136 @@
       overflow-x: hidden;
     }
     
-    /* Header Styles */
-    .admin-header {
-      background: white;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      height: 70px;
-      position: fixed;
-      top: 0;
-      right: 0;
-      left: 0;
-      z-index: 1030;
-      display: flex;
-      align-items: center;
-      padding: 0 1.5rem;
-    }
-    
-    .brand-logo {
-      font-weight: 700;
-      font-size: 1.5rem;
-      color: var(--primary-color);
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-    
-    .brand-logo i {
-      font-size: 1.75rem;
-    }
-    
+  /* Header Styles */
+  .admin-header {
+    background: #FFFFFF;
+    height: 70px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+    border-bottom: 3px solid #FFFF00; /* Bright yellow accent */
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+  }
+  
+  .header-container {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  
+  /* Sidebar Toggle */
+  .sidebar-toggle {
+    background: none;
+    border: none;
+    color: #005BAC; /* Dark blue */
+    font-size: 1.25rem;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+  }
+  
+  .sidebar-toggle:hover {
+    background: rgba(0, 92, 188, 0.1);
+    color: #007ACC; /* Light blue */
+  }
+  
+  /* Logo Styles */
+  .brand-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .header-logo {
+    height: 40px;
+    width: 40px;
+    object-fit: contain;
+    border-radius: 4px;
+  }
+  
+  .logo-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+  }
+  
+  .logo-main {
+    font-weight: 700;
+    font-size: 1.4rem;
+    color: #005BAC; /* Dark blue */
+    letter-spacing: 0.5px;
+  }
+  
+  .logo-sub {
+    font-size: 0.7rem;
+    color: #6C757D;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+  }
+  
+  /* User Profile */
+  .user-profile {
+    text-align: right;
+  }
+  
+  .username {
+    font-weight: 600;
+    color: #2B2D42;
+    display: block;
+  }
+  
+  .user-role {
+    font-size: 0.75rem;
+    color: #6C757D;
+    margin-top: 2px;
+  }
+  
+  /* Logout Button */
+  .logout-btn {
+    background: #007ACC; /* Light blue */
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+  }
+  
+  .logout-btn:hover {
+    background: #005BAC; /* Dark blue */
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 92, 188, 0.2);
+  }
+  
+  .logout-text {
+    display: inline-block;
+  }
+  
+ 
     /* Sidebar Styles */
     .admin-sidebar {
       width: 250px;
@@ -70,12 +174,9 @@
       transition: var(--transition);
       z-index: 1020;
       overflow-y: auto;
-    }
-    
-    .sidebar-profile {
-      text-align: center;
-      padding: 1.5rem 1rem;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+      border-right: 1px solid rgba(255, 255, 255, 0.1);
+      padding-top: 4rem;
+
     }
     
     .profile-img {
@@ -83,8 +184,19 @@
       height: 80px;
       border-radius: 50%;
       object-fit: cover;
-      border: 3px solid rgba(255,255,255,0.2);
+      border: 3px solid var(--yellow-primary);
       margin-bottom: 1rem;
+    }
+    
+    .profile-name {
+      font-weight: 600;
+      margin-bottom: 0;
+    }
+    
+    .profile-role {
+      font-size: 0.8rem;
+      color: var(--yellow-primary);
+      margin-top: 0.25rem;
     }
     
     .sidebar-menu {
@@ -94,17 +206,27 @@
     .menu-item {
       display: flex;
       align-items: center;
-      padding: 0.75rem 1.5rem;
+      padding: 0.85rem 1.5rem;
       color: var(--text-light);
       text-decoration: none;
       transition: var(--transition);
       margin: 0.25rem 1rem;
       border-radius: var(--border-radius);
+      font-weight: 500;
+      transition: background 0.3s ease, transform 0.2s ease;
+      gap: 0.75rem;
+
     }
     
-    .menu-item:hover, .menu-item.active {
-      background: var(--sidebar-hover);
+    .menu-item:hover {
+      background: rgba(0, 122, 204, 0.2);
+      color: var(--text-light);
+    }
+    
+    .menu-item.active {
+      background: var(--blue-primary);
       color: white;
+      box-shadow: 0 4px 12px rgba(0, 122, 204, 0.2);
     }
     
     .menu-item i {
@@ -121,26 +243,70 @@
       padding: 2rem;
       min-height: calc(100vh - 70px);
       transition: var(--transition);
+      background-color: var(--card-bg);
+    }
+    
+    /* Card Styles */
+    .dashboard-card {
+      background: var(--content-bg);
+      border-radius: var(--border-radius);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      border: none;
+      transition: var(--transition);
+      border-top: 3px solid var(--blue-primary);
+    }
+    
+    .dashboard-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0, 122, 204, 0.1);
+    }
+    
+    .card-icon {
+      font-size: 1.75rem;
+      color: var(--blue-primary);
+      margin-bottom: 1rem;
     }
     
     /* Logout Button */
     .logout-btn {
-      background: var(--primary-color);
+      background: var(--blue-primary);
       color: white;
       border: none;
-      padding: 0.5rem 1.25rem;
+      padding: 0.6rem 1.5rem;
       border-radius: var(--border-radius);
-      font-weight: 500;
+      font-weight: 600;
       transition: var(--transition);
       display: flex;
       align-items: center;
       gap: 0.5rem;
+      box-shadow: 0 2px 8px rgba(0, 122, 204, 0.2);
     }
     
     .logout-btn:hover {
-      background: var(--primary-hover);
+      background: var(--blue-dark);
       transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 122, 204, 0.3);
       color: white;
+    }
+    
+    /* Toggle Button */
+    .sidebar-toggle {
+      background: none;
+      border: none;
+      color: var(--blue-dark);
+      font-size: 1.25rem;
+      cursor: pointer;
+      margin-right: 1.5rem;
+      transition: var(--transition);
+    }
+    
+    .sidebar-toggle:hover {
+      color: var(--blue-primary);
+    }
+    
+    /* Badges */
+    .badge-primary {
+      background-color: var(--blue-primary);
     }
     
     /* Collapsed State */
@@ -170,18 +336,9 @@
       height: 50px;
     }
     
-    .sidebar-collapsed .profile-name {
+    .sidebar-collapsed .profile-name,
+    .sidebar-collapsed .profile-role {
       display: none;
-    }
-    
-    /* Toggle Button */
-    .sidebar-toggle {
-      background: none;
-      border: none;
-      color: var(--text-dark);
-      font-size: 1.25rem;
-      cursor: pointer;
-      margin-right: 1rem;
     }
     
     /* Responsive Adjustments */
@@ -202,69 +359,199 @@
       .sidebar-collapsed .admin-content {
         margin-left: 80px;
       }
+      
+      .admin-header {
+        padding: 0 1rem;
+      }
     }
+    
+    @media (max-width: 768px) {
+      .admin-content {
+        padding: 1.5rem;
+      }
+      .logo-sub, .user-role {
+      display: none;
+    }
+    
+    .logout-text {
+      display: none;
+    }
+    
+    .logout-btn {
+      padding: 8px 12px;
+    }
+    }
+
   </style>
 </head>
 
 <body>
   <!-- Header Area -->
-  <header class="admin-header shadow-sm">
-    <button class="sidebar-toggle" id="sidebarToggle">
-      <i class="fas fa-bars"></i>
-    </button>
-    <div class="brand-logo">
-      <i class="fas fa-graduation-cap"></i>
-      <span>Exam System</span>
-    </div>
-    <div class="ms-auto">
-      <a href="/logout" class="logout-btn">
-        <i class="fas fa-sign-out-alt"></i>
-        <span>Logout</span>
-      </a>
+  <header class="admin-header">
+    <div class="header-container">
+      <!-- Left Side: Toggle and Logo -->
+      <div class="header-left">
+        <button class="sidebar-toggle" id="sidebarToggle">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="brand-logo">
+          <img src="/static/image/logo.jpg" alt="PICE Logo" class="header-logo">
+          <div class="logo-text">
+            <span class="logo-main">PICE</span>
+            <span class="logo-sub">Examination System</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Right Side: User and Logout -->
+      <div class="header-right">
+        <div class="user-profile">
+          <span class="username">{{user.username}}</span>
+          <div class="user-role">Administrator</div>
+        </div>
+        <a href="/logout" class="logout-btn">
+          <i class="fas fa-sign-out-alt"></i>
+          <span class="logout-text">Logout</span>
+        </a>
+      </div>
     </div>
   </header>
 
   <!-- Sidebar Area -->
   <aside class="admin-sidebar">
-    <div class="sidebar-profile">
-      <!-- <img src="{% static 'image/admin-avatar.png' %}" class="profile-img" alt="Admin Avatar"> -->
-      <h5 class="profile-name">{{user.username}} (Admin) </h5>
-    </div>
-    
     <nav class="sidebar-menu">
-      <a href="/admin-dashboard" class="menu-item active">
-        <i class="fas fa-tachometer-alt"></i>
-        <span>Dashboard</span>
-      </a>
-      <a href="/admin-teacher" class="menu-item">
-        <i class="fas fa-chalkboard-teacher"></i>
-        <span>Examiner Section</span>
-      </a>
-      <a href="/admin-student" class="menu-item">
-        <i class="fas fa-user-graduate"></i>
-        <span>Examinee Section</span>
-      </a>
-      <a href="/admin-course" class="menu-item">
-        <i class="fas fa-book"></i>
-        <span>Exam Courses</span>
-      </a>
-      <a href="/admin-question" class="menu-item">
-        <i class="fas fa-question-circle"></i>
-        <span>Questions</span>
-      </a>
-      <a href="/admin-report" class="menu-item">
-        <i class="fas fa-chart-bar"></i>
-        <span>Reports</span>
-      </a>
+      <div class="menu-container">
+        <a href="/admin-dashboard" class="menu-item">
+          <div class="menu-icon"><i class="fas fa-tachometer-alt"></i></div>
+          <span class="menu-text">Dashboard</span>
+        </a>
+        <a href="/admin-department" class="menu-item">
+          <div class="menu-icon"><i class="fas fa-sitemap"></i></div>
+          <span class="menu-text">Departments</span>
+        </a>
+        <a href="/admin-teacher" class="menu-item">
+          <div class="menu-icon"><i class="fas fa-chalkboard-teacher"></i></div>
+          <span class="menu-text">Examiners</span>
+        </a>
+        <a href="/admin-student" class="menu-item">
+          <div class="menu-icon"><i class="fas fa-user-graduate"></i></div>
+          <span class="menu-text">Examinees</span>
+        </a>
+        <a href="/admin-course" class="menu-item">
+          <div class="menu-icon"><i class="fas fa-book"></i></div>
+          <span class="menu-text">Exam Courses</span>
+        </a>
+        <a href="/admin-question" class="menu-item">
+          <div class="menu-icon"><i class="fas fa-question-circle"></i></div>
+          <span class="menu-text">Questions</span>
+        </a>
+        <a href="/admin-report" class="menu-item">
+          <div class="menu-icon"><i class="fas fa-chart-bar"></i></div>
+          <span class="menu-text">Reports</span>
+        </a>
+      </div>
     </nav>
   </aside>
+  
 
   <!-- Main Content Area -->
   <main class="admin-content">
     {% block content %}
+    <div class="container-fluid">
+      <!-- Dashboard Cards Row -->
+      <div class="row mb-4">
+        <div class="col-md-3 mb-4">
+          <div class="card dashboard-card h-100">
+            <div class="card-body text-center">
+              <div class="card-icon">
+                <i class="fas fa-user-graduate"></i>
+              </div>
+              <h5 class="card-title">Examinees</h5>
+              <h2 class="mb-0">1,245</h2>
+              <p class="text-muted mb-0">+12% from last month</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 mb-4">
+          <div class="card dashboard-card h-100">
+            <div class="card-body text-center">
+              <div class="card-icon">
+                <i class="fas fa-chalkboard-teacher"></i>
+              </div>
+              <h5 class="card-title">Examiners</h5>
+              <h2 class="mb-0">48</h2>
+              <p class="text-muted mb-0">+2 new this month</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 mb-4">
+          <div class="card dashboard-card h-100">
+            <div class="card-body text-center">
+              <div class="card-icon">
+                <i class="fas fa-book"></i>
+              </div>
+              <h5 class="card-title">Courses</h5>
+              <h2 class="mb-0">36</h2>
+              <p class="text-muted mb-0">6 departments</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 mb-4">
+          <div class="card dashboard-card h-100">
+            <div class="card-body text-center">
+              <div class="card-icon">
+                <i class="fas fa-question-circle"></i>
+              </div>
+              <h5 class="card-title">Questions</h5>
+              <h2 class="mb-0">1,892</h2>
+              <p class="text-muted mb-0">+124 this week</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Recent Activity Section -->
+      <div class="row">
+        <div class="col-md-8 mb-4">
+          <div class="card dashboard-card h-100">
+            <div class="card-body">
+              <h5 class="card-title">Recent Activity</h5>
+              <div class="activity-feed">
+                <!-- Activity items would go here -->
+                <p class="text-center text-muted my-5">Activity feed will appear here</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+          <div class="card dashboard-card h-100">
+            <div class="card-body">
+              <h5 class="card-title">Quick Actions</h5>
+              <div class="list-group">
+                <a href="/admin-teacher" class="list-group-item list-group-item-action d-flex align-items-center">
+                  <i class="fas fa-plus-circle me-3 text-primary"></i>
+                  Add New Examiner
+                </a>
+                <a href="/admin-course" class="list-group-item list-group-item-action d-flex align-items-center">
+                  <i class="fas fa-book me-3 text-primary"></i>
+                  Create New Course
+                </a>
+                <a href="/admin-question" class="list-group-item list-group-item-action d-flex align-items-center">
+                  <i class="fas fa-question me-3 text-primary"></i>
+                  Add Questions
+                </a>
+                <a href="/admin-report" class="list-group-item list-group-item-action d-flex align-items-center">
+                  <i class="fas fa-file-export me-3 text-primary"></i>
+                  Generate Reports
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     {% endblock content %}
-    
-    {% include "exam/footer.html" %}
   </main>
 
   <!-- Scripts -->
@@ -306,8 +593,6 @@
     document.querySelectorAll('.menu-item').forEach(item => {
       if (item.href === window.location.href) {
         item.classList.add('active');
-      } else {
-        item.classList.remove('active');
       }
     });
   </script>

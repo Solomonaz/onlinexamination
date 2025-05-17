@@ -7,22 +7,22 @@ class ContactusForm(forms.Form):
     Email = forms.EmailField()
     Message = forms.CharField(max_length=500,widget=forms.Textarea(attrs={'rows': 3, 'cols': 30}))
 
+class DepartmentForm(forms.ModelForm):
+    class Meta:
+        model = models.Department
+        fields = ['department_name']
+
 class TeacherSalaryForm(forms.Form):
     salary=forms.IntegerField()
 
 class CourseForm(forms.ModelForm):
     class Meta:
         model=models.Course
-        fields=['course_name','question_number','total_marks', 'given_time']
-
-# class QuestionForm(forms.ModelForm):
-#     courseID=forms.ModelChoiceField(queryset=models.Course.objects.all(),empty_label="Course Name", to_field_name="id")
-#     class Meta:
-#         model=models.Question
-#         fields=['marks','question','option1','option2','option3','option4','answer']
-#         widgets = {
-#             'question': forms.Textarea(attrs={'rows': 3, 'cols': 50})
-#         }
+        fields=['course_name','question_number','total_marks', 'given_time', 'department']
+        widgets = {
+            'department': forms.Select(attrs={'class': 'form-control'}),
+        }
+   
 
 class QuestionForm(forms.ModelForm):
     # Course selection field (unchanged)

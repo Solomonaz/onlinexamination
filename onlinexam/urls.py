@@ -21,6 +21,10 @@ urlpatterns = [
     path('adminclick', views.adminclick_view),
     path('adminlogin', LoginView.as_view(template_name='exam/adminlogin.html'),name='adminlogin'),
     path('admin-dashboard', views.admin_dashboard_view,name='admin-dashboard'),
+
+    path('admin-department', views.admin_department_view,name='admin-department'),
+    path('admin-add-department', views.admin_add_department_view,name='admin-add-department'),
+
     path('admin-teacher', views.admin_teacher_view,name='admin-teacher'),
     path('admin-view-teacher', views.admin_view_teacher_view,name='admin-view-teacher'),
     path('update-teacher/<int:pk>', views.update_teacher_view,name='update-teacher'),

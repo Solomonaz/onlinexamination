@@ -397,3 +397,26 @@ def report_view(request):
         'max_mark': max_mark,
     }
     return render(request, 'exam/report_view.html', context)
+
+@login_required(login_url='adminlogin')
+def admin_department_view(request):
+    departments = models.Department.objects.all()
+    context = {
+        'departments':departments
+    }
+    return render(request, 'exam/department.html', context)
+
+
+
+@login_required(login_url='adminlogin')
+def admin_add_department_view(request):
+    departmentForm = forms.DepartmentForm()
+    if request.method == 'POST':
+        departmentForm = forms.DepartmentForm(request.POST)
+        if departmentForm.is_valid():        
+            departmentForm.save()
+            messages.success(request, "Department added successfully!")
+            return HttpResponseRedirect('/admin-add-department')
+        else:
+            messages.error(request, "Please correct the errors below.")
+    return render(request, 'exam/admin_add_department.html', {'departmentForm': departmentForm})

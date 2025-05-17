@@ -13,7 +13,7 @@
         }
         
         .form-container {
-            max-width: 800px;
+            max-width: 1000px;
             margin: 40px auto;
             padding: 30px;
             border-radius: 12px;
@@ -59,6 +59,7 @@
             font-weight: 500;
             width: 100%;
             transition: all 0.3s;
+            margin-top: 30px;
         }
         
         .btn-submit:hover {
@@ -90,15 +91,22 @@
         <form method="POST" autocomplete="off">
             {% csrf_token %}
             
-            <div class="row mb-4">
-                <div class="col-md-6">
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label for="course_name" class="form-label">Department Name</label>
+                <div class="input-icon">
+                    {% render_field courseForm.department class="form-control" placeholder="e.g. Computer Science" %}
+                    <i class="fas fa-book"></i>
+                </div>
+            </div>
+            <div class="col-md-4">
                 <label for="course_name" class="form-label">Course Name</label>
                 <div class="input-icon">
                     {% render_field courseForm.course_name class="form-control" placeholder="e.g. Software Engineering" %}
                     <i class="fas fa-book"></i>
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <label for="given_time" class="form-label">Given Time in Minutes</label>
                 <div class="input-icon">
                     {% render_field courseForm.given_time class="form-control" placeholder="e.g. 60" %}
@@ -107,7 +115,7 @@
             </div>
         </div>
             
-            <div class="row mb-4">
+            <div class="row mb-6">
                 <div class="col-md-6">
                     <label for="question_number" class="form-label">Total Questions</label>
                     <div class="input-icon">

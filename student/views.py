@@ -47,16 +47,6 @@ def student_signup_view(request):
 def is_student(user):
     return user.groups.filter(name='STUDENT').exists()
 
-# @login_required(login_url='studentlogin')
-# @user_passes_test(is_student)
-# def student_dashboard_view(request):
-#     dict={
-    
-#     'total_course':QMODEL.Course.objects.all().count(),
-#     'total_question':QMODEL.Question.objects.all().count(),
-#     'courses':QMODEL.Course.objects.all()
-#     }
-#     return render(request,'student/student_dashboard.html',context=dict)
 
 @login_required(login_url='studentlogin')
 @user_passes_test(is_student)
@@ -123,36 +113,6 @@ def take_exam_view(request, pk):
 
     return render(request, 'student/take_exam.html', context)
 
-
-# from django.utils import timezone
-# @login_required(login_url='studentlogin')
-# @user_passes_test(is_student)
-# def start_exam_view(request, pk):
-#     course = QMODEL.Course.objects.get(id=pk)
-#     given_time = course.given_time
-
-#     exam_start_time_str = request.session.get('exam_start_time')
-#     if not exam_start_time_str:
-#         exam_start_time = timezone.now()
-#         exam_start_time_str = exam_start_time.isoformat()
-#         request.session['exam_start_time'] = exam_start_time_str
-#     else:
-#         exam_start_time = timezone.datetime.fromisoformat(exam_start_time_str)
-
-#     questions = QMODEL.Question.objects.filter(course=course)
-
-#     if request.method == 'POST':
-#         pass 
-
-#     context = {
-#         'exam_duration_seconds': given_time,
-#         'exam_start_time': exam_start_time_str,
-#         'course': course,
-#         'questions': questions,
-#     }
-#     response = render(request, 'student/start_exam.html', context)
-#     response.set_cookie('course_id', course.id, httponly=True, samesite='Lax')
-#     return response
 
 from django.utils import timezone
 import random
@@ -268,5 +228,7 @@ def student_marks_view(request):
     courses=QMODEL.Course.objects.all()
     return render(request,'student/student_marks.html',{'courses':courses})
   
-# def explanation_question_view(request):
-#     return render(request, 'student/take_explanation_question.html')
+def load_courses(request):
+    department_id = request.GET.get('department')
+    courses = QMODEL.Course.objects.filter(department_id=department_id)
+    return render(request, 'student/course_dropdown_list_options.html', {'courses': courses})

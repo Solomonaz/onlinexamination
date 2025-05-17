@@ -316,6 +316,7 @@
             <th>Examinee</th>
             <th>Contact</th>
             <th>Organization</th>
+            <th>examination</th>
             <th class="text-center" style="width: 120px;">Actions</th>
           </tr>
         </thead>
@@ -336,6 +337,7 @@
                   <div>{{ student.mobile }}</div>
                 </td>
                 <td>{{ student.organization|truncatechars:30|default:"-" }}</td>
+                <td>{{ student.course|truncatechars:30|default:"-" }}</td>
                 <td>
                   <div class="action-btns">
                     <a href="{% url 'update-student' student.id %}" class="btn-action btn-edit" title="Edit">

@@ -56,6 +56,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'teacher.middleware.TeacherAccessMiddleware',
+
 ]
 CSRF_COOKIE_SECURE=False
 ROOT_URLCONF = 'onlinexam.urls'

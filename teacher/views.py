@@ -23,23 +23,33 @@ def teacherclick_view(request):
     return render(request,'teacher/teacherclick.html')
 
 def teacher_signup_view(request):
-    userForm=forms.TeacherUserForm()
-    teacherForm=forms.TeacherForm()
-    mydict={'userForm':userForm,'teacherForm':teacherForm}
-    if request.method=='POST':
-        userForm=forms.TeacherUserForm(request.POST)
-        teacherForm=forms.TeacherForm(request.POST,request.FILES)
+    if request.method == 'POST':
+        userForm = forms.TeacherUserForm(request.POST)
+        teacherForm = forms.TeacherForm(request.POST, request.FILES)
+        
         if userForm.is_valid() and teacherForm.is_valid():
-            user=userForm.save()
+            user = userForm.save(commit=False)
             user.set_password(user.password)
             user.save()
-            teacher=teacherForm.save(commit=False)
-            teacher.user=user
+            
+            teacher = teacherForm.save(commit=False)
+            teacher.user = user
             teacher.save()
+            
             my_teacher_group = Group.objects.get_or_create(name='TEACHER')
             my_teacher_group[0].user_set.add(user)
-        return HttpResponseRedirect('teachersignup')
-    return render(request,'teacher/teachersignup.html',context=mydict)
+            
+            return HttpResponseRedirect('teachersignup')
+        
+        # If forms are invalid, fall through to render with errors
+    else:
+        userForm = forms.TeacherUserForm()
+        teacherForm = forms.TeacherForm()
+    
+    return render(request, 'teacher/teachersignup.html', {
+        'userForm': userForm,
+        'teacherForm': teacherForm
+    })
 
 
 
@@ -49,11 +59,15 @@ def is_teacher(user):
 @login_required(login_url='teacherlogin')
 @user_passes_test(is_teacher)
 def teacher_dashboard_view(request):
+    teacher = models.Teacher.objects.get(user=request.user)
+    department = teacher.department
+
+
     dict={
     
-    'total_course':QMODEL.Course.objects.all().count(),
-    'total_question':QMODEL.Question.objects.all().count(),
-    'total_student':SMODEL.Student.objects.all().count()
+    'total_course':QMODEL.Course.objects.filter(department=department).count(),
+    'total_question':QMODEL.Question.objects.filter(course__department=department).count(),
+    'total_student':SMODEL.Student.objects.filter(department=department).count()
     }
     return render(request,'teacher/teacher_dashboard.html',context=dict)
 
@@ -79,7 +93,9 @@ def teacher_add_exam_view(request):
 @login_required(login_url='teacherlogin')
 @user_passes_test(is_teacher)
 def teacher_view_exam_view(request):
-    courses = QMODEL.Course.objects.all()
+    teacher = models.Teacher.objects.get(user=request.user)
+    department = teacher.department
+    courses = QMODEL.Course.objects.filter(department=department)
     return render(request,'teacher/teacher_view_exam.html',{'courses':courses})
 
 @login_required(login_url='teacherlogin')
@@ -137,6 +153,9 @@ def teacher_add_question_view(request):
         'questionForm': questionForm,
         'import_errors': request.session.pop('import_errors', None)
     })
+
+@login_required(login_url='teacherlogin')
+@user_passes_test(is_teacher)
 def handle_bulk_import(request):
     try:
         course_id = request.POST.get('courseID')
@@ -204,6 +223,8 @@ def handle_bulk_import(request):
     
     return HttpResponseRedirect('/teacher/teacher-add-question')
 
+@login_required(login_url='teacherlogin')
+@user_passes_test(is_teacher)
 def download_question_template(request, type):
     response = HttpResponse(content_type='text/csv')
     
@@ -299,6 +320,8 @@ def teacher_view_examinees_view(request, course_id):
         'max_mark': max_mark,
     })
 
+@login_required(login_url='teacherlogin')
+@user_passes_test(is_teacher)
 def teacher_explanation_grading_view(request, student_id, course_id):
     student = get_object_or_404(SMODEL.Student, pk=student_id)
     course = get_object_or_404(QMODEL.Course, pk=course_id)

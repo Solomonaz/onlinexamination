@@ -1,10 +1,11 @@
 from django.contrib import admin
-from . models import Question, Course, Result, StudentAnswer
+from . models import Question, Course, Result, StudentAnswer, Department
 
 
 admin.site.register(Course)
 admin.site.register(Result)
 admin.site.register(StudentAnswer)
+admin.site.register(Department)
 
 
 

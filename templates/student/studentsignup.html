@@ -9,13 +9,14 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
-      --primary-color: #4361ee;
-      --primary-hover: #3a56d4;
-      --secondary-color: #f8f9fa;
+      --primary-color: #2e9422;         /* Dark Blue from the logo */
+      --primary-hover: #004080;         /* Slightly darker for hover */
+      --secondary-color: #f0f4f8;       /* Soft gray-blue background */
       --text-color: #2b2d42;
       --border-radius: 8px;
-      --box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     }
+
     
     body {
       background-color: var(--secondary-color);
@@ -24,7 +25,7 @@
     }
     
     .signup-container {
-      max-width: 800px;
+      max-width: 1000px;
       margin: 3rem auto;
     }
     
@@ -107,6 +108,8 @@
       background-color: var(--primary-hover);
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(67, 97, 238, 0.2);
+      color: #f0f4f8;
+
     }
     
     .alert-success {
@@ -139,6 +142,8 @@
   <div class="signup-container">
     <div class="signup-card">
       <div class="form-header">
+        <img src="/static/image/logo.jpg" alt="PICE Logo" style="width: 120px; margin-bottom: 1rem;">
+
         <a href="/admin-view-student" class="back-btn">
           <i class="fas fa-arrow-left me-2"></i> Back
         </a>
@@ -198,15 +203,19 @@
         
         <div class="form-section">
           <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-4">
               <label for="mobile" class="form-label">Contact Number</label>
               {% render_field studentForm.mobile|attr:'required:true' class="form-control" placeholder="Phone number" %}
             </div>
-            <div class="col-md-6">
-              <label for="course" class="form-label">Select Course</label>
-              {% render_field studentForm.course class="form-select" %}
-            </div>
-          </div>
+              <div class="col-md-4">
+                <label for="department" class="form-label">Select Department</label>
+                {% render_field studentForm.department|attr:'required:true' class="form-select" id="id_department" %}
+              </div>
+              <div class="col-md-4">
+                <label for="course" class="form-label">Select Filed of examination</label>
+                {% render_field studentForm.course|attr:'required:true' class="form-select" id="id_course" %}
+              </div>          
+            </div>      
         </div>
         
         <button type="submit" class="btn btn-signup">
@@ -217,6 +226,7 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script>
     // Add focus styles for better accessibility
     document.querySelectorAll('.form-control, .form-select').forEach(input => {
@@ -228,6 +238,28 @@
         this.parentNode.querySelector('.form-label').style.color = 'var(--text-color)';
       });
     });
+
+    $(document).ready(function() {
+      $.ajaxSetup({
+        data: {csrfmiddlewaretoken: '{{ csrf_token }}'}
+    });
+    $('#id_department').change(function() {
+        var departmentId = $(this).val();
+        if (departmentId) {
+            $.ajax({
+                url: '{% url "load_courses" %}',
+                data: {
+                    'department': departmentId
+                },
+                success: function(data) {
+                    $('#id_course').html(data);
+                }
+            });
+        } else {
+            $('#id_course').html('<option value="">Select Department First</option>');
+        }
+    });
+});
   </script>
 </body>
 </html>

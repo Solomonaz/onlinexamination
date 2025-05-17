@@ -17,7 +17,16 @@ class Student(models.Model):
         on_delete=models.SET_NULL,
         null=True
     )
-   
+
+    # Department relationship
+    department = models.ForeignKey(
+        'exam.Department',  # Reference to your Department model
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='students'
+    )
+  
     @property
     def get_name(self):
         return self.user.first_name+" "+self.user.last_name

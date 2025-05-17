@@ -1,15 +1,14 @@
 from django.db import models
 from student.models import Student
+from django.apps import apps
 
 
-# class Course(models.Model):
-#    course_name = models.CharField(max_length=50)
-#    question_number = models.PositiveIntegerField()
-#    total_marks = models.PositiveIntegerField()
-#    given_time = models.PositiveIntegerField(default=60)
 
-#    def __str__(self):
-#         return self.course_name
+class Department(models.Model):
+   department_name = models.CharField(max_length=100, unique=True)
+   
+   def __str__(self):
+        return self.department_name
 
 from django.core.exceptions import ValidationError
 
@@ -18,13 +17,16 @@ class Course(models.Model):
     question_number = models.PositiveIntegerField()
     total_marks = models.PositiveIntegerField(default=100)
     given_time = models.PositiveIntegerField(default=60)
+    department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='course_set')
+
+
 
     def __str__(self):
         return self.course_name
 
     def get_random_questions(self):
         """Get random questions ensuring total marks = 100"""
-        all_questions = list(self.questions.all())  # Changed from question_set to questions
+        all_questions = list(self.questions.all())
         if not all_questions:
             return []
             
@@ -37,7 +39,6 @@ class Course(models.Model):
         
         # Try to find combination that sums to exactly 100
         for attempt in range(100):
-            random.shuffle(all_questions)
             temp_questions = []
             temp_total = 0
             for q in all_questions:
