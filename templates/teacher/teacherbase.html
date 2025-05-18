@@ -65,6 +65,7 @@
             width: auto;
             object-fit: contain;
             transition: var(--transition-speed);
+            
         }
         
         .menu-toggle {
@@ -102,6 +103,8 @@
             background-color: var(--dark-blue);
             transform: translateY(-1px);
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            color: #e2e8f0;
+            text-decoration: none;
         }
         
         /* Sidebar Styles */
@@ -173,6 +176,7 @@
             background: rgba(255, 255, 255, 0.2);
             color: white;
             transform: translateX(4px);
+            text-decoration: none;
         }
         
         .nav-item i {
@@ -272,7 +276,7 @@
         <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
             <i class="fas fa-bars"></i>
         </button>
-        <a href="/teacher/teacher-dashboard" class="logo">
+        <a href="/teacher/teacher-dashboard" class="logo" style="text-decoration: none;">
             <img src="{% static 'image/logo.jpg' %}" class="logo-img" alt="PICE Logo">
             <span>PICE</span>
         </a>

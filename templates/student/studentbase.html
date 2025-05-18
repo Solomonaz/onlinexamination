@@ -1,94 +1,170 @@
 <!DOCTYPE html>
 {% load static %}
 <html lang="en" dir="ltr">
-
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-  <link href="http://netdna.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
-  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
-  <style media="screen">
-    a:link {
-      text-decoration: none;
+  <title>{% block title %}PICE Examination System{% endblock %}</title>
+  
+  <!-- Modern CSS Libraries -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --primary-blue: #2563eb;
+      --dark-blue: #1e40af;
+      --accent-yellow: #facc15;
+      --light-gray: #f8f9fa;
     }
-
+    
     body {
       margin: 0;
       padding: 0;
-      font-family: "Gill Sans", sans-serif;;
+      font-family: 'Poppins', sans-serif;
+      background-color: var(--light-gray);
+      color: #1e293b;
     }
-
+    
+    /* Header Styles */
     header {
       position: fixed;
-      padding: 20px;
+      top: 0;
       width: 100%;
-      z-index: 1;
-      height: 5.8em !important;
+      z-index: 1000;
+      background: white;
+      box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+      padding: 10px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 70px;
     }
-
-    .left_area h3 {
-      margin: 0px;
-      text-transform: uppercase;
-      font-size: 22px;
-      font-weight: 900;
+    
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 15px;
     }
-
-    .left_area span {
-      color: #19B3D3;
+    
+    .logo-img {
+      height: 40px;
+      width: auto;
+      transition: transform 0.3s ease;
     }
-
-    .logout_btn:hover {
-      background:#ca4745;
+    
+    .logo-img:hover {
+      transform: rotate(-5deg);
     }
-
+    
+    .logo-text {
+      font-weight: 700;
+      font-size: 1.4rem;
+      color: var(--primary-blue);
+      margin: 0;
+    }
+    
+    .logo-text span {
+      color: var(--accent-yellow);
+    }
+    
+    .user-area {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    
+    .user-name {
+      font-weight: 600;
+      color: var(--dark-blue);
+      margin: 0;
+    }
+    
+    .logout-btn {
+      background-color: var(--primary-blue);
+      color: white;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 6px;
+      font-weight: 500;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .logout-btn:hover {
+      background-color: var(--dark-blue);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Content Area */
+    .content {
+      margin-top: 90px;
+      padding: 30px;
+      min-height: calc(100vh - 90px);
+    }
+    
+    /* Footer */
+    footer {
+      background-color: var(--primary-blue);
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    
+    @media (max-width: 768px) {
+      header {
+        padding: 10px 15px;
+      }
+      
+      .logo-text {
+        font-size: 1.2rem;
+      }
+      
+      .logo-img {
+        height: 35px;
+      }
+      
+      .user-name {
+        display: none;
+      }
+      
+      .content {
+        padding: 20px;
+      }
+    }
   </style>
-
-
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css">
-
-
 </head>
 
 <body>
-  <!--header area start-->
-  <header class="shadow bg-light navbar-right">
-    <div class="right_area">
-      <h4><a href="/logout" class="btn btn-danger">Logout</a> <strong> {{request.user.first_name}}</strong></h4>
+  <!-- Header Area -->
+  <header>
+    <div class="logo-container">
+      <img src="/static/image/logo.jpg" alt="PICE Logo" class="logo-img">
+      <h1 class="logo-text">PICE <span>Exams</span></h1>
+    </div>
+    
+    <div class="user-area">
+      <p class="user-name">Welcome, {{request.user.first_name}}</p>
+      <a href="/logout" class="logout-btn">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+      </a>
     </div>
   </header>
-  <!--header area end-->
-  <!--sidebar start-->
-  <!-- <div class="sidebar">
-    <center>
-
-      <h4>{{request.user.first_name}}</h4>
-      <h6 style="color: rgb(255, 255, 255);">( Student )</h6>
-
-    </center>
-
-    <a href="/student/student-dashboard"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
-    <a href="/student/student-exam"><i class="fas fa-book"></i><span>Examination</span></a>
-    <a href="/student/student-marks"><i class="fas fa-sort-numeric-up"></i><span>My Marks</span></a>
-  </div> -->
-  <!--sidebar end-->
-
-
-  <!--content start-->
+  
+  <!-- Content Area -->
   <div class="content">
-    <br><br><br><br><br>
     {% block content %}
-
     {% endblock content %}
-
-
-    <br><br><br>
-
   </div>
-  <!--content end-->
-</body>
+  
 
+  <!-- JavaScript Libraries -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 </html>
