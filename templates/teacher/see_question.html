@@ -129,9 +129,7 @@
             {% if questions %}
               {% for question in questions %}
               <tr>
-                <td>
-                  {{forloop.counter}}
-                </td>
+                <td>{{forloop.counter}}</td>
                 <td>
                   <div class="question-text" title="{{ question.question }}">
                     {{ question.question }}
@@ -169,7 +167,7 @@
               {% endfor %}
             {% else %}
               <tr>
-                <td colspan="4">
+                <td colspan="5">
                   <div class="empty-state py-5">
                     <div class="empty-state-icon">
                       <i class="fas fa-question"></i>
@@ -212,7 +210,7 @@
           text: '<i class="fas fa-file-excel me-1"></i> Excel',
           className: 'btn btn-success btn-sm',
           exportOptions: {
-            columns: [0, 1, 2]
+            columns: [0, 1, 2, 3, 4]
           }
         },
         {
@@ -220,7 +218,7 @@
           text: '<i class="fas fa-file-pdf me-1"></i> PDF',
           className: 'btn btn-danger btn-sm',
           exportOptions: {
-            columns: [0, 1, 2]
+            columns: [0, 1, 2, 3, 4]
           }
         },
         {
@@ -228,7 +226,7 @@
           text: '<i class="fas fa-print me-1"></i> Print',
           className: 'btn btn-info btn-sm',
           exportOptions: {
-            columns: [0, 1, 2]
+            columns: [0, 1, 2, 3, 4]
           }
         }
       ],
@@ -244,7 +242,7 @@
       },
       initComplete: function() {
         // Add filter dropdown for marks
-        this.api().columns([1]).every(function() {
+        this.api().columns([2]).every(function() {
           var column = this;
           var select = $('<select class="form-select form-select-sm filter-dropdown"><option value="">All Marks</option></select>')
             .appendTo($(column.header()).empty())

@@ -15,43 +15,56 @@ class DepartmentForm(forms.ModelForm):
 class TeacherSalaryForm(forms.Form):
     salary=forms.IntegerField()
 
+# class CourseForm(forms.ModelForm):
+#     class Meta:
+#         model=models.Course
+#         fields=['course_name','question_number','total_marks', 'given_time', 'department']
+#         widgets = {
+#             'department': forms.Select(attrs={'class': 'form-control'}),
+#         }
+
 class CourseForm(forms.ModelForm):
     class Meta:
-        model=models.Course
-        fields=['course_name','question_number','total_marks', 'given_time', 'department']
-        widgets = {
-            'department': forms.Select(attrs={'class': 'form-control'}),
-        }
-   
+        model = models.Course
+        fields = ['course_name', 'question_number', 'total_marks', 'given_time']
+        
+    def __init__(self, *args, **kwargs):
+        # Remove department from kwargs before calling parent's __init__
+        self.department = kwargs.pop('department', None)
+        super().__init__(*args, **kwargs)
+        
+        # If department is provided, set it as initial value and hide the field
+        if self.department:
+            self.fields['department'] = forms.ModelChoiceField(
+                queryset=models.Department.objects.filter(id=self.department.id),
+                initial=self.department,
+                widget=forms.HiddenInput()
+            )
 
+    def save(self, commit=True):
+        # Automatically set department if it was provided
+        course = super().save(commit=False)
+        if self.department:
+            course.department = self.department
+        if commit:
+            course.save()
+        return course
+   
 class QuestionForm(forms.ModelForm):
-    # Course selection field (unchanged)
-    courseID = forms.ModelChoiceField(
-        queryset=models.Course.objects.all(),
-        empty_label="Course Name",
-        to_field_name="id",
-        label="Course"
-    )
-    
     class Meta:
         model = models.Question
         fields = ['question_type', 'marks', 'question', 'option1', 'option2', 
                  'option3', 'option4', 'answer', 'blank_answer', 'case_sensitive']
-        widgets = {
-            'question': forms.Textarea(attrs={'rows': 3, 'cols': 50}),
-            'question_type': forms.Select(attrs={'id': 'questionTypeSelect'}),
-            'blank_answer': forms.TextInput(attrs={'placeholder': 'Enter the correct answer'}),
-        }
-        labels = {
-            'question': 'Question Text',
-            'blank_answer': 'Correct Answer',
-        }
-        help_texts = {
-            'case_sensitive': 'Check this if the answer should be case sensitive',
-        }
-
-    def __init__(self, *args, **kwargs):
+    
+    def __init__(self, *args, department=None, **kwargs):
         super().__init__(*args, **kwargs)
+        
+        # Add course field dynamically
+        self.fields['course'] = forms.ModelChoiceField(
+            queryset=models.Course.objects.filter(department=department) if department else models.Course.objects.none(),
+            required=True,
+            label="Course"
+        )
         
         # Set required=False for all fields initially
         for field in self.fields:
@@ -62,27 +75,18 @@ class QuestionForm(forms.ModelForm):
             self.fields['question_type'].initial = 'MCQ'
             
         # Set required fields based on question type
-        if 'question_type' in self.data:  # Form was submitted
-            question_type = self.data.get('question_type', 'MCQ')
-        elif self.instance.pk:  # Existing instance
-            question_type = self.instance.question_type
-        else:  # New instance
-            question_type = 'MCQ'
-        
+        question_type = self.data.get('question_type', 'MCQ') if self.data else self.instance.question_type if self.instance.pk else 'MCQ'
         self.set_required_fields(question_type)
 
     def set_required_fields(self, question_type):
         """Set required fields based on question type"""
-        common_required = ['courseID', 'marks', 'question']
+        common_required = ['course', 'marks', 'question']
         
         if question_type == 'MCQ':
             required_fields = common_required + ['option1', 'option2', 'answer']
-            self.fields['answer'].choices = self.instance.cat  # Use the existing choices
         else:  # FIB
             required_fields = common_required + ['blank_answer']
-            self.fields['answer'].required = False  # Will be set from blank_answer
             
-        # Set required attributes
         for field in required_fields:
             if field in self.fields:
                 self.fields[field].required = True
@@ -99,31 +103,26 @@ class QuestionForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         question_type = cleaned_data.get('question_type', 'MCQ')
+        from django.core.exceptions import ValidationError
+        
+        if hasattr(self, '_current_user'):
+            teacher = models.Teacher.objects.get(user=self._current_user)
+            if self.course.department != teacher.department:
+                raise ValidationError("You can only add questions to courses in your department")
+        
+        super().clean()
         
         if question_type == 'MCQ':
-            # Validate that at least options 1 and 2 are provided
             if not cleaned_data.get('option1') or not cleaned_data.get('option2'):
                 raise forms.ValidationError("MCQ questions require at least two options")
                 
-            # Validate answer is one of the options
             answer = cleaned_data.get('answer')
             if answer not in ['Option1', 'Option2', 'Option3', 'Option4']:
                 raise forms.ValidationError("Please select a valid answer option")
                 
         elif question_type == 'FIB':
-            # Validate blank answer exists
             if not cleaned_data.get('blank_answer'):
                 raise forms.ValidationError("Please provide the correct answer for the blank")
-            
-            # Set the answer field to the blank answer
             cleaned_data['answer'] = cleaned_data['blank_answer']
             
         return cleaned_data
-
-    def save(self, commit=True):
-        question = super().save(commit=False)
-        question.course = self.cleaned_data['courseID']
-        
-        if commit:
-            question.save()
-        return question

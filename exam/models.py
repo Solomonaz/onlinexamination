@@ -1,6 +1,5 @@
 from django.db import models
 from student.models import Student
-<<<<<<< HEAD
 from django.apps import apps
 
 
@@ -11,8 +10,6 @@ class Department(models.Model):
    def __str__(self):
         return self.department_name
 
-=======
->>>>>>> 8705655b6933019eeac94f54fefd9070009bc089
 from django.core.exceptions import ValidationError
 
 
@@ -21,18 +18,10 @@ class Course(models.Model):
     question_number = models.PositiveIntegerField()
     total_marks = models.PositiveIntegerField(default=100)
     given_time = models.PositiveIntegerField(default=60)
-<<<<<<< HEAD
     department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='course_set')
 
 
 
-=======
-    
-    @property
-    def is_fib_only(self):
-        """Returns True if the course contains only FIB questions"""
-        return not self.questions.filter(question_type='MCQ').exists()
->>>>>>> 8705655b6933019eeac94f54fefd9070009bc089
     def __str__(self):
         return self.course_name
 

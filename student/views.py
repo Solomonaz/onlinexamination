@@ -252,12 +252,8 @@ def check_marks_view(request,pk):
 def student_marks_view(request):
     courses=QMODEL.Course.objects.all()
     return render(request,'student/student_marks.html',{'courses':courses})
-<<<<<<< HEAD
   
 def load_courses(request):
     department_id = request.GET.get('department')
     courses = QMODEL.Course.objects.filter(department_id=department_id)
     return render(request, 'student/course_dropdown_list_options.html', {'courses': courses})
-=======
-  
->>>>>>> 8705655b6933019eeac94f54fefd9070009bc089

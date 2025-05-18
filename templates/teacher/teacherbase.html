@@ -3,22 +3,25 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Trainer Dashboard | PICE</title>
     
     <!-- Modern CSS Libraries -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --primary-blue: #0078C9;
-            --accent-yellow: #FFF200;
-            --dark-blue: #005A9C;
-            --light-gray: #f8f9fa;
+            --primary-blue: #2563eb;
+            --accent-yellow: #facc15;
+            --dark-blue: #1e40af;
+            --sidebar-color: #156749;
+            --light-gray: #f8fafc;
             --sidebar-width: 280px;
             --header-height: 70px;
+            --transition-speed: 0.3s;
+            
         }
         
         body {
@@ -26,7 +29,8 @@
             padding: 0;
             font-family: 'Inter', sans-serif;
             background-color: var(--light-gray);
-            color: #333;
+            color: #1e293b;
+            overflow-x: hidden;
         }
         
         /* Header Styles */
@@ -37,54 +41,67 @@
             right: 0;
             height: var(--header-height);
             background: white;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 25px;
-            z-index: 1000;
+            padding: 0 2rem;
+            z-index: 1050;
+            transition: var(--transition-speed);
         }
         
         .logo {
             display: flex;
             align-items: center;
-            gap: 8px; /* Reduced gap */
+            gap: 12px;
             font-weight: 700;
-            font-size: 1.1rem; /* Reduced from 1.4rem */
+            font-size: 1.25rem;
             color: var(--primary-blue);
+            text-decoration: none;
         }
         
-        .logo-icon {
-            color: var(--accent-yellow);
-            font-size: 1.1rem; /* Reduced from 1.6rem */
+        .logo-img {
+            height: 40px;
+            width: auto;
+            object-fit: contain;
+            transition: var(--transition-speed);
         }
         
         .menu-toggle {
             background: none;
             border: none;
             color: var(--primary-blue);
-            font-size: 1.4rem;
+            font-size: 1.5rem;
             cursor: pointer;
             display: none;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: var(--transition-speed);
+        }
+        
+        .menu-toggle:hover {
+            background-color: #e2e8f0;
         }
         
         .logout-btn {
             background-color: var(--primary-blue);
             color: white;
             border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
+            padding: 0.5rem 1.25rem;
+            border-radius: 8px;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all var(--transition-speed);
             display: flex;
             align-items: center;
             gap: 8px;
+            font-size: 0.9rem;
         }
         
         .logout-btn:hover {
             background-color: var(--dark-blue);
-            transform: translateY(-2px);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
         
         /* Sidebar Styles */
@@ -94,61 +111,68 @@
             left: 0;
             width: var(--sidebar-width);
             height: calc(100vh - var(--header-height));
-            background: var(--primary-blue);
-            transition: all 0.3s;
+            background: linear-gradient(180deg, var(--sidebar-color));
+            transition: transform var(--transition-speed) ease;
             overflow-y: auto;
-            z-index: 999;
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1040;
+            box-shadow: 4px 0 6px -1px rgba(0, 0, 0, 0.1);
+            padding-bottom: 1rem;
         }
         
         .profile-section {
-            padding: 25px 0;
+            padding: 1.5rem 1rem;
             text-align: center;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 0.5rem;
         }
         
         .profile-image {
-            width: 90px;
-            height: 90px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
             object-fit: cover;
             border: 3px solid var(--accent-yellow);
-            margin-bottom: 10px;
+            margin: 0 auto 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
         
         .profile-name {
             color: white;
             font-weight: 600;
-            margin: 5px 0;
+            margin: 0.5rem 0;
+            font-size: 1.1rem;
         }
         
         .profile-role {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 0.85rem;
-            background: rgba(0, 0, 0, 0.1);
-            padding: 3px 10px;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.8rem;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.25rem 0.75rem;
             border-radius: 20px;
             display: inline-block;
+            font-weight: 500;
         }
         
         .nav-menu {
-            padding: 15px 0;
+            padding: 0.5rem 0;
         }
         
         .nav-item {
             display: flex;
             align-items: center;
-            padding: 12px 25px;
-            color: white;
+            padding: 0.75rem 1.5rem;
+            color: rgba(255, 255, 255, 0.9);
             text-decoration: none;
-            transition: all 0.3s;
-            margin: 5px 10px;
-            border-radius: 6px;
+            transition: all var(--transition-speed);
+            margin: 0.25rem 1rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
         }
         
         .nav-item:hover, .nav-item.active {
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.2);
             color: white;
+            transform: translateX(4px);
         }
         
         .nav-item i {
@@ -156,15 +180,16 @@
             width: 20px;
             text-align: center;
             color: var(--accent-yellow);
+            font-size: 1rem;
         }
         
         /* Main Content Styles */
         .main-content {
             margin-left: var(--sidebar-width);
-            padding: 30px;
+            padding: 2rem;
             min-height: calc(100vh - var(--header-height));
             margin-top: var(--header-height);
-            transition: all 0.3s;
+            transition: margin-left var(--transition-speed);
         }
         
         /* Responsive Styles */
@@ -179,10 +204,63 @@
             
             .main-content {
                 margin-left: 0;
+                padding: 1.5rem;
             }
             
             .menu-toggle {
                 display: block;
+            }
+            
+            .logo-img {
+                height: 36px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .main-header {
+                padding: 0 1rem;
+            }
+            
+            .main-content {
+                padding: 1.25rem;
+            }
+            
+            .logo {
+                font-size: 1.1rem;
+                gap: 8px;
+            }
+            
+            .logo-img {
+                height: 32px;
+            }
+            
+            .logout-btn span {
+                display: none;
+            }
+            
+            .logout-btn {
+                padding: 0.5rem;
+                border-radius: 50%;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .profile-section {
+                padding: 1rem 0.5rem;
+            }
+            
+            .profile-image {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .profile-name {
+                font-size: 1rem;
+            }
+            
+            .nav-item {
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
             }
         }
     </style>
@@ -191,14 +269,14 @@
 <body>
     <!-- Header Area -->
     <header class="main-header">
-        <button class="menu-toggle" id="menuToggle">
+        <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
             <i class="fas fa-bars"></i>
         </button>
-        <div class="logo">
-          <img src="{% static 'image/logo.jpg' %}" class="profile-image" alt="Teacher Avatar">
+        <a href="/teacher/teacher-dashboard" class="logo">
+            <img src="{% static 'image/logo.jpg' %}" class="logo-img" alt="PICE Logo">
             <span>PICE</span>
-        </div>
-        <a href="/logout" class="logout-btn">
+        </a>
+        <a href="/logout" class="logout-btn" title="Logout">
             <i class="fas fa-sign-out-alt"></i>
             <span>Logout</span>
         </a>
@@ -207,21 +285,21 @@
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="profile-section">
-            <img src="{% static 'image/teacher-avatar.png' %}" class="profile-image" alt="Teacher Avatar">
-            <h4 class="profile-name">{{request.user.first_name}}</h4>
-            <p class="profile-role">Examiner</p>
+            <h4 class="profile-name">{{request.user.first_name}} {{request.user.last_name}}</h4>
+            <p class="profile-role">Trainer</p>
+            <p class="profile-role">{{ request.user.teacher.department }}</p>
         </div>
         
         <div class="nav-menu">
-            <a href="/teacher/teacher-dashboard" class="nav-item">
+            <a href="/teacher/teacher-dashboard" class="nav-item {% if request.path == '/teacher/teacher-dashboard' %}active{% endif %}">
                 <i class="fas fa-tachometer-alt"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="/teacher/teacher-exam" class="nav-item">
+            <a href="/teacher/teacher-exam" class="nav-item {% if request.path == '/teacher/teacher-exam' %}active{% endif %}">
                 <i class="fas fa-book"></i>
                 <span>Manage Courses</span>
             </a>
-            <a href="/teacher/teacher-question" class="nav-item">
+            <a href="/teacher/teacher-question" class="nav-item {% if request.path == '/teacher/teacher-question' %}active{% endif %}">
                 <i class="fas fa-question-circle"></i>
                 <span>Manage Questions</span>
             </a>
@@ -238,20 +316,43 @@
 
     <script>
         // Mobile menu toggle
-        document.getElementById('menuToggle').addEventListener('click', function() {
-            document.getElementById('sidebar').classList.toggle('active');
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        
+        menuToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('active');
+            document.body.classList.toggle('sidebar-active');
         });
         
         // Close sidebar when clicking outside on mobile
         document.addEventListener('click', function(event) {
-            const sidebar = document.getElementById('sidebar');
-            const menuToggle = document.getElementById('menuToggle');
-            
             if (window.innerWidth <= 992 && 
                 !sidebar.contains(event.target) && 
                 event.target !== menuToggle && 
                 !menuToggle.contains(event.target)) {
                 sidebar.classList.remove('active');
+                document.body.classList.remove('sidebar-active');
+            }
+        });
+        
+        // Add active class to current page nav item
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPath = window.location.pathname;
+            const navItems = document.querySelectorAll('.nav-item');
+            
+            navItems.forEach(item => {
+                if (item.getAttribute('href') === currentPath) {
+                    item.classList.add('active');
+                }
+            });
+        });
+        
+        // Adjust content padding when footer is present
+        window.addEventListener('load', function() {
+            const footer = document.querySelector('footer');
+            if (footer) {
+                const mainContent = document.querySelector('.main-content');
+                mainContent.style.paddingBottom = '4rem';
             }
         });
     </script>

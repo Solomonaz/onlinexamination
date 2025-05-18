@@ -1,9 +1,9 @@
-from django.shortcuts import render,redirect,reverse
-from . import forms,models
-from django.db.models import Sum
+from django.shortcuts import render, redirect, reverse, get_object_or_404
+from . import forms, models
+from django.db.models import Sum, Count
 from django.contrib.auth.models import Group
 from django.http import HttpResponseRedirect, HttpResponse
-from django.contrib.auth.decorators import login_required,user_passes_test
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.conf import settings
 from datetime import date, timedelta
 from exam import models as QMODEL
@@ -15,6 +15,11 @@ from io import BytesIO
 import csv
 from datetime import datetime
 from django.db.models import Prefetch
+
+# Helper function to get teacher's department
+def get_teacher_department(request):
+    teacher = get_object_or_404(models.Teacher, user=request.user)
+    return teacher.department
 
 #for showing signup/login button for teacher
 def teacherclick_view(request):
@@ -40,8 +45,6 @@ def teacher_signup_view(request):
             my_teacher_group[0].user_set.add(user)
             
             return HttpResponseRedirect('teachersignup')
-        
-        # If forms are invalid, fall through to render with errors
     else:
         userForm = forms.TeacherUserForm()
         teacherForm = forms.TeacherForm()
@@ -51,25 +54,22 @@ def teacher_signup_view(request):
         'teacherForm': teacherForm
     })
 
-
-
 def is_teacher(user):
     return user.groups.filter(name='TEACHER').exists()
 
 @login_required(login_url='teacherlogin')
 @user_passes_test(is_teacher)
 def teacher_dashboard_view(request):
-    teacher = models.Teacher.objects.get(user=request.user)
-    department = teacher.department
-
-
-    dict={
+    department = get_teacher_department(request)
     
-    'total_course':QMODEL.Course.objects.filter(department=department).count(),
-    'total_question':QMODEL.Question.objects.filter(course__department=department).count(),
-    'total_student':SMODEL.Student.objects.filter(department=department).count()
+    # Get all counts in optimized way
+    context = {
+        'total_course': QMODEL.Course.objects.filter(department=department).count(),
+        'total_question': QMODEL.Question.objects.filter(course__department=department).count(),
+        'total_student': SMODEL.Student.objects.filter(department=department).count(),
+        'department': department
     }
-    return render(request,'teacher/teacher_dashboard.html',context=dict)
+    return render(request,'teacher/teacher_dashboard.html', context)
 
 @login_required(login_url='teacherlogin')
 @user_passes_test(is_teacher)
@@ -80,74 +80,61 @@ def teacher_exam_view(request):
 @login_required(login_url='teacherlogin')
 @user_passes_test(is_teacher)
 def teacher_add_exam_view(request):
-    courseForm=QFORM.CourseForm()
-    if request.method=='POST':
-        courseForm=QFORM.CourseForm(request.POST)
+    department = get_teacher_department(request)
+    
+    if request.method == 'POST':
+        courseForm = QFORM.CourseForm(request.POST, department=department)
         if courseForm.is_valid():        
-            courseForm.save()
-        else:
-            print("form is invalid")
-        return HttpResponseRedirect('/teacher/teacher-view-exam')
+            course = courseForm.save()  # Department will be set automatically
+            messages.success(request, "Course added successfully!")
+            return redirect('teacher:teacher-view-exam')
+    else:
+        courseForm = QFORM.CourseForm(department=department)
+    
     return render(request,'teacher/teacher_add_exam.html',{'courseForm':courseForm})
 
 @login_required(login_url='teacherlogin')
 @user_passes_test(is_teacher)
 def teacher_view_exam_view(request):
-    teacher = models.Teacher.objects.get(user=request.user)
-    department = teacher.department
+    department = get_teacher_department(request)
     courses = QMODEL.Course.objects.filter(department=department)
     return render(request,'teacher/teacher_view_exam.html',{'courses':courses})
 
 @login_required(login_url='teacherlogin')
 @user_passes_test(is_teacher)
 def delete_exam_view(request,pk):
-    course=QMODEL.Course.objects.get(id=pk)
+    department = get_teacher_department(request)
+    course = get_object_or_404(QMODEL.Course, id=pk, department=department)
     course.delete()
-    return HttpResponseRedirect('/teacher/teacher-view-exam')
+    messages.success(request, "Course deleted successfully!")
+    return redirect('teacher:teacher-view-exam')
 
-@login_required(login_url='adminlogin')
+@login_required(login_url='teacherlogin')
+@user_passes_test(is_teacher)
 def teacher_question_view(request):
     return render(request,'teacher/teacher_question.html')
+
 
 @login_required(login_url='teacherlogin')
 @user_passes_test(is_teacher)
 def teacher_add_question_view(request):
-    questionForm = QFORM.QuestionForm()
+    # Get teacher's department
+    teacher = models.Teacher.objects.get(user=request.user)
+    department = teacher.department
     
     if request.method == 'POST':
-        # Check if it's a file import
         if 'question_file' in request.FILES:
             return handle_bulk_import(request)
         else:
-            # Handle single question form submission
-            question_type = request.POST.get('question_type', 'MCQ')
-            questionForm = QFORM.QuestionForm(request.POST)
-            
+            questionForm = QFORM.QuestionForm(request.POST, department=department)
             if questionForm.is_valid():
-                question = questionForm.save(commit=False)
-                course = QMODEL.Course.objects.get(id=request.POST.get('courseID'))
-                question.course = course
-                
-                # Handle question type specific logic
-                if question_type == 'FIB':
-                    # For explanation questions, ensure the question_type is set to FIB
-                    question.question_type = 'FIB'
-                    # The form should handle the field mapping, so no need for manual field setting
-                    question = questionForm.save(commit=False)
-                    course = QMODEL.Course.objects.get(id=request.POST.get('courseID'))
-                    question.course = course
-                    question.save()
-                
-                question.save()
+                question = questionForm.save()
                 messages.success(request, f"{question.get_question_type_display()} question added successfully!")
-                return HttpResponseRedirect('/teacher/teacher-add-question')
+                return redirect('teacher:teacher-add-question')
             else:
-                # Pass the form with errors back to template
                 messages.error(request, "Form is invalid. Please check your inputs.")
-                return render(request, 'teacher/teacher_add_question.html', {
-                    'questionForm': questionForm,
-                    'import_errors': request.session.pop('import_errors', None)
-                })
+    else:
+        questionForm = QFORM.QuestionForm(department=department)
     
     return render(request, 'teacher/teacher_add_question.html', {
         'questionForm': questionForm,
@@ -157,17 +144,37 @@ def teacher_add_question_view(request):
 @login_required(login_url='teacherlogin')
 @user_passes_test(is_teacher)
 def handle_bulk_import(request):
+    # Get teacher's department
+    teacher = models.Teacher.objects.get(user=request.user)
+    department = teacher.department
+    
     try:
         course_id = request.POST.get('courseID')
-        import_type = request.POST.get('import_type', 'MCQ')  # Default to MCQ
-        course = QMODEL.Course.objects.get(id=course_id)
+        import_type = request.POST.get('import_type', 'MCQ')
+        
+        # Verify course exists and belongs to teacher's department
+        try:
+            course = QMODEL.Course.objects.get(id=course_id, department=department)
+        except QMODEL.Course.DoesNotExist:
+            messages.error(request, "Invalid course selection or you don't have permission to add questions to this course")
+            return redirect('teacher:teacher-add-question')
+        
+        # Check if file was uploaded
+        if 'question_file' not in request.FILES:
+            messages.error(request, "No file was uploaded")
+            return redirect('teacher:teacher-add-question')
+            
         file = request.FILES['question_file']
         
         # Determine file type and read accordingly
-        if file.name.endswith('.csv'):
-            df = pd.read_csv(BytesIO(file.read()))
-        else:  # Assume Excel
-            df = pd.read_excel(BytesIO(file.read()))
+        try:
+            if file.name.endswith('.csv'):
+                df = pd.read_csv(BytesIO(file.read()))
+            else:  # Assume Excel
+                df = pd.read_excel(BytesIO(file.read()))
+        except Exception as e:
+            messages.error(request, f"Error reading file: {str(e)}")
+            return redirect('teacher:teacher-add-question')
         
         success_count = 0
         error_messages = []
@@ -175,11 +182,12 @@ def handle_bulk_import(request):
         for index, row in df.iterrows():
             try:
                 if import_type == 'MCQ':
-                    # Validate MCQ required fields
+                    # Validate required fields
                     required_fields = ['question', 'marks', 'option1', 'option2', 'answer']
                     if not all(field in row for field in required_fields):
                         raise ValueError("Missing required columns for MCQ import")
                     
+                    # Create question
                     QMODEL.Question.objects.create(
                         course=course,
                         question_type='MCQ',
@@ -193,11 +201,12 @@ def handle_bulk_import(request):
                     )
                     
                 elif import_type == 'FIB':
-                    # Validate FIB required fields
+                    # Validate required fields
                     required_fields = ['question_text', 'marks', 'blank_answer']
                     if not all(field in row for field in required_fields):
                         raise ValueError("Missing required columns for FIB import")
                     
+                    # Create question
                     QMODEL.Question.objects.create(
                         course=course,
                         question_type='FIB',
@@ -212,6 +221,7 @@ def handle_bulk_import(request):
             except Exception as e:
                 error_messages.append(f"Row {index+2}: {str(e)}")
         
+        # Show success/error messages
         if success_count > 0:
             messages.success(request, f"Successfully imported {success_count} {import_type} questions!")
         if error_messages:
@@ -221,7 +231,7 @@ def handle_bulk_import(request):
     except Exception as e:
         messages.error(request, f"Import failed: {str(e)}")
     
-    return HttpResponseRedirect('/teacher/teacher-add-question')
+    return redirect('teacher:teacher-add-question')
 
 @login_required(login_url='teacherlogin')
 @user_passes_test(is_teacher)
@@ -244,32 +254,38 @@ def download_question_template(request, type):
 @login_required(login_url='teacherlogin')
 @user_passes_test(is_teacher)
 def teacher_view_question_view(request):
-    courses= QMODEL.Course.objects.all()
+    department = get_teacher_department(request)
+    courses = QMODEL.Course.objects.filter(department=department)
     return render(request,'teacher/teacher_view_question.html',{'courses':courses})
 
 @login_required(login_url='teacherlogin')
 @user_passes_test(is_teacher)
 def see_question_view(request,pk):
-    questions=QMODEL.Question.objects.all().filter(course_id=pk)
-    return render(request,'teacher/see_question.html',{'questions':questions})
+    department = get_teacher_department(request)
+    course = get_object_or_404(QMODEL.Course, id=pk, department=department)
+    questions = QMODEL.Question.objects.filter(course=course)
+    return render(request,'teacher/see_question.html',{
+        'questions': questions,
+        'course': course
+    })
 
 @login_required(login_url='teacherlogin')
 @user_passes_test(is_teacher)
 def remove_question_view(request,pk):
-    question=QMODEL.Question.objects.get(id=pk)
+    department = get_teacher_department(request)
+    question = get_object_or_404(QMODEL.Question, id=pk, course__department=department)
     question.delete()
-    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+    messages.success(request, "Question deleted successfully!")
+    return redirect(request.META.get('HTTP_REFERER', '/'))
 
-from django.shortcuts import get_object_or_404
 @login_required(login_url='teacherlogin')
 @user_passes_test(is_teacher)
 def teacher_view_examinees_view(request, course_id):
-    course = get_object_or_404(QMODEL.Course, id=course_id)
+    department = get_teacher_department(request)
+    course = get_object_or_404(QMODEL.Course, id=course_id, department=department)
     
-    # Get all results with prefetching for better performance
     results = QMODEL.Result.objects.filter(exam=course).select_related('student')
     
-    # Prefetch FIB answers for all students in one query
     student_ids = [result.student.id for result in results]
     fib_answers = QMODEL.StudentAnswer.objects.filter(
         student_id__in=student_ids,
@@ -277,39 +293,35 @@ def teacher_view_examinees_view(request, course_id):
         question__question_type='FIB'
     ).values('student').annotate(fib_score=Sum('marks_obtained'))
     
-    # Create a mapping of student_id to fib_score
     fib_scores = {answer['student']: answer['fib_score'] or 0 for answer in fib_answers}
     
-    # Add fib_score and total_score to each result
     for result in results:
         result.fib_score = fib_scores.get(result.student.id, 0)
         result.total_score = result.marks + result.fib_score
     
-    organizations = QMODEL.Student.objects.values_list('organization', flat=True).distinct()
-    
-    # Initialize filter variables
+    # Apply filters
     organization = request.GET.get('organization', '')
     min_mark = request.GET.get('min_mark', '')
     max_mark = request.GET.get('max_mark', '')
     exam_date = request.GET.get('exam_date', '')
 
-    # Apply filters
     if organization:
         results = results.filter(student__organization=organization)
-    
     if min_mark and min_mark.isdigit():
         results = results.filter(marks__gte=int(min_mark))
-    
     if max_mark and max_mark.isdigit():
         results = results.filter(marks__lte=int(max_mark))
-    
     if exam_date:
         try:
             date_obj = datetime.strptime(exam_date, '%Y-%m-%d').date()
             results = results.filter(date__date=date_obj)
         except ValueError:
-            exam_date = ''  # Reset invalid date
+            exam_date = ''
 
+    organizations = SMODEL.Student.objects.filter(
+        department=department
+    ).values_list('organization', flat=True).distinct()
+    
     return render(request, 'teacher/teacher_view_examinee.html', {        
         'course': course,
         'results': results,
@@ -323,24 +335,21 @@ def teacher_view_examinees_view(request, course_id):
 @login_required(login_url='teacherlogin')
 @user_passes_test(is_teacher)
 def teacher_explanation_grading_view(request, student_id, course_id):
-    student = get_object_or_404(SMODEL.Student, pk=student_id)
-    course = get_object_or_404(QMODEL.Course, pk=course_id)
+    department = get_teacher_department(request)
+    student = get_object_or_404(SMODEL.Student, pk=student_id, department=department)
+    course = get_object_or_404(QMODEL.Course, pk=course_id, department=department)
     
-    # Get all FIB questions and answers
     fib_questions = QMODEL.Question.objects.filter(
         course=course,
         question_type='FIB'
     )
     
-    # Get all existing answers in one query
     existing_answers = QMODEL.StudentAnswer.objects.filter(
         student=student,
         question__in=fib_questions
     )
     
-    # Create a mapping of question_id to answer
     answer_map = {a.question_id: a for a in existing_answers}
-    
     questions_answers = []
     total_fib_marks = 0
     current_fib_score = 0

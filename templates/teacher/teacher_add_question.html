@@ -166,10 +166,32 @@
                 {% csrf_token %}
                 <input type="hidden" name="question_type" value="MCQ">
 
-                <div class="form-section">
+                <!-- <div class="form-section">
                   <label class="form-label" for="courseID">Course</label>
                   {% render_field questionForm.courseID|attr:'required:true' class="form-control" %}
-                </div>
+                </div> -->
+
+                <!-- <div class="form-section">
+                  <label class="form-label" for="courseID">Course</label>
+                  {% render_field  questionForm.course class="form-control" %}
+                  {% if questionForm.course.errors %}
+                      <div class="text-danger">
+                          {% for error in questionForm.course.errors %}
+                              {{ error }}
+                          {% endfor %}
+                      </div>
+                  {% endif %}
+              </div> -->
+
+              <div class="form-group">
+                <label for="courseID">Select Course</label>
+                <select name="courseID" class="form-control" required>
+                    <option value="">---------</option>
+                    {% for course in request.user.teacher.department.course_set.all %}
+                        <option value="{{ course.id }}">{{ course.course_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
 
                 <div class="form-section">
                   <label class="form-label" for="question">Question</label>
@@ -270,12 +292,34 @@
                   {% csrf_token %}
                   <input type="hidden" name="import_type" value="MCQ">
                   
-                  <div class="mb-3">
+                  <!-- <div class="mb-3">
                     <label for="courseIDImport" class="form-label">Course</label>
                     {% render_field questionForm.courseID class="form-control" id="courseIDImport" required="true" %}
-                  </div>
+                  </div> -->
+
+                  <!-- <div class="form-section">
+                    <label class="form-label" for="courseIDImport">Course</label>
+                    {% render_field questionForm.course class="form-control" id="courseIDImport"%}
+                    {% if questionForm.course.errors %}
+                        <div class="text-danger">
+                            {% for error in questionForm.course.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div> -->
+
+                <div class="form-group">
+                  <label for="courseID">Select Course</label>
+                  <select name="courseID" class="form-control" required>
+                      <option value="">---------</option>
+                      {% for course in request.user.teacher.department.course_set.all %}
+                          <option value="{{ course.id }}">{{ course.course_name }}</option>
+                      {% endfor %}
+                  </select>
+              </div>
                   
-                  <div class="mb-3">
+                  <div class="mb-5">
                     <label for="fileUpload" class="form-label">Select MCQ Template File</label>
                     <input type="file" class="form-control" id="fileUpload" name="question_file" accept=".xlsx,.xls,.csv" required>
                     <div class="file-upload-info">
@@ -297,10 +341,31 @@
                   {% csrf_token %}
                   <input type="hidden" name="import_type" value="FIB">
                   
-                  <div class="mb-3">
+                  <!-- <div class="mb-3">
                     <label for="fibCourseIDImport" class="form-label">Course</label>
-                    {% render_field questionForm.courseID class="form-control" id="fibCourseIDImport" required="true" %}
-                  </div>
+                    {% render_field questionForm.course class="form-control" id="fibCourseIDImport" required="true" %}
+                  </div> -->
+
+                  <!-- <div class="form-section">
+                    <label class="form-label" for="fibCourseIDImport">Course</label>
+                    {% render_field  questionForm.course class="form-control" id="fibCourseIDImport" %}
+                    {% if questionForm.course.errors %}
+                        <div class="text-danger">
+                            {% for error in questionForm.course.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div> -->
+                <div class="form-group">
+                  <label for="courseID">Select Course</label>
+                  <select name="courseID" class="form-control" required>
+                      <option value="">---------</option>
+                      {% for course in request.user.teacher.department.course_set.all %}
+                          <option value="{{ course.id }}">{{ course.course_name }}</option>
+                      {% endfor %}
+                  </select>
+              </div>
                   
                   <div class="mb-3">
                     <label for="fibFileUpload" class="form-label">Select Explanation Template File</label>
