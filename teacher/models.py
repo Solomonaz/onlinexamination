@@ -5,7 +5,7 @@ class Teacher(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     address = models.CharField(max_length=40)
     mobile = models.CharField(max_length=20, null=False)
-    status = models.BooleanField(default=False)
+    status = models.BooleanField(default=True)
     salary = models.PositiveIntegerField(null=True)
     
     department = models.ForeignKey(

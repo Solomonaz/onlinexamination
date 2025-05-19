@@ -30,8 +30,8 @@
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
             margin-bottom: 1.5rem;
             height: 100%;
-            position: relative;
-            cursor: pointer;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
         }
         
         .stat-card:hover {
@@ -39,22 +39,8 @@
             box-shadow: 0 12px 20px rgba(0, 0, 0, 0.12);
         }
         
-        .stat-card.approved {
-            background: linear-gradient(135deg, #4361ee, #3f37c9);
-        }
-        
-        .stat-card.pending {
-            background: linear-gradient(135deg, #f8961e, #f3722c);
-        }
-        
-        .stat-card.income {
-            background: linear-gradient(135deg, #4cc9f0, #4895ef);
-            cursor: default; /* Non-clickable for income card */
-        }
-        
         .stat-card .card-body {
             padding: 1.75rem;
-            color: white;
             position: relative;
             z-index: 1;
         }
@@ -95,23 +81,6 @@
             margin-bottom: 0;
         }
         
-        .stat-card .trend-indicator {
-            display: flex;
-            align-items: center;
-            font-size: 0.85rem;
-            margin-top: 0.5rem;
-            opacity: 0.9;
-        }
-        
-        /* Clickable state styles */
-        .stat-card.clickable:hover {
-            cursor: pointer;
-        }
-        
-        .stat-card.clickable:active {
-            transform: translateY(-2px) scale(0.98);
-        }
-        
         @media (max-width: 768px) {
             .stat-card .card-body {
                 padding: 1.25rem;
@@ -123,76 +92,104 @@
                 margin-bottom: 1rem;
             }
         }
+
+        /* Alert messages styling */
+        .alert-messages {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1100;
+            min-width: 300px;
+        }
+
+        .alert {
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: none;
+        }
+
+        .alert-success {
+            background-color: #4bb543;
+            color: white;
+        }
+
+        .alert-error {
+            background-color: #ff4444;
+            color: white;
+        }
+
+        .alert-info {
+            background-color: var(--accent-color);
+            color: white;
+        }
     </style>
 </head>
 
 <div class="container py-4">
+    <!-- Alert messages container -->
+    <div class="alert-messages">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
     <div class="dashboard-header">
         <h2 class="fw-bold mb-2">Examiners Dashboard</h2>
-        <p class="text-muted">Overview of examiner statistics and system performance</p>
+        <p class="text-muted">Overview of examiner statistics</p>
     </div>
 
     <div class="row g-4">
-        <!-- Approved Examiners Card -->
-        <div class="col-md-4">
+        <!-- Examiners Card -->
+        <div class="col-md-6">
             <a href="admin-view-teacher" class="text-decoration-none">
-                <div class="stat-card approved clickable">
+                <div class="stat-card">
                     <div class="card-body">
                         <div class="icon-wrapper">
                             <i class="fas fa-chalkboard-teacher fa-lg"></i>
                         </div>
-                        <h6 class="card-title">TOTAL APPROVED EXAMINER</h6>
+                        <h6 class="card-title">TOTAL TRAINERS</h6>
                         <h3 class="card-value">{{total_teacher}}</h3>
-                        <!-- <div class="trend-indicator">
-                            <i class="fas fa-arrow-up me-1"></i>
-                            <span>5.2% from last month</span>
-                        </div> -->
                     </div>
                 </div>
             </a>
         </div>
         
-        <!-- Pending Examiners Card -->
-        <div class="col-md-4">
-            <a href="admin-view-pending-teacher" class="text-decoration-none">
-                <div class="stat-card pending clickable">
+        <!-- Students Card (if you want to keep this relevant metric) -->
+        <!-- <div class="col-md-6">
+            <a href="admin-view-student" class="text-decoration-none">
+                <div class="stat-card" style="background: linear-gradient(135deg, #4cc9f0, #4895ef);">
                     <div class="card-body">
                         <div class="icon-wrapper">
-                            <i class="fas fa-sync-alt fa-lg"></i>
+                            <i class="fas fa-user-graduate fa-lg"></i>
                         </div>
-                        <h6 class="card-title">TOTAL PENDING EXAMINER</h6>
-                        <h3 class="card-value">{{pending_teacher}}</h3>
-                        <!-- <div class="trend-indicator">
-                            <i class="fas fa-arrow-down me-1"></i>
-                            <span>2.1% from last month</span>
-                        </div> -->
+                        <h6 class="card-title">TOTAL STUDENTS</h6>
+                        <h3 class="card-value">{{total_student}}</h3>
                     </div>
                 </div>
             </a>
-        </div>
-        
-        <!-- Income Generated Card -->
-        <div class="col-md-4">
-            <div class="stat-card income">
-                <div class="card-body">
-                    <div class="icon-wrapper">
-                        <i class="fas fa-dollar-sign fa-lg"></i>
-                    </div>
-                    <h6 class="card-title">INCOME GENERATED</h6>
-                    <h3 class="card-value">
-                        {% if salary %}{{ salary }}{% else %}0{% endif %}
-                    </h3>
-                    <div class="trend-indicator">
-                        <i class="fas fa-arrow-up me-1"></i>
-                        <span>12.7% from last month</span>
-                    </div>
-                </div>
-            </div>
-        </div>
+        </div> -->
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+
+<script>
+    // Auto-dismiss alerts after 5 seconds
+    document.addEventListener('DOMContentLoaded', function() {
+        var alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function(alert) {
+            setTimeout(function() {
+                var bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            }, 5000);
+        });
+    });
+</script>
 
 {% endblock content %}

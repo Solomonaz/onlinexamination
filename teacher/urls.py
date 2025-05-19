@@ -16,6 +16,7 @@ path('delete-exam/<int:pk>', views.delete_exam_view,name='delete-exam'),
 
 path('teacher-view-examinee/<int:course_id>', views.teacher_view_examinees_view,name='teacher-view-examinee'),
 path('teacher-view-grading/<int:student_id>/<int:course_id>/',views.teacher_explanation_grading_view, name='teacher-view-grading'),
+path('teacher-view-department',views.teacher_view_department_view, name='teacher-view-department'),
 
 path('teacher-question', views.teacher_question_view,name='teacher-question'),
 path('teacher-add-question', views.teacher_add_question_view,name='teacher-add-question'),

@@ -27,24 +27,44 @@ def teacherclick_view(request):
         return HttpResponseRedirect('afterlogin')
     return render(request,'teacher/teacherclick.html')
 
+from django.contrib import messages
+
 def teacher_signup_view(request):
     if request.method == 'POST':
         userForm = forms.TeacherUserForm(request.POST)
         teacherForm = forms.TeacherForm(request.POST, request.FILES)
         
         if userForm.is_valid() and teacherForm.is_valid():
-            user = userForm.save(commit=False)
-            user.set_password(user.password)
-            user.save()
+            try:
+                user = userForm.save(commit=False)
+                user.set_password(user.password)
+                user.save()
+                
+                teacher = teacherForm.save(commit=False)
+                teacher.user = user
+                teacher.save()
+                
+                my_teacher_group = Group.objects.get_or_create(name='TEACHER')
+                my_teacher_group[0].user_set.add(user)
+                
+                messages.success(request, 'Trainer account created successfully!')
+                return HttpResponseRedirect('teachersignup')
             
-            teacher = teacherForm.save(commit=False)
-            teacher.user = user
-            teacher.save()
+            except Exception as e:
+                messages.error(request, f'An error occurred during registration: {str(e)}')
+        else:
+            # Form validation failed
+            error_messages = []
+            for field, errors in userForm.errors.items():
+                for error in errors:
+                    error_messages.append(f"{field}: {error}")
+            for field, errors in teacherForm.errors.items():
+                for error in errors:
+                    error_messages.append(f"{field}: {error}")
             
-            my_teacher_group = Group.objects.get_or_create(name='TEACHER')
-            my_teacher_group[0].user_set.add(user)
-            
-            return HttpResponseRedirect('teachersignup')
+            for msg in error_messages:
+                messages.error(request, msg)
+    
     else:
         userForm = forms.TeacherUserForm()
         teacherForm = forms.TeacherForm()
@@ -402,3 +422,20 @@ def teacher_explanation_grading_view(request, student_id, course_id):
     }
     
     return render(request, 'teacher/teacher_explanation_grading.html', context)
+
+from django.core.paginator import Paginator
+
+def teacher_view_department_view(request, department_id=None):
+    department = get_teacher_department(request)
+    student_list = SMODEL.Student.objects.filter(department=department)
+    
+    paginator = Paginator(student_list, 25)  # Show 25 students per page
+    page_number = request.GET.get('page')
+    students = paginator.get_page(page_number)
+    
+    context = {
+        'department': department,
+        'students': students,
+        'student_list':student_list,
+    }
+    return render(request, 'teacher/teacher_view_examinee_department.html', context)
