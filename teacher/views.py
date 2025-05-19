@@ -429,7 +429,7 @@ def teacher_view_department_view(request, department_id=None):
     department = get_teacher_department(request)
     student_list = SMODEL.Student.objects.filter(department=department)
     
-    paginator = Paginator(student_list, 25)  # Show 25 students per page
+    paginator = Paginator(student_list, 10)  # Show 25 students per page
     page_number = request.GET.get('page')
     students = paginator.get_page(page_number)
     
@@ -439,3 +439,10 @@ def teacher_view_department_view(request, department_id=None):
         'student_list':student_list,
     }
     return render(request, 'teacher/teacher_view_examinee_department.html', context)
+
+def delete_view_student_list(request, pk):
+    department = get_teacher_department(request)
+    student_list = SMODEL.Student.objects.filter(id=pk,department=department)    
+    student_list.delete()
+    messages.success(request, "Course deleted successfully!")
+    return redirect('teacher:teacher-view-department')

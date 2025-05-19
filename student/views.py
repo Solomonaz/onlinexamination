@@ -48,20 +48,28 @@ def is_student(user):
     return user.groups.filter(name='STUDENT').exists()
 
 
+from django.core.exceptions import ObjectDoesNotExist
+
 @login_required(login_url='studentlogin')
 @user_passes_test(is_student)
 def student_dashboard_view(request):
-    student = models.Student.objects.get(user_id=request.user.id)
-    student_course = student.course
-    total_questions = QMODEL.Question.objects.filter(course=student_course).count()
+    try:
+        student = models.Student.objects.get(user_id=request.user.id)
+        student_course = student.course
+        total_questions = QMODEL.Question.objects.filter(course=student_course).count()
 
-    context = {
-        'total_course': 1,
-        'total_question': total_questions,
-        'courses': [student_course],
-    }
+        context = {
+            'total_course': 1,
+            'total_question': total_questions,
+            'courses': [student_course],
+        }
 
-    return render(request, 'student/student_dashboard.html', context=context)
+        return render(request, 'student/student_dashboard.html', context=context)
+    
+    except ObjectDoesNotExist:
+        # Handle the case where student doesn't exist
+        messages.error(request, "Student profile not found. Please contact administrator.")
+        return redirect('studentlogin')  # or some other appropriate page
 
 
 @login_required(login_url='studentlogin')

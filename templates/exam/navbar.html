@@ -1,88 +1,121 @@
 <!DOCTYPE html>
 {% load static %}
 <html lang="en">
-
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Fancy Navbar</title>
-
-  <!-- Bootstrap 5 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Online Examination System</title>
+  
+  <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Icons -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-  <!-- Google Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&display=swap" rel="stylesheet">
-
+  
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  
   <style>
+    :root {
+      --primary-color: #2c3e50;
+      --secondary-color: #3498db;
+      --accent-color: #e74c3c;
+      --text-light: #ecf0f1;
+    }
+    
     body {
-      font-family: 'Ubuntu', sans-serif;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      padding-top: 60px;
     }
-
+    
     .navbar {
-      background: linear-gradient(to right, #00bcd4, #2196f3);
-      padding: 1rem 2rem;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      background-color: white;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      padding: 10px 0;
     }
-
+    
     .navbar-brand {
-      font-size: 1.8rem;
-      font-weight: bold;
-      color: #fff !important;
-      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      font-weight: 600;
+      color: var(--primary-color) !important;
     }
-
-    .navbar-nav .nav-link {
-      color: #f8f9fa !important;
-      margin-left: 1rem;
-      font-size: 1rem;
-      transition: all 0.3s ease;
+    
+    .logo-img {
+      height: 40px;
+      margin-right: 10px;
     }
-
-    .navbar-nav .nav-link:hover {
-      color: #ffd700 !important;
-      transform: scale(1.05);
+    
+    .nav-link {
+      color: var(--primary-color) !important;
+      font-weight: 500;
+      padding: 8px 15px !important;
+      margin: 0 5px;
+      border-radius: 4px;
+      transition: all 0.2s ease;
     }
-
+    
+    .nav-link:hover {
+      background-color: #f8f9fa;
+      color: var(--secondary-color) !important;
+    }
+    
+    .nav-link.active {
+      color: var(--accent-color) !important;
+    }
+    
+    .nav-icon {
+      margin-right: 6px;
+    }
+    
     .navbar-toggler {
       border: none;
+      padding: 8px;
     }
-
+    
     .navbar-toggler:focus {
       box-shadow: none;
     }
-
-    .nav-icon {
-      margin-right: 5px;
+    
+    @media (max-width: 992px) {
+      .navbar-collapse {
+        padding-top: 15px;
+      }
+      
+      .nav-link {
+        margin: 5px 0 !important;
+      }
     }
   </style>
 </head>
 
 <body>
-  <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
-    <div class="container-fluid">
+  <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+    <div class="container">
       <a class="navbar-brand" href="/">
-        <i class="fas fa-laptop-code nav-icon"></i> Online Examination
+        <img src="{% static 'image/logo.jpg' %}" alt="Logo" class="logo-img">
+        PICE
       </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+      
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu">
         <span class="navbar-toggler-icon"></span>
       </button>
-
-      <div class="collapse navbar-collapse justify-content-end" id="navbarCollapse">
-        <ul class="navbar-nav">
+      
+      <div class="collapse navbar-collapse" id="navbarMenu">
+        <ul class="navbar-nav ms-auto">
           <li class="nav-item">
             <a href="/teacher/teacherlogin" class="nav-link">
-              <i class="fas fa-chalkboard-teacher nav-icon"></i> አሰልጣኝ
+              <i class="fas fa-chalkboard-teacher nav-icon"></i>
+              አሰልጣኝ
             </a>
           </li>
           <li class="nav-item">
             <a href="/student/studentlogin" class="nav-link">
-              <i class="fas fa-user-graduate nav-icon"></i> ተፈታኝ
+              <i class="fas fa-user-graduate nav-icon"></i>
+              ተፈታኝ
             </a>
           </li>
           <li class="nav-item">
             <a href="/adminclick" class="nav-link">
-              <i class="fas fa-user-shield nav-icon"></i> አድሚን
+              <i class="fas fa-user-shield nav-icon"></i>
+              አድሚን
             </a>
           </li>
         </ul>
@@ -90,8 +123,19 @@
     </div>
   </nav>
 
-  <!-- Bootstrap 5 JS -->
+  <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <script>
+    // Highlight active link
+    document.addEventListener('DOMContentLoaded', function() {
+      const currentPath = window.location.pathname;
+      document.querySelectorAll('.nav-link').forEach(link => {
+        if (link.getAttribute('href') === currentPath) {
+          link.classList.add('active');
+        }
+      });
+    });
+  </script>
 </body>
-
 </html>

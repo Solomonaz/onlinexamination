@@ -13,113 +13,143 @@
     
     <style>
         :root {
-            --primary-blue: #2563eb;
-            --accent-yellow: #facc15;
-            --dark-blue: #1e40af;
+            --yellow-primary: #FFFF00;
+            --blue-primary: #007ACC;
+            --blue-dark: #005BAC;
             --sidebar-color: #156749;
-            --light-gray: #f8fafc;
-            --sidebar-width: 280px;
-            --header-height: 70px;
-            --transition-speed: 0.3s;
-            
+            --content-bg: #FFFFFF;
+            --card-bg: #F8F9FA;
+            --text-light: #FFFFFF;
+            --text-dark: #2B2D42;
+            --text-muted: #6C757D;
+            --border-radius: 8px;
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
         
         body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', sans-serif;
-            background-color: var(--light-gray);
-            color: #1e293b;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--content-bg);
+            color: var(--text-dark);
             overflow-x: hidden;
         }
         
         /* Header Styles */
-        .main-header {
+        .admin-header {
+            background: #FFFFFF;
+            height: 70px;
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            height: var(--header-height);
-            background: white;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+            border-bottom: 3px solid var(--yellow-primary);
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 0 2rem;
-            z-index: 1050;
-            transition: var(--transition-speed);
+            padding: 0 20px;
         }
         
-        .logo {
+        .header-container {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        /* Sidebar Toggle */
+        .sidebar-toggle {
+            background: none;
+            border: none;
+            color: var(--blue-dark);
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 4px;
+            transition: var(--transition);
+        }
+        
+        .sidebar-toggle:hover {
+            background: rgba(0, 92, 188, 0.1);
+            color: var(--blue-primary);
+        }
+        
+        /* Logo Styles */
+        .brand-logo {
             display: flex;
             align-items: center;
             gap: 12px;
-            font-weight: 700;
-            font-size: 1.25rem;
-            color: var(--primary-blue);
-            text-decoration: none;
         }
         
-        .logo-img {
+        .header-logo {
             height: 40px;
-            width: auto;
+            width: 40px;
             object-fit: contain;
-            transition: var(--transition-speed);
-            
+            border-radius: 4px;
         }
         
-        .menu-toggle {
-            background: none;
-            border: none;
-            color: var(--primary-blue);
-            font-size: 1.5rem;
-            cursor: pointer;
-            display: none;
-            padding: 0.5rem;
-            border-radius: 50%;
-            transition: var(--transition-speed);
-        }
-        
-        .menu-toggle:hover {
-            background-color: #e2e8f0;
-        }
-        
-        .logout-btn {
-            background-color: var(--primary-blue);
-            color: white;
-            border: none;
-            padding: 0.5rem 1.25rem;
-            border-radius: 8px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all var(--transition-speed);
+        .logo-text {
             display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.9rem;
+            flex-direction: column;
+            line-height: 1.2;
         }
         
-        .logout-btn:hover {
-            background-color: var(--dark-blue);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            color: #e2e8f0;
-            text-decoration: none;
+        .logo-main {
+            font-weight: 700;
+            font-size: 1.4rem;
+            color: var(--blue-dark);
+            letter-spacing: 0.5px;
+        }
+        
+        .logo-sub {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+        
+        /* User Profile */
+        .user-profile {
+            text-align: right;
+        }
+        
+        .username {
+            font-weight: 600;
+            color: var(--text-dark);
+            display: block;
+        }
+        
+        .user-role {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 2px;
         }
         
         /* Sidebar Styles */
-        .sidebar {
+        .admin-sidebar {
+            width: 270px;
+            height: 100vh;
             position: fixed;
-            top: var(--header-height);
+            top: 70px;
             left: 0;
-            width: var(--sidebar-width);
-            height: calc(100vh - var(--header-height));
-            background: linear-gradient(180deg, var(--sidebar-color));
-            transition: transform var(--transition-speed) ease;
+            background: var(--sidebar-color);
+            color: var(--text-light);
+            transition: var(--transition);
+            z-index: 1020;
             overflow-y: auto;
-            z-index: 1040;
-            box-shadow: 4px 0 6px -1px rgba(0, 0, 0, 0.1);
-            padding-bottom: 1rem;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 1rem;
         }
         
         .profile-section {
@@ -129,142 +159,167 @@
             margin-bottom: 0.5rem;
         }
         
-        .profile-image {
+        .profile-img {
             width: 80px;
             height: 80px;
             border-radius: 50%;
             object-fit: cover;
-            border: 3px solid var(--accent-yellow);
-            margin: 0 auto 0.75rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 3px solid var(--yellow-primary);
+            margin-bottom: 1rem;
         }
         
         .profile-name {
-            color: white;
             font-weight: 600;
-            margin: 0.5rem 0;
-            font-size: 1.1rem;
+            margin-bottom: 0;
+            color: var(--text-light);
         }
         
         .profile-role {
-            color: rgba(255, 255, 255, 0.9);
             font-size: 0.8rem;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            display: inline-block;
-            font-weight: 500;
+            color: var(--yellow-primary);
+            margin-top: 0.25rem;
         }
         
-        .nav-menu {
-            padding: 0.5rem 0;
+        .sidebar-menu {
+            padding: 1rem 0;
         }
         
-        .nav-item {
+        .menu-item {
             display: flex;
             align-items: center;
-            padding: 0.75rem 1.5rem;
-            color: rgba(255, 255, 255, 0.9);
+            padding: 0.85rem 1.5rem;
+            color: var(--text-light);
             text-decoration: none;
-            transition: all var(--transition-speed);
+            transition: var(--transition);
             margin: 0.25rem 1rem;
-            border-radius: 8px;
-            font-size: 0.95rem;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            gap: 0.75rem;
         }
         
-        .nav-item:hover, .nav-item.active {
-            background: rgba(255, 255, 255, 0.2);
+        .menu-item:hover {
+            background: rgba(0, 122, 204, 0.2);
+            color: var(--text-light);
+        }
+        
+        .menu-item.active {
+            background: var(--blue-primary);
             color: white;
-            transform: translateX(4px);
-            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(0, 122, 204, 0.2);
         }
         
-        .nav-item i {
-            margin-right: 12px;
-            width: 20px;
+        .menu-item i {
+            width: 24px;
             text-align: center;
-            color: var(--accent-yellow);
-            font-size: 1rem;
+            font-size: 1.1rem;
         }
         
         /* Main Content Styles */
-        .main-content {
-            margin-left: var(--sidebar-width);
+        .admin-content {
+            margin-left: 250px;
+            margin-top: 70px;
             padding: 2rem;
-            min-height: calc(100vh - var(--header-height));
-            margin-top: var(--header-height);
-            transition: margin-left var(--transition-speed);
+            min-height: calc(100vh - 70px);
+            transition: var(--transition);
+            background-color: var(--card-bg);
         }
         
-        /* Responsive Styles */
+        /* Logout Button */
+        .logout-btn {
+            background: var(--blue-primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition);
+        }
+        
+        .logout-btn:hover {
+            background: var(--blue-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 92, 188, 0.2);
+        }
+        
+        .logout-text {
+            display: inline-block;
+        }
+        
+        /* Collapsed State */
+        .sidebar-collapsed .admin-sidebar {
+            width: 80px;
+        }
+        
+        .sidebar-collapsed .admin-content {
+            margin-left: 80px;
+        }
+        
+        .sidebar-collapsed .menu-item span {
+            display: none;
+        }
+        
+        .sidebar-collapsed .menu-item i {
+            margin-right: 0;
+            font-size: 1.25rem;
+        }
+        
+        .sidebar-collapsed .profile-section {
+            padding: 1rem 0.5rem;
+        }
+        
+        .sidebar-collapsed .profile-img {
+            width: 50px;
+            height: 50px;
+        }
+        
+        .sidebar-collapsed .profile-name,
+        .sidebar-collapsed .profile-role {
+            display: none;
+        }
+        
+        /* Responsive Adjustments */
         @media (max-width: 992px) {
-            .sidebar {
-                transform: translateX(-100%);
+            .admin-sidebar {
+                left: -250px;
             }
             
-            .sidebar.active {
-                transform: translateX(0);
-            }
-            
-            .main-content {
+            .admin-content {
                 margin-left: 0;
-                padding: 1.5rem;
             }
             
-            .menu-toggle {
-                display: block;
+            .sidebar-collapsed .admin-sidebar {
+                left: 0;
+                width: 80px;
             }
             
-            .logo-img {
-                height: 36px;
+            .sidebar-collapsed .admin-content {
+                margin-left: 80px;
+            }
+            
+            .admin-header {
+                padding: 0 1rem;
             }
         }
         
         @media (max-width: 768px) {
-            .main-header {
-                padding: 0 1rem;
+            .admin-content {
+                padding: 1.5rem;
+            }
+            .logo-sub, .user-role {
+                display: none;
             }
             
-            .main-content {
-                padding: 1.25rem;
-            }
-            
-            .logo {
-                font-size: 1.1rem;
-                gap: 8px;
-            }
-            
-            .logo-img {
-                height: 32px;
-            }
-            
-            .logout-btn span {
+            .logout-text {
                 display: none;
             }
             
             .logout-btn {
-                padding: 0.5rem;
-                border-radius: 50%;
-            }
-        }
-        
-        @media (max-width: 576px) {
-            .profile-section {
-                padding: 1rem 0.5rem;
-            }
-            
-            .profile-image {
-                width: 60px;
-                height: 60px;
-            }
-            
-            .profile-name {
-                font-size: 1rem;
-            }
-            
-            .nav-item {
-                padding: 0.6rem 1rem;
-                font-size: 0.9rem;
+                padding: 8px 12px;
             }
         }
     </style>
@@ -272,91 +327,108 @@
 
 <body>
     <!-- Header Area -->
-    <header class="main-header">
-        <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
-            <i class="fas fa-bars"></i>
-        </button>
-        <a href="/teacher/teacher-dashboard" class="logo" style="text-decoration: none;">
-            <img src="{% static 'image/logo.jpg' %}" class="logo-img" alt="PICE Logo">
-            <span>PICE</span>
-        </a>
-        <a href="/logout" class="logout-btn" title="Logout">
-            <i class="fas fa-sign-out-alt"></i>
-            <span>Logout</span>
-        </a>
+    <header class="admin-header">
+        <div class="header-container">
+            <!-- Left Side: Toggle and Logo -->
+            <div class="header-left">
+                <button class="sidebar-toggle" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="brand-logo">
+                    <img src="{% static 'image/logo.jpg' %}" alt="PICE Logo" class="header-logo">
+                    <div class="logo-text">
+                        <span class="logo-main">PICE</span>
+                        <span class="logo-sub">Examination System</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Side: User and Logout -->
+            <div class="header-right">
+                <div class="user-profile">
+                    <span class="username">{{request.user.first_name}} {{request.user.last_name}}</span>
+                    <div class="user-role">Trainer</div>
+                </div>
+                <a href="/logout" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span class="logout-text">Logout</span>
+                </a>
+            </div>
+        </div>
     </header>
 
-    <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
+    <!-- Sidebar Area -->
+    <aside class="admin-sidebar">
         <div class="profile-section">
+            <img src="{% static 'image/logo.jpg' %}" class="profile-img" alt="Profile Image">
             <h4 class="profile-name">{{request.user.first_name}} {{request.user.last_name}}</h4>
             <p class="profile-role">Trainer</p>
             <p class="profile-role">{{ request.user.teacher.department }}</p>
         </div>
         
-        <div class="nav-menu">
-            <a href="/teacher/teacher-dashboard" class="nav-item {% if request.path == '/teacher/teacher-dashboard' %}active{% endif %}">
-                <i class="fas fa-tachometer-alt"></i>
-                <span>Dashboard</span>
-            </a>
-            <a href="/teacher/teacher-exam" class="nav-item {% if request.path == '/teacher/teacher-exam' %}active{% endif %}">
-                <i class="fas fa-book"></i>
-                <span>Manage Courses</span>
-            </a>
-            <a href="/teacher/teacher-question" class="nav-item {% if request.path == '/teacher/teacher-question' %}active{% endif %}">
-                <i class="fas fa-question-circle"></i>
-                <span>Manage Questions</span>
-            </a>
-        </div>
-    </div>
+        <nav class="sidebar-menu">
+            <div class="menu-container">
+                <a href="/teacher/teacher-dashboard" class="menu-item {% if request.path == '/teacher/teacher-dashboard' %}active{% endif %}">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/teacher/teacher-exam" class="menu-item {% if request.path == '/teacher/teacher-exam' %}active{% endif %}">
+                    <i class="fas fa-book"></i>
+                    <span>Manage Courses</span>
+                </a>
+                <a href="/teacher/teacher-question" class="menu-item {% if request.path == '/teacher/teacher-question' %}active{% endif %}">
+                    <i class="fas fa-question-circle"></i>
+                    <span>Manage Questions</span>
+                </a>
+            </div>
+        </nav>
+    </aside>
 
-    <!-- Main Content -->
-    <main class="main-content">
+    <!-- Main Content Area -->
+    <main class="admin-content">
         {% block content %}
         {% endblock content %}
-        
-        {% include "exam/footer.html" %}
     </main>
 
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Mobile menu toggle
-        const menuToggle = document.getElementById('menuToggle');
-        const sidebar = document.getElementById('sidebar');
-        
-        menuToggle.addEventListener('click', function() {
-            sidebar.classList.toggle('active');
-            document.body.classList.toggle('sidebar-active');
-        });
-        
-        // Close sidebar when clicking outside on mobile
-        document.addEventListener('click', function(event) {
-            if (window.innerWidth <= 992 && 
-                !sidebar.contains(event.target) && 
-                event.target !== menuToggle && 
-                !menuToggle.contains(event.target)) {
-                sidebar.classList.remove('active');
-                document.body.classList.remove('sidebar-active');
+        // Sidebar Toggle Functionality
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            document.body.classList.toggle('sidebar-collapsed');
+            
+            // Save state in localStorage
+            if (document.body.classList.contains('sidebar-collapsed')) {
+                localStorage.setItem('sidebarCollapsed', 'true');
+            } else {
+                localStorage.removeItem('sidebarCollapsed');
             }
         });
         
-        // Add active class to current page nav item
-        document.addEventListener('DOMContentLoaded', function() {
-            const currentPath = window.location.pathname;
-            const navItems = document.querySelectorAll('.nav-item');
-            
-            navItems.forEach(item => {
-                if (item.getAttribute('href') === currentPath) {
-                    item.classList.add('active');
-                }
-            });
-        });
+        // Check for saved state on page load
+        if (localStorage.getItem('sidebarCollapsed') === 'true') {
+            document.body.classList.add('sidebar-collapsed');
+        }
         
-        // Adjust content padding when footer is present
-        window.addEventListener('load', function() {
-            const footer = document.querySelector('footer');
-            if (footer) {
-                const mainContent = document.querySelector('.main-content');
-                mainContent.style.paddingBottom = '4rem';
+        // Responsive sidebar toggle for mobile
+        function handleResize() {
+            if (window.innerWidth < 992) {
+                document.body.classList.add('sidebar-collapsed');
+            } else if (!localStorage.getItem('sidebarCollapsed')) {
+                document.body.classList.remove('sidebar-collapsed');
+            }
+        }
+        
+        // Initial check
+        handleResize();
+        
+        // Add event listener
+        window.addEventListener('resize', handleResize);
+        
+        // Set active menu item based on current URL
+        document.querySelectorAll('.menu-item').forEach(item => {
+            if (item.getAttribute('href') === window.location.pathname) {
+                item.classList.add('active');
             }
         });
     </script>
