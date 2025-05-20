@@ -15,17 +15,35 @@
   <div class="container min-vh-100 d-flex justify-content-center align-items-center">
     <div class="col-md-6">
       <div class="card shadow p-4">
+        <!-- Messages section -->
+        {% if messages %}
+          <div class="mb-3">
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+        
         <form method="post">
           {% csrf_token %}
           
           <h1 class="text-center mb-4 text-secondary">Admin Login Panel</h1>
+
+          {% if form.errors %}
+            <div class="alert alert-danger">
+              Invalid username or password. Please try again.
+            </div>
+          {% endif %}
 
           {% render_field form.username class="form-control mb-3" placeholder="Username" autocomplete="off" %}
           {% render_field form.password class="form-control mb-4" placeholder="Password" autocomplete="off" %}
           <div class="d-flex justify-content-center">
             <button type="submit" class="btn btn-primary">Admin Login</button>
           </div>
-                  </form>
+        </form>
       </div>
     </div>
   </div>
