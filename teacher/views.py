@@ -164,50 +164,49 @@ def teacher_add_question_view(request):
 @login_required(login_url='teacherlogin')
 @user_passes_test(is_teacher)
 def handle_bulk_import(request):
-    # Get teacher's department
     teacher = models.Teacher.objects.get(user=request.user)
     department = teacher.department
-    
+
     try:
         course_id = request.POST.get('courseID')
         import_type = request.POST.get('import_type', 'MCQ')
-        
-        # Verify course exists and belongs to teacher's department
+
         try:
             course = QMODEL.Course.objects.get(id=course_id, department=department)
         except QMODEL.Course.DoesNotExist:
-            messages.error(request, "Invalid course selection or you don't have permission to add questions to this course")
+            messages.error(request, "Invalid course selection or you don't have permission to add questions to this course.")
             return redirect('teacher:teacher-add-question')
-        
-        # Check if file was uploaded
+
         if 'question_file' not in request.FILES:
-            messages.error(request, "No file was uploaded")
+            messages.error(request, "No file was uploaded.")
             return redirect('teacher:teacher-add-question')
-            
+
         file = request.FILES['question_file']
-        
-        # Determine file type and read accordingly
+
+        # Attempt to read CSV or Excel with fallback encoding
         try:
             if file.name.endswith('.csv'):
-                df = pd.read_csv(BytesIO(file.read()))
-            else:  # Assume Excel
+                try:
+                    df = pd.read_csv(BytesIO(file.read()), encoding='utf-8')
+                except UnicodeDecodeError:
+                    file.seek(0)
+                    df = pd.read_csv(BytesIO(file.read()), encoding='cp1252')
+            else:
                 df = pd.read_excel(BytesIO(file.read()))
         except Exception as e:
             messages.error(request, f"Error reading file: {str(e)}")
             return redirect('teacher:teacher-add-question')
-        
+
         success_count = 0
         error_messages = []
-        
+
         for index, row in df.iterrows():
             try:
                 if import_type == 'MCQ':
-                    # Validate required fields
                     required_fields = ['question', 'marks', 'option1', 'option2', 'answer']
-                    if not all(field in row for field in required_fields):
-                        raise ValueError("Missing required columns for MCQ import")
-                    
-                    # Create question
+                    if not all(field in row.index for field in required_fields):
+                        raise ValueError("Missing required columns for MCQ import.")
+
                     QMODEL.Question.objects.create(
                         course=course,
                         question_type='MCQ',
@@ -219,14 +218,12 @@ def handle_bulk_import(request):
                         option4=row.get('option4', ''),
                         answer=f"Option{row['answer']}" if str(row['answer']).isdigit() else row['answer'],
                     )
-                    
+
                 elif import_type == 'FIB':
-                    # Validate required fields
                     required_fields = ['question_text', 'marks', 'blank_answer']
-                    if not all(field in row for field in required_fields):
-                        raise ValueError("Missing required columns for FIB import")
-                    
-                    # Create question
+                    if not all(field in row.index for field in required_fields):
+                        raise ValueError("Missing required columns for FIB import.")
+
                     QMODEL.Question.objects.create(
                         course=course,
                         question_type='FIB',
@@ -235,24 +232,23 @@ def handle_bulk_import(request):
                         blank_answer=row['blank_answer'],
                         case_sensitive=str(row.get('case_sensitive', 'false')).lower() == 'true',
                     )
-                
+
                 success_count += 1
-                
+
             except Exception as e:
                 error_messages.append(f"Row {index+2}: {str(e)}")
-        
-        # Show success/error messages
+
         if success_count > 0:
             messages.success(request, f"Successfully imported {success_count} {import_type} questions!")
         if error_messages:
-            messages.warning(request, f"Completed with {len(error_messages)} errors")
+            messages.warning(request, f"Completed with {len(error_messages)} errors.")
             request.session['import_errors'] = error_messages
-        
+
     except Exception as e:
         messages.error(request, f"Import failed: {str(e)}")
-    
-    return redirect('teacher:teacher-add-question')
 
+    return redirect('teacher:teacher-add-question')
+    
 @login_required(login_url='teacherlogin')
 @user_passes_test(is_teacher)
 def download_question_template(request, type):

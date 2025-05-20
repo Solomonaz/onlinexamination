@@ -14,10 +14,7 @@
     <div class="jumbotron">
         {% if attempted %}
         <strong class="text-danger">You have already taken this exam.</strong> <br>
-        <!-- <strong class="text-danger">ይሄን ፈተና ተፈትነዉታል.</strong> -->
         <p>You cannot attempt the same exam more than once.</p>
-        <!-- <p>ከአንዴ በላይ መፈተን አይቻልም.</p>  -->
-        <!-- <p>Your mark is {{marks}}</p> -->
         {% else %}
         <div class="row">
 
@@ -26,9 +23,9 @@
                     <h4 class="card-title">Exam Details :</h4>
                     <p class="card-text">
                         </p><ul style="list-style:decimal;">
-                            <li>Course : {{course.course_name}}</li>
-                            <li>Total Question : {{total_questions}}</li>
-                            <li>Total Marks : {{total_marks}}</li>
+                            <li>ፈተናው : {{course.course_name}}</li>
+                            <li>የጥያቄው ብዛት : {{total_questions}}</li>
+                            <li>የሚይዙት ማርክ : {{total_marks}}</li>
                         </ul>
                     <p></p>
 
@@ -37,13 +34,10 @@
                     <h4 class="card-title">Rules :</h4>
                     <p class="card-text">
                         </p><ul style="list-style:decimal;">
-                            <li>All questions are MCQ (multiple choice question)</li>
-                            <li><span class="text-danger">Only one choice is correct among the given.</span></li>
-                            <li>Every question carry different marks.</li>
-                            <li>Try to answer ASAP.</li>
-                            <li>If you PRESS refresh or go back to the previous page, there will be a new question for you and the question you were on will be counted as number of attempts.</li>
-                            <li>Questions are presented randomly.</li>
-                            <li>You will be able to view marks immediately once after you submit the answer.</li>
+                            <li>ጥያቄዎቹ ተመሳሳይም ወይም የተለያየ ማርክ ሊኖራቸው ይችላል</li>
+                            <li>በማስተዋል ትክክለኛዉን መልስ ይስጡ.</li>
+                            <li>ፈተናዉን ከጨረሱ በሁዋላ submit የሚለዉን በመጫን የምርጫ ዉጤትዎን ማየት ይችላሉ.</li>
+                            <li>የፈተናው አይነት ጻፍ ከሆነ ዉጤቱን ሲስተሙ ጋር ማየት አትችሉም.</li>
                         </ul>
                     <p></p>
 
