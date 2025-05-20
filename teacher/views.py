@@ -420,19 +420,18 @@ def teacher_explanation_grading_view(request, student_id, course_id):
     return render(request, 'teacher/teacher_explanation_grading.html', context)
 
 from django.core.paginator import Paginator
-
 def teacher_view_department_view(request, department_id=None):
     department = get_teacher_department(request)
-    student_list = SMODEL.Student.objects.filter(department=department)
+    student_list = SMODEL.Student.objects.filter(department=department).order_by('id')  # or 'last_name', 'first_name', etc.
     
-    paginator = Paginator(student_list, 10)  # Show 25 students per page
+    paginator = Paginator(student_list, 10)  # Show 10 students per page
     page_number = request.GET.get('page')
     students = paginator.get_page(page_number)
     
     context = {
         'department': department,
         'students': students,
-        'student_list':student_list,
+        'student_list': student_list,
     }
     return render(request, 'teacher/teacher_view_examinee_department.html', context)
 
