@@ -1,7 +1,7 @@
 
 from datetime import datetime  # Add this import at the top
 from django.utils import timezone  # Also helpful for timezone-aware datetimes
-@login_required(login_url='teacherlogin')
+@login_required(login_url='teacher:teacherlogin')
 @user_passes_test(is_teacher)
 def teacher_view_examinees_view(request, course_id):
     course = QMODEL.Course.objects.get(id=course_id)

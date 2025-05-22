@@ -14,7 +14,8 @@
     <div class="jumbotron">
         {% if attempted %}
         <strong class="text-danger">You have already taken this exam.</strong> <br>
-        <p>You cannot attempt the same exam more than once.</p>
+        <p>You cannot attempt the same exam more than once.</p> <br>
+        <p>ይሄን ፈተና ተፈትነዉታል። ድጋሜ መፈተን አይችሉም</p>
         {% else %}
         <div class="row">
 
@@ -41,7 +42,7 @@
                         </ul>
                     <p></p>
 
-                    <a href="{% url 'start-exam' course.id %}" class="btn btn-primary btn-lg" style="border-radius:0px;">Enter Examination</a>
+                    <a href="{% url 'start-exam' course.id %}" class="btn btn-primary btn-lg" style="border-radius:0px;">ጀምር</a>
                 
                 
                 </div>  

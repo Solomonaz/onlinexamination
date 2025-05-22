@@ -77,7 +77,7 @@ def teacher_signup_view(request):
 def is_teacher(user):
     return user.groups.filter(name='TEACHER').exists()
 
-@login_required(login_url='teacherlogin')
+@login_required(login_url='teacher:teacherlogin')
 @user_passes_test(is_teacher)
 def teacher_dashboard_view(request):
     department = get_teacher_department(request)
@@ -91,13 +91,13 @@ def teacher_dashboard_view(request):
     }
     return render(request,'teacher/teacher_dashboard.html', context)
 
-@login_required(login_url='teacherlogin')
+@login_required(login_url='teacher:teacherlogin')
 @user_passes_test(is_teacher)
 def teacher_exam_view(request):
     return render(request,'teacher/teacher_exam.html')
 
 
-@login_required(login_url='teacherlogin')
+@login_required(login_url='teacher:teacherlogin')
 @user_passes_test(is_teacher)
 def teacher_add_exam_view(request):
     department = get_teacher_department(request)
@@ -113,14 +113,14 @@ def teacher_add_exam_view(request):
     
     return render(request,'teacher/teacher_add_exam.html',{'courseForm':courseForm})
 
-@login_required(login_url='teacherlogin')
+@login_required(login_url='teacher:teacherlogin')
 @user_passes_test(is_teacher)
 def teacher_view_exam_view(request):
     department = get_teacher_department(request)
     courses = QMODEL.Course.objects.filter(department=department)
     return render(request,'teacher/teacher_view_exam.html',{'courses':courses})
 
-@login_required(login_url='teacherlogin')
+@login_required(login_url='teacher:teacherlogin')
 @user_passes_test(is_teacher)
 def delete_exam_view(request,pk):
     department = get_teacher_department(request)
@@ -129,13 +129,13 @@ def delete_exam_view(request,pk):
     messages.success(request, "Course deleted successfully!")
     return redirect('teacher:teacher-view-exam')
 
-@login_required(login_url='teacherlogin')
+@login_required(login_url='teacher:teacherlogin')
 @user_passes_test(is_teacher)
 def teacher_question_view(request):
     return render(request,'teacher/teacher_question.html')
 
 
-@login_required(login_url='teacherlogin')
+@login_required(login_url='teacher:teacherlogin')
 @user_passes_test(is_teacher)
 def teacher_add_question_view(request):
     # Get teacher's department
@@ -161,7 +161,7 @@ def teacher_add_question_view(request):
         'import_errors': request.session.pop('import_errors', None)
     })
 
-@login_required(login_url='teacherlogin')
+@login_required(login_url='teacher:teacherlogin')
 @user_passes_test(is_teacher)
 def handle_bulk_import(request):
     teacher = models.Teacher.objects.get(user=request.user)
@@ -249,7 +249,7 @@ def handle_bulk_import(request):
 
     return redirect('teacher:teacher-add-question')
     
-@login_required(login_url='teacherlogin')
+@login_required(login_url='teacher:teacherlogin')
 @user_passes_test(is_teacher)
 def download_question_template(request, type):
     response = HttpResponse(content_type='text/csv')
@@ -267,14 +267,14 @@ def download_question_template(request, type):
     
     return response
 
-@login_required(login_url='teacherlogin')
+@login_required(login_url='teacher:teacherlogin')
 @user_passes_test(is_teacher)
 def teacher_view_question_view(request):
     department = get_teacher_department(request)
     courses = QMODEL.Course.objects.filter(department=department)
     return render(request,'teacher/teacher_view_question.html',{'courses':courses})
 
-@login_required(login_url='teacherlogin')
+@login_required(login_url='teacher:teacherlogin')
 @user_passes_test(is_teacher)
 def see_question_view(request,pk):
     department = get_teacher_department(request)
@@ -285,7 +285,7 @@ def see_question_view(request,pk):
         'course': course
     })
 
-@login_required(login_url='teacherlogin')
+@login_required(login_url='teacher:teacherlogin')
 @user_passes_test(is_teacher)
 def remove_question_view(request,pk):
     department = get_teacher_department(request)
@@ -294,7 +294,7 @@ def remove_question_view(request,pk):
     messages.success(request, "Question deleted successfully!")
     return redirect(request.META.get('HTTP_REFERER', '/'))
 
-@login_required(login_url='teacherlogin')
+@login_required(login_url='teacher:teacherlogin')
 @user_passes_test(is_teacher)
 def teacher_view_examinees_view(request, course_id):
     department = get_teacher_department(request)
@@ -348,7 +348,7 @@ def teacher_view_examinees_view(request, course_id):
         'max_mark': max_mark,
     })
 
-@login_required(login_url='teacherlogin')
+@login_required(login_url='teacher:teacherlogin')
 @user_passes_test(is_teacher)
 def teacher_explanation_grading_view(request, student_id, course_id):
     department = get_teacher_department(request)
@@ -420,6 +420,7 @@ def teacher_explanation_grading_view(request, student_id, course_id):
     return render(request, 'teacher/teacher_explanation_grading.html', context)
 
 from django.core.paginator import Paginator
+@login_required(login_url='teacher:teacherlogin')
 def teacher_view_department_view(request, department_id=None):
     department = get_teacher_department(request)
     student_list = SMODEL.Student.objects.filter(department=department).order_by('id')  # or 'last_name', 'first_name', etc.
@@ -434,7 +435,7 @@ def teacher_view_department_view(request, department_id=None):
         'student_list': student_list,
     }
     return render(request, 'teacher/teacher_view_examinee_department.html', context)
-
+@login_required(login_url='teacher:teacherlogin')
 def delete_view_student_list(request, pk):
     department = get_teacher_department(request)
     student_list = SMODEL.Student.objects.filter(id=pk,department=department)    

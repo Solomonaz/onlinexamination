@@ -1,7 +1,7 @@
 from django.shortcuts import render,redirect,reverse, get_object_or_404
 from . import forms,models
 from django.db.models import Sum
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, User
 from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required,user_passes_test
 from django.conf import settings
@@ -10,7 +10,8 @@ from exam import models as QMODEL
 from teacher import models as TMODEL
 from django.contrib import messages
 from datetime import datetime, timedelta
-
+import random
+from django.db import IntegrityError
 
 #for showing signup/login button for student
 def studentclick_view(request):
@@ -18,31 +19,78 @@ def studentclick_view(request):
         return HttpResponseRedirect('afterlogin')
     return render(request,'student/studentclick.html')
 
+import random
+from django.contrib import messages
+from django.db import IntegrityError
+
+def generate_username(first_name):
+    """Generate username from first 3 letters of first name + random 3 digits"""
+    prefix = first_name[:3].lower()
+    while True:
+        random_digits = ''.join(random.choice('0123456789') for _ in range(3))
+        username = f"{prefix}{random_digits}"
+        if not User.objects.filter(username=username).exists():
+            return username
+
+def generate_password():
+    """Generate 6-digit numeric password"""
+    return ''.join(random.choice('0123456789') for _ in range(6))
+
 def student_signup_view(request):
-    userForm=forms.StudentUserForm()
-    studentForm=forms.StudentForm()
-    mydict={
-        'userForm':userForm,
-        'studentForm':studentForm,
-        }
-    if request.method=='POST':
-        userForm=forms.StudentUserForm(request.POST)
-        studentForm=forms.StudentForm(request.POST,request.FILES)
+    if request.method == 'POST':
+        userForm = forms.StudentUserForm(request.POST)
+        studentForm = forms.StudentForm(request.POST, request.FILES)
+        
         if userForm.is_valid() and studentForm.is_valid():
-            user=userForm.save()
-            user.set_password(user.password)
-            user.save()
-            student=studentForm.save(commit=False)
-            student.user=user
-            student.save()
+            try:
+                first_name = userForm.cleaned_data['first_name']
+                username = generate_username(first_name)
+                password = generate_password()
+                
+                # Create user with generated credentials
+                user = userForm.save(commit=False)
+                user.username = username
+                user.set_password(password)
+                user.save()
+                
+                # Create student profile
+                student = studentForm.save(commit=False)
+                student.user = user
+                student.save()
 
-            my_student_group = Group.objects.get_or_create(name='STUDENT')
-            my_student_group[0].user_set.add(user)
+                # Add to STUDENT group
+                my_student_group = Group.objects.get_or_create(name='STUDENT')
+                my_student_group[0].user_set.add(user)
 
-            messages.success(request, "Student has been successfully registered!")
-
-        return HttpResponseRedirect('studentsignup')
-    return render(request,'student/studentsignup.html',context=mydict)
+                # Prepare success data
+                context = {
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                    'username': username,
+                    'password': password,
+                    'date_joined': user.date_joined.strftime('%Y-%m-%d'),
+                }
+                return render(request, 'student/registration_success.html', context)
+                
+            except IntegrityError:
+                messages.error(request, "Username already exists. Please try again.")
+            except Exception as e:
+                messages.error(request, f"Error creating account: {str(e)}")
+        else:
+            for field, errors in userForm.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
+            for field, errors in studentForm.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
+    
+    # For GET request
+    userForm = forms.StudentUserForm()
+    studentForm = forms.StudentForm()
+    return render(request, 'student/studentsignup.html', {
+        'userForm': userForm,
+        'studentForm': studentForm,
+    })
 
 def is_student(user):
     return user.groups.filter(name='STUDENT').exists()
@@ -69,7 +117,7 @@ def student_dashboard_view(request):
     except ObjectDoesNotExist:
         # Handle the case where student doesn't exist
         messages.error(request, "Student profile not found. Please contact administrator.")
-        return redirect('studentlogin')  # or some other appropriate page
+        return redirect('studentlogin')
 
 
 @login_required(login_url='studentlogin')

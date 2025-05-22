@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Successful</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+        }
+        .card {
+            max-width: 600px;
+            margin: 2rem auto;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .printable-card {
+            border: 2px dashed #ccc;
+            padding: 2rem;
+            margin-top: 2rem;
+            background-color: white;
+        }
+        .credentials {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <!-- <div class="card-header bg-success text-white">
+                <h3 class="text-center">Registration Successful</h3>
+            </div> -->
+            <div class="card-body">
+                <!-- <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i> Student has been successfully registered!
+                </div> -->
+                
+                <div class="printable-card" id="printableArea">
+                    <h4 class="text-center mb-4">የተፈታኝ መረጃ</h4>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>ስም:</strong>
+                            <span class="credentials">{{ first_name }}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>የአባት ስም:</strong>
+                            <span class="credentials">{{ last_name }}</span>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>የመግቢያ ስም:</strong>
+                            <span class="credentials">{{ username }}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>መለያ:</strong>
+                            <span class="credentials">{{ password }}</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <strong>የምዝገባ ቀን:</strong>
+                            <span>{{ date_joined }}</span>
+                        </div>
+                    </div>
+                    <hr>
+                    <!-- <p class="text-center text-muted">
+                        <small>This information should be printed and attached to the student's ID card</small>
+                    </p> -->
+                </div>
+                
+                <!-- <div class="mt-4 text-center">
+                    <button onclick="window.print()" class="btn btn-primary me-2">
+                        <i class="fas fa-print"></i> Print Credentials
+                    </button>
+                    <a href="/admin-view-student" class="btn btn-success">
+                        <i class="fas fa-home"></i> Back to Dashboard
+                    </a>
+                </div> -->
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <script>
+        // Automatically print when page loads (optional)
+        // window.onload = function() { window.print(); }
+    </script>
+</body>
+</html>
