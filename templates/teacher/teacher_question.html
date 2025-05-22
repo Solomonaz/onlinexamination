@@ -22,7 +22,7 @@
         }
         
         .dashboard-container {
-            max-width: 800px;
+            max-width: 1000px;
             margin: 0 auto;
             padding: 30px;
         }
@@ -70,6 +70,16 @@
             color: var(--primary-blue);
         }
         
+        .green-icon {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .purple-icon {
+            background-color: #f3e5f5;
+            color: #7b1fa2;
+        }
+        
         .card-title {
             font-size: 1.1rem;
             font-weight: 600;
@@ -110,16 +120,68 @@
             transform: translateX(-50%);
             border-radius: 2px;
         }
+        
+        .active-bank-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: var(--primary-blue);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
     </style>
 </head>
 
 <div class="dashboard-container">
     <div class="dashboard-header">
         <h2>Question Management</h2>
-        <p class="text-muted">Add and manage your examination questions</p>
+        <p class="text-muted">Add and manage your examination questions and banks</p>
     </div>
     
     <div class="row g-4">
+        <!-- Question Bank Management Card -->
+        <div class="col-md-6">
+            <a href="{% url 'teacher:teacher-add-question-bank' %}" class="action-link">
+                <div class="action-card">
+                    <div class="card-body">
+                        <div class="card-icon green-icon">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <h4 class="card-title">Create Question Banks</h4>
+                        <p class="card-description">Create and organize questions into different banks</p>
+                        <div class="btn btn-sm" style="background-color: var(--primary-blue); color: white;">
+                            Manage Banks
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        
+        <!-- Active Bank Status Card -->
+        <div class="col-md-6">
+            <a href="{% url 'teacher:teacher-assign-question-bank' %}" class="action-link">
+                <div class="action-card">
+                    <div class="card-body">
+                        <div class="card-icon purple-icon">
+                            <i class="fas fa-toggle-on"></i>
+                        </div>
+                        <h4 class="card-title">Set Active Bank</h4>
+                        <p class="card-description">Choose which question bank is currently active for exams</p>
+                        {% if active_bank %}
+                        <div class="active-bank-badge">Current: {{ active_bank.name|truncatechars:15 }}</div>
+                        {% endif %}
+                        <div class="btn btn-sm" style="background-color: var(--primary-blue); color: white;">
+                            Change Active Bank
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        
+        <!-- Original Question Management Cards -->
         <div class="col-md-6">
             <a href="teacher-add-question" class="action-link">
                 <div class="action-card">

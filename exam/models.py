@@ -11,16 +11,12 @@ class Department(models.Model):
         return self.department_name
 
 from django.core.exceptions import ValidationError
-
-
 class Course(models.Model):
     course_name = models.CharField(max_length=50)
     question_number = models.PositiveIntegerField()
     total_marks = models.PositiveIntegerField(default=100)
     given_time = models.PositiveIntegerField(default=60)
     department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='course_set')
-
-
 
     def __str__(self):
         return self.course_name

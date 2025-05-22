@@ -1,0 +1,408 @@
+{% extends 'teacher/teacherbase.html' %}
+{% load widget_tweaks %}
+{% block content %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question Bank Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #0078C9;
+            --primary-yellow: #FFF200;
+            --light-blue: #E6F2FA;
+            --dark-blue: #005A9C;
+            --success: #28a745;
+            --light-bg: #f8f9fa;
+        }
+        
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        
+        /* Modern Card Design */
+        .course-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+            margin-bottom: 24px;
+            border: none;
+            overflow: hidden;
+        }
+        
+        .course-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 120, 201, 0.12);
+        }
+        
+        .course-header {
+            background: linear-gradient(135deg, var(--primary-blue), var(--dark-blue));
+            color: white;
+            padding: 18px 24px;
+            position: relative;
+        }
+        
+        .course-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-yellow), rgba(255,255,255,0.3));
+        }
+        
+        .bank-item {
+            padding: 16px 24px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+        }
+        
+        .bank-item:last-child {
+            border-bottom: none;
+        }
+        
+        .bank-item:hover {
+            background-color: var(--light-blue);
+        }
+        
+        .active-bank {
+            background-color: rgba(40, 167, 69, 0.08);
+            border-left: 4px solid var(--success);
+        }
+        
+        /* Status Indicators */
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-active {
+            background-color: rgba(40, 167, 69, 0.15);
+            color: var(--success);
+        }
+        
+        .status-inactive {
+            background-color: rgba(108, 117, 125, 0.15);
+            color: #6c757d;
+        }
+        
+        /* Buttons */
+        .btn-activate {
+            background-color: var(--primary-blue);
+            color: white;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn-activate:hover {
+            background-color: var(--dark-blue);
+            transform: translateY(-1px);
+        }
+        
+        .btn-icon {
+            width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            color: var(--primary-blue);
+            background-color: rgba(0, 120, 201, 0.1);
+            transition: all 0.2s;
+        }
+        
+        .btn-icon:hover {
+            background-color: rgba(0, 120, 201, 0.2);
+            color: var(--dark-blue);
+        }
+        
+        /* Layout */
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+        
+        .search-bar {
+            background: white;
+            border-radius: 12px;
+            padding: 16px 24px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+            margin-bottom: 24px;
+        }
+        
+        /* Active Bank Highlight */
+        .active-highlight {
+            background: white;
+            border-radius: 12px;
+            padding: 16px 24px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            margin-bottom: 24px;
+            border-left: 4px solid var(--primary-yellow);
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <div>
+                <h1 class="h3 fw-bold mb-1" style="color: var(--primary-blue);">
+                    <i class="fas fa-database me-2"></i>Question Banks
+                </h1>
+                <p class="text-muted">Manage all question banks across your courses</p>
+            </div>
+            <button class="btn btn-primary px-4 py-2" style="background-color: var(--primary-blue); border: none;">
+                <i class="fas fa-plus me-2"></i>New Bank
+            </button>
+        </div>
+        
+        <!-- Active Bank Indicator -->
+        <div class="active-highlight">
+            <div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <h5 class="mb-1 fw-bold" style="color: var(--primary-blue);">
+                        <i class="fas fa-star me-2" style="color: var(--primary-yellow);"></i>Currently Active Bank
+                    </h5>
+                    <div class="d-flex align-items-center">
+                        <span class="fw-bold me-2">Mathematics:</span>
+                        <span class="me-3">Midterm Exam Bank 2023</span>
+                        <span class="status-badge status-active me-2">ACTIVE</span>
+                        <span class="text-muted small">45 questions • Last used: 2 days ago</span>
+                    </div>
+                </div>
+                <button class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-cog me-1"></i>Settings
+                </button>
+            </div>
+        </div>
+        
+        <!-- Search and Filter -->
+        <div class="search-bar">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                        <input type="text" class="form-control border-start-0" placeholder="Search banks...">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select">
+                        <option selected>All Courses</option>
+                        <option>Mathematics</option>
+                        <option>Physics</option>
+                        <option>Chemistry</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select">
+                        <option selected>All Statuses</option>
+                        <option>Active</option>
+                        <option>Inactive</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Courses Grid -->
+        <div class="row">
+            <!-- Course 1 -->
+            <div class="col-lg-6">
+                <div class="course-card">
+                    <div class="course-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="h5 mb-0">Mathematics</h3>
+                            <span class="small opacity-75">8 question banks</span>
+                        </div>
+                        <span class="badge bg-white text-primary rounded-pill">Most Active</span>
+                    </div>
+                    <div class="bank-list">
+                        <!-- Active Bank -->
+                        <div class="bank-item active-bank">
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-center mb-1">
+                                    <h6 class="mb-0 me-2">Midterm Exam Bank 2023</h6>
+                                    <span class="status-badge status-active">ACTIVE</span>
+                                </div>
+                                <div class="small text-muted">
+                                    <span class="me-3"><i class="fas fa-question-circle me-1"></i> 45 questions</span>
+                                    <span><i class="far fa-calendar me-1"></i> Updated: Oct 15, 2023</span>
+                                </div>
+                            </div>
+                            <div class="d-flex">
+                                <button class="btn-icon me-2" title="Edit">
+                                    <i class="fas fa-pen"></i>
+                                </button>
+                                <button class="btn-icon" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Inactive Banks -->
+                        <div class="bank-item">
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-center mb-1">
+                                    <h6 class="mb-0 me-2">Final Exam Bank</h6>
+                                    <span class="status-badge status-inactive">INACTIVE</span>
+                                </div>
+                                <div class="small text-muted">
+                                    <span class="me-3"><i class="fas fa-question-circle me-1"></i> 32 questions</span>
+                                    <span><i class="far fa-calendar me-1"></i> Updated: Nov 5, 2023</span>
+                                </div>
+                            </div>
+                            <div class="d-flex">
+                                <button class="btn-activate me-2">
+                                    <i class="fas fa-power-off me-1"></i> Activate
+                                </button>
+                                <button class="btn-icon me-2">
+                                    <i class="fas fa-pen"></i>
+                                </button>
+                                <button class="btn-icon">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="bank-item">
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-center mb-1">
+                                    <h6 class="mb-0 me-2">Chapter Quizzes</h6>
+                                    <span class="status-badge status-inactive">INACTIVE</span>
+                                </div>
+                                <div class="small text-muted">
+                                    <span class="me-3"><i class="fas fa-question-circle me-1"></i> 28 questions</span>
+                                    <span><i class="far fa-calendar me-1"></i> Updated: Sep 1, 2023</span>
+                                </div>
+                            </div>
+                            <div class="d-flex">
+                                <button class="btn-activate me-2">
+                                    <i class="fas fa-power-off me-1"></i> Activate
+                                </button>
+                                <button class="btn-icon me-2">
+                                    <i class="fas fa-pen"></i>
+                                </button>
+                                <button class="btn-icon">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Show More Trigger -->
+                        <div class="text-center py-2">
+                            <button class="btn btn-link text-primary small">
+                                <i class="fas fa-chevron-down me-1"></i> Show all 8 banks
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Course 2 -->
+            <div class="col-lg-6">
+                <div class="course-card">
+                    <div class="course-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="h5 mb-0">Physics</h3>
+                            <span class="small opacity-75">6 question banks</span>
+                        </div>
+                        <span class="badge bg-white text-primary rounded-pill">Recently Updated</span>
+                    </div>
+                    <div class="bank-list">
+                        <div class="bank-item">
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-center mb-1">
+                                    <h6 class="mb-0 me-2">Practical Exams</h6>
+                                    <span class="status-badge status-inactive">INACTIVE</span>
+                                </div>
+                                <div class="small text-muted">
+                                    <span class="me-3"><i class="fas fa-question-circle me-1"></i> 18 questions</span>
+                                    <span><i class="far fa-calendar me-1"></i> Updated: Dec 10, 2023</span>
+                                </div>
+                            </div>
+                            <div class="d-flex">
+                                <button class="btn-activate me-2">
+                                    <i class="fas fa-power-off me-1"></i> Activate
+                                </button>
+                                <button class="btn-icon me-2">
+                                    <i class="fas fa-pen"></i>
+                                </button>
+                                <button class="btn-icon">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="bank-item">
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-center mb-1">
+                                    <h6 class="mb-0 me-2">Term Tests</h6>
+                                    <span class="status-badge status-inactive">INACTIVE</span>
+                                </div>
+                                <div class="small text-muted">
+                                    <span class="me-3"><i class="fas fa-question-circle me-1"></i> 24 questions</span>
+                                    <span><i class="far fa-calendar me-1"></i> Updated: Nov 20, 2023</span>
+                                </div>
+                            </div>
+                            <div class="d-flex">
+                                <button class="btn-activate me-2">
+                                    <i class="fas fa-power-off me-1"></i> Activate
+                                </button>
+                                <button class="btn-icon me-2">
+                                    <i class="fas fa-pen"></i>
+                                </button>
+                                <button class="btn-icon">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Show More Trigger -->
+                        <div class="text-center py-2">
+                            <button class="btn btn-link text-primary small">
+                                <i class="fas fa-chevron-down me-1"></i> Show all 6 banks
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Additional courses would follow the same pattern -->
+        </div>
+        
+        <!-- Pagination -->
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item disabled">
+                    <a class="page-link" href="#"><i class="fas fa-chevron-left"></i></a>
+                </li>
+                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                <li class="page-item">
+                    <a class="page-link" href="#"><i class="fas fa-chevron-right"></i></a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
+{% endblock content %}

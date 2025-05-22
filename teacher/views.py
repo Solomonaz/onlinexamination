@@ -442,3 +442,10 @@ def delete_view_student_list(request, pk):
     student_list.delete()
     messages.success(request, "Course deleted successfully!")
     return redirect('teacher:teacher-view-department')
+
+def teacher_add_question_bank_view(request):
+    return render(request, 'teacher/teacher_add_question_banks.html')
+
+
+def teacher_assign_question_bank_view(request):
+    return render(request, 'teacher/teacher_assign_question_banks.html')

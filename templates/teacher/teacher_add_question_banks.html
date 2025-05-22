@@ -1,0 +1,252 @@
+{% extends 'teacher/teacherbase.html' %}
+{% load widget_tweaks %}
+{% block content %}
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-blue: #0078C9;
+            --primary-yellow: #FFF200;
+            --light-blue: #E6F2FA;
+            --dark-blue: #005A9C;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        .bank-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+        
+        .bank-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .bank-header h2 {
+            color: var(--primary-blue);
+            font-weight: 600;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .bank-header h2:after {
+            content: '';
+            position: absolute;
+            width: 60px;
+            height: 4px;
+            background: var(--primary-yellow);
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+        
+        .bank-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            margin-bottom: 25px;
+            border-top: 4px solid var(--primary-blue);
+            background: white;
+        }
+        
+        .bank-card-header {
+            background-color: var(--light-blue);
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .bank-card-body {
+            padding: 20px;
+        }
+        
+        .bank-status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .active-bank {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .inactive-bank {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+        
+        .bank-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-sm {
+            padding: 5px 12px;
+            font-size: 0.85rem;
+        }
+        
+        .course-badge {
+            background-color: var(--light-blue);
+            color: var(--primary-blue);
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .create-bank-form {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+            margin-top: 30px;
+        }
+        
+        .form-label {
+            font-weight: 500;
+            color: var(--primary-blue);
+        }
+        
+        .select2-container--default .select2-selection--multiple {
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            min-height: 38px;
+        }
+    </style>
+</head>
+
+<div class="bank-container">
+    <div class="bank-header">
+        <h2>Question Bank Management</h2>
+        <p class="text-muted">Organize your questions into different banks and manage their availability</p>
+    </div>
+    
+    <!-- Current Active Bank Indicator -->
+    <div class="alert alert-success" role="alert">
+        <i class="fas fa-info-circle me-2"></i>
+        <strong>Current Active Bank:</strong> 
+        {% if active_bank %}
+            {{ active_bank.name }} ({{ active_bank.questions.count }} questions)
+        {% else %}
+            No active bank selected
+        {% endif %}
+    </div>
+    
+    <!-- Existing Question Banks -->
+    <h4 class="mb-3" style="color: var(--primary-blue);">Your Question Banks</h4>
+    
+    {% for bank in question_banks %}
+    <div class="bank-card">
+        <div class="bank-card-header">
+            <h5 class="mb-0">{{ bank.name }}</h5>
+            <div class="d-flex align-items-center">
+                <span class="bank-status-badge {% if bank.is_active %}active-bank{% else %}inactive-bank{% endif %}">
+                    {% if bank.is_active %}ACTIVE{% else %}INACTIVE{% endif %}
+                </span>
+            </div>
+        </div>
+        <div class="bank-card-body">
+            <div class="d-flex justify-content-between mb-3">
+                <div>
+                    <span class="text-muted"><i class="far fa-question-circle me-1"></i> {{ bank.questions.count }} questions</span>
+                    <span class="text-muted ms-3"><i class="far fa-calendar-alt me-1"></i> Created: {{ bank.created_at|date:"M d, Y" }}</span>
+                </div>
+                <div class="bank-actions">
+                    {% if not bank.is_active %}
+                    <a href="{% url 'activate-question-bank' bank.id %}" class="btn btn-success btn-sm">
+                        <i class="fas fa-toggle-on me-1"></i> Activate
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'edit-question-bank' bank.id %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-edit me-1"></i> Edit
+                    </a>
+                    <a href="{% url 'delete-question-bank' bank.id %}" class="btn btn-danger btn-sm">
+                        <i class="fas fa-trash-alt me-1"></i> Delete
+                    </a>
+                </div>
+            </div>
+            
+            <div class="mb-2">
+                <strong>Assigned Courses:</strong>
+                {% if bank.courses.all %}
+                    {% for course in bank.courses.all %}
+                        <span class="badge course-badge">{{ course.course_name }}</span>
+                    {% endfor %}
+                {% else %}
+                    <span class="text-muted">Not assigned to any courses</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="alert alert-info">
+        You haven't created any question banks yet.
+    </div>
+    {% endfor %}
+    
+    <!-- Create New Question Bank Form -->
+    <div class="create-bank-form">
+        <h4 class="mb-4" style="color: var(--primary-blue);">
+            <i class="fas fa-plus-circle me-2"></i>Create New Question Bank
+        </h4>
+        
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="id_name" class="form-label">Bank Name*</label>
+                    {% render_field form.name class="form-control" placeholder="e.g. Midterm Exam Bank 2023" %}
+                    <input type="text" class="form-control" placeholder="e.g. Midterm Exam Bank 2023">
+                    <small class="text-muted">A descriptive name for your question bank</small>
+                </div>
+                <div class="col-md-6">
+                    <label for="id_courses" class="form-label">Assign to Courses</label>
+                    {% render_field form.courses class="form-select" %}
+                    <select name="" id="" class="form-select">
+                        <option value="">----------------</option>
+                        <option value="">Computer Science</option>
+                        <option value="">Software Engineering</option>
+                        <option value="">Internet programing</option>
+                    </select>
+                    <small class="text-muted">Hold Ctrl/Cmd to select multiple courses</small>
+                </div>
+            </div>
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-1"></i> Create Question Bank
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Include Select2 for better multi-select experience -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#id_courses').select2({
+            placeholder: "Select courses...",
+            allowClear: true
+        });
+    });
+</script>
+
+{% endblock content %}

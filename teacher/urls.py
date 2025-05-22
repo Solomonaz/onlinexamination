@@ -26,7 +26,9 @@ path('teacher-add-question', views.teacher_add_question_view,name='teacher-add-q
 path('teacher-view-question', views.teacher_view_question_view,name='teacher-view-question'),
 path('see-question/<int:pk>', views.see_question_view,name='see-question'),
 path('remove-question/<int:pk>', views.remove_question_view,name='remove-question'),
-
 path('download-template/<str:type>/', views.download_question_template, name='download_template'),
-# path('update-question/<int:pk>/', views.update_question_view, name='update-question'),
+
+path('teacher-add-question-bank', views.teacher_add_question_bank_view,name='teacher-add-question-bank'),
+path('teacher-assign-question-bank', views.teacher_assign_question_bank_view,name='teacher-assign-question-bank'),
+
 ]
