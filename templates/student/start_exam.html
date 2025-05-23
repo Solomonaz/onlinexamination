@@ -259,12 +259,11 @@
     }
   </style>
 </head>
-
 <div class="exam-container">
   <form class="exam-card" autocomplete="off" onsubmit="return saveAns()" action="/student/calculate-marks" method="POST" id="examForm">
     {% csrf_token %}
     <div class="exam-header">
-      <i class="fas fa-book-open me-2"></i>Course: {{course.course_name}}
+      <i class="fas fa-book-open me-2"></i>Course: {{ course.course_name }}
       <div class="timer-container">
         <i class="fas fa-clock me-2"></i>
         <span id="timer">00:00</span>
@@ -272,80 +271,77 @@
     </div>
 
     <div class="question-container">
-    {% for q in questions %}
-<div class="question-card single-question" id="question{{ forloop.counter }}" style="display: none;">
-  <div class="question-header">
-    <h3 class="question-text">{{ forloop.counter }}. {{q.question}}</h3>
-    <span class="question-marks">{{q.marks}} Marks</span>
-  </div>
+      {% for q in questions %}
+        {% if forloop.first or forloop.counter0|divisibleby:2 %}
+          <div class="question-card question-pair" id="questionGroup{{ forloop.counter0|add:1 }}" style="display: none;">
+        {% endif %}
 
-  {% if q.question_type == 'MCQ' %}
-    <!-- Multiple Choice Question Options -->
-    {% if q.option1 %}
-    <div class="option-item">
-      <input class="option-input" type="radio" name="{{ forloop.counter }}" id="{{q.id}}_option1" value="Option1">
-      <label class="option-label" for="{{q.id}}_option1">{{q.option1}}</label>
-    </div>
-    {% endif %}
+        <div class="single-question">
+          <div class="question-header">
+            <h3 class="question-text">{{ forloop.counter }}. {{ q.question }}</h3>
+            <span class="question-marks">{{ q.marks }} Marks</span>
+          </div>
 
-    {% if q.option2 %}
-    <div class="option-item">
-      <input class="option-input" type="radio" name="{{ forloop.counter }}" id="{{q.id}}_option2" value="Option2">
-      <label class="option-label" for="{{q.id}}_option2">{{q.option2}}</label>
-    </div>
-    {% endif %}
+          {% if q.question_type == 'MCQ' %}
+            {% if q.option1 %}
+              <div class="option-item">
+                <input class="option-input" type="radio" name="{{ forloop.counter }}" id="{{ q.id }}_option1" value="Option1">
+                <label class="option-label" for="{{ q.id }}_option1">{{ q.option1 }}</label>
+              </div>
+            {% endif %}
+            {% if q.option2 %}
+              <div class="option-item">
+                <input class="option-input" type="radio" name="{{ forloop.counter }}" id="{{ q.id }}_option2" value="Option2">
+                <label class="option-label" for="{{ q.id }}_option2">{{ q.option2 }}</label>
+              </div>
+            {% endif %}
+            {% if q.option3 %}
+              <div class="option-item">
+                <input class="option-input" type="radio" name="{{ forloop.counter }}" id="{{ q.id }}_option3" value="Option3">
+                <label class="option-label" for="{{ q.id }}_option3">{{ q.option3 }}</label>
+              </div>
+            {% endif %}
+            {% if q.option4 %}
+              <div class="option-item">
+                <input class="option-input" type="radio" name="{{ forloop.counter }}" id="{{ q.id }}_option4" value="Option4">
+                <label class="option-label" for="{{ q.id }}_option4">{{ q.option4 }}</label>
+              </div>
+            {% endif %}
 
-    {% if q.option3 %}
-    <div class="option-item">
-      <input class="option-input" type="radio" name="{{ forloop.counter }}" id="{{q.id}}_option3" value="Option3">
-      <label class="option-label" for="{{q.id}}_option3">{{q.option3}}</label>
-    </div>
-    {% endif %}
+            {% if q.explanation %}
+              <div class="explanation-prompt mt-4">
+                <h5>Explanation:</h5>
+                <p>{{ q.explanation }}</p>
+                <div class="form-group">
+                  <textarea class="form-control" name="explanation_{{ q.id }}" rows="4" placeholder="Please explain your answer..."></textarea>
+                </div>
+              </div>
+            {% endif %}
 
-    {% if q.option4 %}
-    <div class="option-item">
-      <input class="option-input" type="radio" name="{{ forloop.counter }}" id="{{q.id}}_option4" value="Option4">
-      <label class="option-label" for="{{q.id}}_option4">{{q.option4}}</label>
-    </div>
-    {% endif %}
-
-    <!-- Show explanation prompt if it exists -->
-    {% if q.explanation %}
-    <div class="explanation-prompt mt-4">
-      <h5>Explanation:</h5>
-      <p>{{ q.explanation }}</p>
-      <div class="form-group">
-        <textarea class="form-control" name="explanation_{{ q.id }}" rows="4" 
-                  placeholder="Please explain your answer..."></textarea>
-      </div>
-    </div>
-    {% endif %}
-
-    {% elif q.question_type == 'FIB' %}
-        <!-- Fill in the Blank Question -->
-        <div class="form-group mt-3">
-            <label for="fib_{{ q.id }}">Your answer:</label>
-            <textarea class="form-control" id="fib_{{ q.id }}" 
-                name="{{ forloop.counter }}"
-                rows="3"
-                {% if not q.case_sensitive %}style="text-transform: lowercase;"{% endif %}>
-            </textarea>
+          {% elif q.question_type == 'FIB' %}
+            <div class="form-group mt-3">
+              <label for="fib_{{ q.id }}">Your answer:</label>
+              <textarea class="form-control" id="fib_{{ q.id }}" name="{{ forloop.counter }}" rows="3" {% if not q.case_sensitive %}style="text-transform: lowercase;"{% endif %}></textarea>
+            </div>
+          {% endif %}
         </div>
-    {% endif %}
+
+         {% if forloop.counter0|add:1|divisibleby:2 or forloop.last %}
+        </div>
+        {% endif %}
+    {% endfor %}
+    </div>
+
+    <div class="nav-buttons">
+      <button type="button" class="nav-btn" id="prevBtn" disabled>Previous</button>
+      <button type="button" class="nav-btn" id="nextBtn">Next</button>
+    </div>
+
+    <button type="submit" class="submit-btn" id="submitBtn" style="display: none;">
+      <i class="fas fa-paper-plane me-2"></i>Submit Answers
+    </button>
+  </form>
 </div>
-{% endfor %}
-
-
-      <div class="nav-buttons">
-        <button type="button" class="nav-btn" id="prevBtn" disabled>Previous</button>
-        <button type="button" class="nav-btn" id="nextBtn">Next</button>
-      </div>
-  
-      <button type="submit" class="submit-btn" id="submitBtn" style="display: none;">
-        <i class="fas fa-paper-plane me-2"></i>Submit Answers
-      </button>
-    </form>
-  </div>
 
 <script>
   // Timer Setup
@@ -373,16 +369,15 @@
     if (timeLeft <= 0) {
       clearInterval(timerInterval);
       document.getElementById('timer').textContent = "00:00";
-      // Show submit button when time is up
       const submitBtn = document.getElementById("submitBtn");
       if (submitBtn) {
         submitBtn.style.display = "block";
       }
       saveAns();
       localStorage.removeItem(examKey);
-      localStorage.removeItem(currentQuestionKey);
+      localStorage.removeItem(currentGroupKey);
       document.getElementById('examForm').submit();
-    }else {
+    } else {
       timeLeft--;
       localStorage.setItem(examKey, timeLeft);
     }
@@ -392,34 +387,30 @@
   const timerInterval = setInterval(updateTimer, 1000);
 
   // Save Answers
-// Update the saveAns function to handle text inputs
-function saveAns() {
-  // Save radio button answers
-  var radios = document.getElementsByTagName('input');
-  for (i = 0; i < radios.length; i++) {
-    if (radios[i].type == "radio" && radios[i].checked) {
-      setCookie(radios[i].name, radios[i].value, 3);
+  function saveAns() {
+    var radios = document.getElementsByTagName('input');
+    for (i = 0; i < radios.length; i++) {
+      if (radios[i].type == "radio" && radios[i].checked) {
+        setCookie(radios[i].name, radios[i].value, 3);
+      }
     }
+
+    var textInputs = document.querySelectorAll('input[type="text"]');
+    textInputs.forEach(input => {
+      if (input.value.trim() !== '') {
+        setCookie(input.name, input.value, 3);
+      }
+    });
+
+    var textareas = document.getElementsByTagName('textarea');
+    for (i = 0; i < textareas.length; i++) {
+      if (textareas[i].value.trim() !== '') {
+        setCookie(textareas[i].name, textareas[i].value, 3);
+      }
+    }
+
+    return true;
   }
-  
-  // Save text input answers (for FIB questions)
-  var textInputs = document.querySelectorAll('input[type="text"]');
-  textInputs.forEach(input => {
-    if (input.value.trim() !== '') {
-      setCookie(input.name, input.value, 3);
-    }
-  });
-  
-  // Save textarea answers (for explanations)
-  var textareas = document.getElementsByTagName('textarea');
-  for (i = 0; i < textareas.length; i++) {
-    if (textareas[i].value.trim() !== '') {
-      setCookie(textareas[i].name, textareas[i].value, 3);
-    }
-  }
-  
-  return true;
-}
 
   function setCookie(cname, cvalue, exdays) {
     var d = new Date();
@@ -429,80 +420,73 @@ function saveAns() {
   }
 
   // Question Navigation
-  let currentQuestion = 1;
+  let currentGroup = 1;
   const totalQuestions = {{ questions|length }};
-  const currentQuestionKey = "currentQuestion_{{ course.id }}";
+  const totalGroups = Math.ceil(totalQuestions / 2);
+  const currentGroupKey = "currentGroup_{{ course.id }}";
 
-  // Initialize from localStorage if available
-  if (localStorage.getItem(currentQuestionKey)) {
-    const storedQuestion = parseInt(localStorage.getItem(currentQuestionKey));
-    if (!isNaN(storedQuestion) && storedQuestion >= 1 && storedQuestion <= totalQuestions) {
-      currentQuestion = storedQuestion;
+  if (localStorage.getItem(currentGroupKey)) {
+    const storedGroup = parseInt(localStorage.getItem(currentGroupKey));
+    if (!isNaN(storedGroup) && storedGroup >= 1 && storedGroup <= totalGroups) {
+      currentGroup = storedGroup;
     }
   }
 
-  function showQuestion(index) {
-  // Validate index
-  if (index < 1 || index > totalQuestions) return;
+  function showGroup(index) {
+    if (index < 1 || index > totalGroups) return;
 
-  // Hide all questions
-  document.querySelectorAll('.single-question').forEach(q => {
-    q.style.display = 'none';
-  });
+    document.querySelectorAll('.question-pair').forEach(q => {
+      q.style.display = 'none';
+    });
 
-  // Show current question
-  const currentQ = document.getElementById(`question${index}`);
-  if (currentQ) {
-    currentQ.style.display = 'block';
-  }
+    const currentQ = document.getElementById(`questionGroup${(index - 1) * 2 + 1}`);
+    if (currentQ) {
+      currentQ.style.display = 'block';
+    }
 
-  // Update navigation buttons
-  const prevBtn = document.getElementById("prevBtn");
-  const nextBtn = document.getElementById("nextBtn");
-  const submitBtn = document.getElementById("submitBtn");
-  
-  if (prevBtn) {
-    prevBtn.disabled = index === 1;
-  }
-  
-  if (nextBtn) {
-    nextBtn.disabled = index === totalQuestions;
-  }
-
-  // Show submit button only on last question
-  if (submitBtn) {
-    submitBtn.style.display = index === totalQuestions ? "block" : "none";
-  }
-
-  // Save current question
-  localStorage.setItem(currentQuestionKey, index);
-  currentQuestion = index;
-}
-
-  // Initialize navigation
-  document.addEventListener('DOMContentLoaded', function() {
     const prevBtn = document.getElementById("prevBtn");
     const nextBtn = document.getElementById("nextBtn");
-    
+    const submitBtn = document.getElementById("submitBtn");
+
+    if (prevBtn) {
+      prevBtn.disabled = index === 1;
+    }
+
+    if (nextBtn) {
+      nextBtn.disabled = index === totalGroups;
+    }
+
+    if (submitBtn) {
+      submitBtn.style.display = index === totalGroups ? "block" : "none";
+    }
+
+    localStorage.setItem(currentGroupKey, index);
+    currentGroup = index;
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+
     if (prevBtn && nextBtn) {
-      prevBtn.addEventListener("click", function() {
-        if (currentQuestion > 1) {
+      prevBtn.addEventListener("click", function () {
+        if (currentGroup > 1) {
           saveAns();
-          showQuestion(currentQuestion - 1);
+          showGroup(currentGroup - 1);
         }
       });
 
-      nextBtn.addEventListener("click", function() {
-        if (currentQuestion < totalQuestions) {
+      nextBtn.addEventListener("click", function () {
+        if (currentGroup < totalGroups) {
           saveAns();
-          showQuestion(currentQuestion + 1);
+          showGroup(currentGroup + 1);
         }
       });
-      
-      // Initial display
-      showQuestion(currentQuestion);
+
+      showGroup(currentGroup);
     }
   });
 </script>
+
 
 {% endblock content %}

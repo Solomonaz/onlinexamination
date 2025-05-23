@@ -53,6 +53,29 @@ class Course(models.Model):
             
         return selected_questions
 
+class QuestionBank(models.Model):
+    """model to represent question banks"""
+    name = models.CharField(max_length=100, unique=True)
+    is_active = models.BooleanField(default=False)
+    courses = models.ManyToManyField(Course, related_name='question_banks')
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.name} ({'Active' if self.is_active else 'Inactive'})"
+    
+    def clean(self):
+        # Ensure only one bank can be active at a time
+        if self.is_active:
+            active_banks = QuestionBank.objects.filter(is_active=True)
+            if active_banks.exists() and active_banks.first() != self:
+                raise ValidationError("Only one question bank can be active at a time")
+
+    def save(self, *args, **kwargs):
+        if self.is_active:
+            # Deactivate all other banks when saving this one as active
+            QuestionBank.objects.exclude(pk=self.pk).update(is_active=False)
+        super().save(*args, **kwargs)
+
 
 class Question(models.Model):
     # Common Fields for All Question Types
