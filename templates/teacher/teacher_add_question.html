@@ -165,27 +165,9 @@
               <form method="POST" autocomplete="off" id="mcqForm" class="question-type-fields active">
                 {% csrf_token %}
                 <input type="hidden" name="question_type" value="MCQ">
-
-                <!-- <div class="form-section">
-                  <label class="form-label" for="courseID">Course</label>
-                  {% render_field questionForm.courseID|attr:'required:true' class="form-control" %}
-                </div> -->
-
-                <!-- <div class="form-section">
-                  <label class="form-label" for="courseID">Course</label>
-                  {% render_field  questionForm.course class="form-control" %}
-                  {% if questionForm.course.errors %}
-                      <div class="text-danger">
-                          {% for error in questionForm.course.errors %}
-                              {{ error }}
-                          {% endfor %}
-                      </div>
-                  {% endif %}
-              </div> -->
-
               <div class="form-group">
-                <label for="courseID">Select Course</label>
-                <select name="courseID" class="form-control" required>
+                <label for="course">Select Course</label>
+                <select name="course" class="form-control" required>
                     <option value="">---------</option>
                     {% for course in request.user.teacher.department.course_set.all %}
                         <option value="{{ course.id }}">{{ course.course_name }}</option>
@@ -236,42 +218,78 @@
               </form>
 
               <!-- Fill in the Blank Form (initially hidden) -->
-<!-- 
+
               <form method="POST" autocomplete="off" id="fibForm" class="question-type-fields">
                 {% csrf_token %}
                 <input type="hidden" name="question_type" value="FIB">
-
-                <div class="form-section">
-                  <label class="form-label" for="id_courseID">Course</label>
-                  {% render_field questionForm.courseID|attr:'required:true' class="form-control" %}
+                
+                <div class="form-group">
+                    <label for="course">Select Course</label>
+                    <select name="course" class="form-control" required>
+                        <option value="">---------</option>
+                        {% for course in request.user.teacher.department.course_set.all %}
+                            <option value="{{ course.id }}" {% if questionForm.course.value == course.id %}selected{% endif %}>
+                                {{ course.course_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    {% if questionForm.course.errors %}
+                        <div class="text-danger">
+                            {% for error in questionForm.course.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
                 </div>
-
+            
                 <div class="form-section">
-                  <label class="form-label" for="id_question">Question Text</label>
-                  {% render_field questionForm.question class="form-control" rows="3" required="true" placeholder="Write the question here" %}
+                    <label class="form-label" for="id_question">Question Text</label>
+                    {% render_field questionForm.question class="form-control" rows="3" required="true" placeholder="Write the question here (include _____ for the blank)" %}
+                    {% if questionForm.question.errors %}
+                        <div class="text-danger">
+                            {% for error in questionForm.question.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
                 </div>
-
+            
                 <div class="form-section">
-                  <label class="form-label" for="id_marks">Marks</label>
-                  {% render_field questionForm.marks class="form-control" %}
+                    <label class="form-label" for="id_marks">Marks</label>
+                    {% render_field questionForm.marks class="form-control" %}
+                    {% if questionForm.marks.errors %}
+                        <div class="text-danger">
+                            {% for error in questionForm.marks.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
                 </div>
-
-                <div class="form-section">
+            
+                <!-- <div class="form-section">
                   <label class="form-label" for="id_blank_answer">Correct Answer</label>
-                  {% render_field questionForm.blank_answer class="form-control" placeholder="Enter the correct answer" %}
-                </div>
-
-                <div class="form-section form-check">
-                  {% render_field questionForm.case_sensitive class="form-check-input" %}
-                  <label class="form-check-label" for="id_case_sensitive">Case Sensitive</label>
-                </div>
-
+                  <input type="text" 
+                         name="blank_answer" 
+                         id="id_blank_answer" 
+                         class="form-control" 
+                         placeholder="Enter the correct answer"
+                         required
+                         value="{{ questionForm.blank_answer.value|default_if_none:'' }}">
+                  {% if questionForm.blank_answer.errors %}
+                      <div class="text-danger">
+                          {% for error in questionForm.blank_answer.errors %}
+                              {{ error }}
+                          {% endfor %}
+                      </div>
+                  {% endif %}
+              </div> -->
+            
                 <div class="d-grid mt-4">
-                  <button type="submit" class="btn btn-custom btn-lg">
-                    <i class="fas fa-save me-2"></i>Submit Question
-                  </button>
+                    <button type="submit" class="btn btn-custom btn-lg">
+                        <i class="fas fa-save me-2"></i>Submit Question
+                    </button>
                 </div>
-              </form> -->
+            </form>
             </div>
 
             <!-- Bulk Import Tab -->

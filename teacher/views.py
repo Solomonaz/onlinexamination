@@ -135,10 +135,10 @@ def teacher_question_view(request):
     return render(request,'teacher/teacher_question.html')
 
 
+
 @login_required(login_url='teacher:teacherlogin')
 @user_passes_test(is_teacher)
 def teacher_add_question_view(request):
-    # Get teacher's department
     teacher = models.Teacher.objects.get(user=request.user)
     department = teacher.department
     
@@ -147,11 +147,16 @@ def teacher_add_question_view(request):
             return handle_bulk_import(request)
         else:
             questionForm = QFORM.QuestionForm(request.POST, department=department)
+            questionForm._current_user = request.user
             if questionForm.is_valid():
-                question = questionForm.save()
+                question = questionForm.save(commit=False)
+                question.course = questionForm.cleaned_data['course']
+                question.save()
                 messages.success(request, f"{question.get_question_type_display()} question added successfully!")
                 return redirect('teacher:teacher-add-question')
             else:
+                # Debugging: Print form errors to console
+                print("Form errors:", questionForm.errors)
                 messages.error(request, "Form is invalid. Please check your inputs.")
     else:
         questionForm = QFORM.QuestionForm(department=department)

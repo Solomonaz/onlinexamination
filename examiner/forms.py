@@ -4,7 +4,7 @@ from . import models
 from django.core.exceptions import ValidationError
 
 
-class TeacherUserForm(forms.ModelForm):
+class ExaminerUserForm(forms.ModelForm):
     class Meta:
         model=User
         fields=['first_name','last_name','username','password']
@@ -28,15 +28,15 @@ class TeacherUserForm(forms.ModelForm):
     
 
 from exam import models as QMODEL
-class TeacherForm(forms.ModelForm):
+class ExaminerForm(forms.ModelForm):
     class Meta:
-        model = models.Teacher
+        model = models.Examiner
         fields = ['address', 'mobile', 'department']
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['department'].queryset = QMODEL.Department.objects.all()
-        self.fields['department'].required = True 
+        self.fields['department'].required = True  # Make it required at form level
         self.fields['department'].widget.attrs.update({
             'class': 'form-control',
             'id': 'id_department'

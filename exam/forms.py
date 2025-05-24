@@ -1,7 +1,8 @@
 from django import forms
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from . import models
-
+from teacher.models import Teacher
 class ContactusForm(forms.Form):
     Name = forms.CharField(max_length=30)
     Email = forms.EmailField()
@@ -49,7 +50,7 @@ class CourseForm(forms.ModelForm):
         if commit:
             course.save()
         return course
-   
+    
 class QuestionForm(forms.ModelForm):
     class Meta:
         model = models.Question
@@ -58,6 +59,7 @@ class QuestionForm(forms.ModelForm):
     
     def __init__(self, *args, department=None, **kwargs):
         super().__init__(*args, **kwargs)
+        self.department = department
         
         # Add course field dynamically
         self.fields['course'] = forms.ModelChoiceField(
@@ -66,16 +68,10 @@ class QuestionForm(forms.ModelForm):
             label="Course"
         )
         
-        # Set required=False for all fields initially
-        for field in self.fields:
-            self.fields[field].required = False
-            
-        # Set initial question type to MCQ if new instance
-        if not self.instance.pk:
-            self.fields['question_type'].initial = 'MCQ'
-            
-        # Set required fields based on question type
-        question_type = self.data.get('question_type', 'MCQ') if self.data else self.instance.question_type if self.instance.pk else 'MCQ'
+        # Initialize based on question type
+        question_type = self.initial.get('question_type', 'MCQ')
+        if self.data:  # If form is submitted
+            question_type = self.data.get('question_type', 'MCQ')
         self.set_required_fields(question_type)
 
     def set_required_fields(self, question_type):
@@ -83,46 +79,41 @@ class QuestionForm(forms.ModelForm):
         common_required = ['course', 'marks', 'question']
         
         if question_type == 'MCQ':
-            required_fields = common_required + ['option1', 'option2', 'answer']
-        else:  # FIB
-            required_fields = common_required + ['blank_answer']
-            
-        for field in required_fields:
-            if field in self.fields:
-                self.fields[field].required = True
-                
-        # Hide irrelevant fields
-        if question_type == 'MCQ':
+            required_fields = common_required + ['option1', 'option2','option3','option4', 'answer']
+            # Hide FIB-specific fields
+            self.fields['blank_answer'].required = False
             self.fields['blank_answer'].widget = forms.HiddenInput()
             self.fields['case_sensitive'].widget = forms.HiddenInput()
-        else:
+        else:  # FIB
+            required_fields = common_required + ['blank_answer']
+            # Hide MCQ-specific fields
             for option in ['option1', 'option2', 'option3', 'option4']:
+                self.fields[option].required = False
                 self.fields[option].widget = forms.HiddenInput()
+            self.fields['answer'].required = False
             self.fields['answer'].widget = forms.HiddenInput()
-
+        
+        # Set required fields
+        for field_name, field in self.fields.items():
+            field.required = field_name in required_fields
+        
     def clean(self):
         cleaned_data = super().clean()
         question_type = cleaned_data.get('question_type', 'MCQ')
-        from django.core.exceptions import ValidationError
         
-        if hasattr(self, '_current_user'):
-            teacher = models.Teacher.objects.get(user=self._current_user)
-            if self.course.department != teacher.department:
+        # Validate course belongs to teacher's department
+        course = cleaned_data.get('course')
+        if course and hasattr(self, '_current_user'):
+            teacher = Teacher.objects.get(user=self._current_user)
+            if course.department != teacher.department:
                 raise ValidationError("You can only add questions to courses in your department")
         
-        super().clean()
-        
-        if question_type == 'MCQ':
-            if not cleaned_data.get('option1') or not cleaned_data.get('option2'):
-                raise forms.ValidationError("MCQ questions require at least two options")
-                
-            answer = cleaned_data.get('answer')
-            if answer not in ['Option1', 'Option2', 'Option3', 'Option4']:
-                raise forms.ValidationError("Please select a valid answer option")
-                
-        elif question_type == 'FIB':
-            if not cleaned_data.get('blank_answer'):
+        # Validate question type specific fields
+        if question_type == 'FIB':
+            blank_answer = cleaned_data.get('blank_answer')
+            if not blank_answer:
                 raise forms.ValidationError("Please provide the correct answer for the blank")
-            cleaned_data['answer'] = cleaned_data['blank_answer']
+            # Copy blank_answer to answer field for storage
+            cleaned_data['answer'] = blank_answer
             
         return cleaned_data

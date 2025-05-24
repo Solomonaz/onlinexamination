@@ -207,7 +207,7 @@ def admin_student_view(request):
 
 @login_required(login_url='adminlogin')
 def admin_view_student_view(request):
-    student_list = SMODEL.Student.objects.all().order_by('id')  # or any other field you want to sort by
+    student_list = SMODEL.Student.objects.all().order_by('id')
     paginator = Paginator(student_list, 10)
     page_number = request.GET.get('page')
     students = paginator.get_page(page_number)

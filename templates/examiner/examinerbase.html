@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Trainer Dashboard | PICE</title>
+    <title>Examiner Dashboard | PICE</title>
     
     <!-- Modern CSS Libraries -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -322,31 +322,6 @@
                 padding: 8px 12px;
             }
         }
-        /* Notification Styles */
-            .notification-badge {
-                font-size: 0.6rem;
-                top: -5px;
-                right: -5px;
-            }
-
-            .dropdown-menu-lg-start {
-                left: auto !important;
-                right: 0;
-            }
-
-            .notification-item.unread {
-                background-color: rgba(0, 122, 204, 0.05);
-            }
-
-            .notification-item:hover {
-                background-color: #f8f9fa;
-            }
-
-            .notification-icon {
-                font-size: 1.25rem;
-                width: 24px;
-                text-align: center;
-            }
     </style>
 </head>
 
@@ -370,50 +345,6 @@
             
             <!-- Right Side: User and Logout -->
             <div class="header-right">
-                <div class="header-right">
-                    <!-- Notification Dropdown -->
-                    <div class="dropdown me-3">
-                        <button class="btn btn-link text-dark p-0 position-relative" type="button" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-bell fa-lg"></i>
-                            {% if unread_notifications.count > 0 %}
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                    {{ unread_notifications.count }}
-                                    <span class="visually-hidden">unread notifications</span>
-                                </span>
-                            {% endif %}
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-lg-start" aria-labelledby="notificationDropdown" style="width: 320px; max-height: 400px; overflow-y: auto;">
-                            <li class="dropdown-header">
-                                <h6 class="mb-0">Notifications</h6>
-                                <small class="text-muted">{{ unread_notifications.count }} unread</small>
-                            </li>
-                            {% if unread_notifications %}
-                                {% for notification in unread_notifications|slice:":5" %}
-                                    <li>
-                                        <a class="dropdown-item d-flex py-2" href="{{ notification.link|default:'#' }}" data-notification-id="{{ notification.id }}">
-                                            <div class="flex-shrink-0 me-3">
-                                                <i class="fas fa-user-plus text-primary"></i>
-                                            </div>
-                                            <div class="flex-grow-1">
-                                                <span class="d-block">{{ notification.message }}</span>
-                                                <small class="text-muted">{{ notification.created_at|timesince }} ago</small>
-                                            </div>
-                                        </a>
-                                    </li>
-                                    <li><hr class="dropdown-divider"></li>
-                                {% endfor %}
-                                <li>
-                                    <a class="dropdown-item text-center small" href="{% url 'notifications:all' %}">
-                                        View all notifications
-                                    </a>
-                                </li>
-                            {% else %}
-                                <li class="text-center py-3">
-                                    <span class="text-muted">No new notifications</span>
-                                </li>
-                            {% endif %}
-                        </ul>
-                    </div>
                 <div class="user-profile">
                     <span class="username">{{request.user.first_name}} {{request.user.last_name}}</span>
                     <div class="user-role">Trainer</div>
@@ -429,6 +360,8 @@
     <!-- Sidebar Area -->
     <aside class="admin-sidebar">
         <div class="profile-section">
+            <img src="{% static 'image/logo.jpg' %}" class="profile-img" alt="Profile Image">
+            <!-- <h4 class="profile-name">{{request.user.first_name}} {{request.user.last_name}}</h4> -->
             <p class="profile-role">Department</p>
             <p class="profile-role">{{ request.user.teacher.department }}</p>
         </div>
@@ -498,7 +431,6 @@
                 item.classList.add('active');
             }
         });
-        
     </script>
 </body>
 </html>
