@@ -19,6 +19,7 @@ path('teacher-view-grading/<int:student_id>/<int:course_id>/',views.teacher_expl
 path('teacher-view-department',views.teacher_view_department_view, name='teacher-view-department'),
 path('delete-view-student-list/<int:pk>',views.delete_view_student_list, name='delete-view-student-list'),
 
+path('teacher-report',views.teacher_report, name='teacher-report'),
 
 
 path('teacher-question', views.teacher_question_view,name='teacher-question'),

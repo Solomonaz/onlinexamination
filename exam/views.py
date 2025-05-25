@@ -330,8 +330,15 @@ def delete_question_view(request,pk):
 
 @login_required(login_url='adminlogin')
 def admin_view_student_marks_view(request):
-    students= SMODEL.Student.objects.all()
-    return render(request,'exam/admin_view_student_marks.html',{'students':students})
+    students = SMODEL.Student.objects.all().order_by('user')
+    paginator = Paginator(students, 10)
+    page_number = request.GET.get('page')
+    students_page = paginator.get_page(page_number)
+
+    context = {
+        'students': students_page,
+    }
+    return render(request, 'exam/admin_view_student_marks.html', context)
 
 @login_required(login_url='adminlogin')
 def admin_view_marks_view(request, pk):
@@ -368,20 +375,38 @@ def contactus_view(request):
     return render(request, 'exam/contactus.html', {'form':sub})
 
 
-from django.db.models import Q
-from exam import models 
+from datetime import datetime
+
 @login_required(login_url='adminlogin')
 def report_view(request):
+    # Get all distinct courses and organizations
     courses = models.Course.objects.all()
     organizations = models.Student.objects.values_list('organization', flat=True).distinct()
 
-    results = models.Result.objects.select_related('student', 'exam')
+    # Start with base queryset
+    results = models.Result.objects.select_related('student', 'exam').order_by('-date')
 
+    student_ids = [result.student.id for result in results]
+    fib_answers = models.StudentAnswer.objects.filter(
+        student_id__in=student_ids,
+        question__course_id__in=courses,
+        question__question_type='FIB'
+    ).values('student').annotate(fib_score=Sum('marks_obtained'))
+
+    fib_scores = {answer['student']: answer['fib_score'] or 0 for answer in fib_answers}
+
+    for result in results:
+        result.fib_score = fib_scores.get(result.student.id, 0)
+        result.total_score = result.marks + result.fib_score
+
+    # Get filter parameters from request
     course_id = request.GET.get('course')
     organization = request.GET.get('organization')
     min_mark = request.GET.get('min_mark')
     max_mark = request.GET.get('max_mark')
+    exam_date = request.GET.get('exam_date')
 
+    # Apply filters
     if course_id:
         results = results.filter(exam__id=course_id)
     if organization:
@@ -390,15 +415,27 @@ def report_view(request):
         results = results.filter(marks__gte=min_mark)
     if max_mark:
         results = results.filter(marks__lte=max_mark)
+    if exam_date:
+        try:
+            date_obj = datetime.strptime(exam_date, '%Y-%m-%d').date()
+            results = results.filter(date__date=date_obj)
+        except ValueError:
+            pass 
+
+    # Pagination - 25 items per page
+    paginator = Paginator(results, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
     context = {
-        'results': results,
+        'results': page_obj,  # Changed from results to page_obj
         'courses': courses,
         'organizations': organizations,
         'selected_course': course_id,
         'selected_org': organization,
         'min_mark': min_mark,
         'max_mark': max_mark,
+        'selected_date': exam_date,
     }
     return render(request, 'exam/report_view.html', context)
 

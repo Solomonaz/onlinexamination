@@ -1,11 +1,12 @@
-{% extends 'exam/adminbase.html' %}
+{% extends 'teacher/teacherbase.html' %}
+{% load widget_tweaks %}
 {% block content %}
 
 <div class="container py-4">
   <div class="card shadow-sm border-0 overflow-hidden">
     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
       <div>
-        <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i> Examinee Performance Report</h5>
+        <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i> Examinee  Report</h5>
         <small class="opacity-75">Detailed analysis of examination results</small>
       </div>
       <div>
@@ -21,13 +22,16 @@
     <div class="card-body">
       <form id="filter-form" method="get" class="row g-3 mb-4">
         <div class="col-md-3">
-          <label class="form-label fw-semibold small mb-1">Course</label>
-          <select name="course" class="form-select form-select-sm auto-submit">
-            <option value="">All Courses</option>
-            {% for course in courses %}
-              <option value="{{ course.id }}" {% if course.id|stringformat:"s" == selected_course %}selected{% endif %}>{{ course.course_name }}</option>
-            {% endfor %}
-          </select>
+            <label class="form-label fw-semibold small mb-1">Course</label>
+            <select name="course" class="form-select form-select-sm auto-submit">
+                <option value="">All Courses</option>
+                {% for course in courses %}
+                <option value="{{ course.id }}" 
+                        {% if request.GET.course == course.id|stringformat:"s" %}selected{% endif %}>
+                    {{ course.course_name }}
+                </option>
+                {% endfor %}
+            </select>
         </div>
 
         <div class="col-md-3">
@@ -50,11 +54,11 @@
         </div>
 
         <div class="col-md-2">
-          <label class="form-label fw-semibold small mb-1">Exam Date</label>
-          <input type="date" name="exam_date" class="form-control form-control-sm auto-submit" 
-                 value="{{ exam_date|default:'' }}" 
-                 max="{% now 'Y-m-d' %}">
-      </div>
+            <label class="form-label fw-semibold small mb-1">Exam Date</label>
+            <input type="date" name="exam_date" class="form-control form-control-sm auto-submit" 
+                   value="{{ exam_date|default:'' }}" 
+                   max="{% now 'Y-m-d' %}">
+        </div>
 
         <div class="col-md-2 d-flex align-items-end">
           <button type="submit" class="btn btn-primary btn-sm w-100">
@@ -87,7 +91,7 @@
               <tr>
                 <th width="50">#</th>
                 <th>Student Name</th>
-                <th>Username</th>
+                <!-- <th>Username</th> -->
                 <th>Organization</th>
                 <th>Course</th>
                 <th width="120">Score</th>
@@ -99,19 +103,23 @@
               <tr>
                 <td>{{ results.start_index|add:forloop.counter0 }}</td>
                 <td>{{ result.student.get_name }}</td>
-                <td>{{ result.student.user.username }}</td>
+                <!-- <td>{{ result.student.user.username }}</td> -->
                 <td>{{ result.student.organization }}</td>
                 <td>{{ result.exam.course_name }}</td>
                 <td>
                   <div class="progress" style="height: 20px;">
                     <div class="progress-bar {% if result.marks >= 75 %}bg-success{% elif result.marks >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
-                         role="progressbar" style="width:  100%" 
-                         aria-valuenow=" {{ result.total_score }}" aria-valuemin="0" aria-valuemax="100">
-                       {{ result.total_score }}%
+                         role="progressbar" style="width: 100%" 
+                         aria-valuenow="{{ result.total_score }}" aria-valuemin="0" aria-valuemax="100">
+                      {{ result.total_score }}%
                     </div>
                   </div>
                 </td>
-                <td>{{ result.date|date:"M d, Y H:i" }}</td>
+                <td>{{ result.date|date:"Y-m-d" }}</td>
+              </tr>
+              {% empty %}
+              <tr>
+                  <td colspan="6">No results found matching your criteria</td>
               </tr>
               {% endfor %}
             </tbody>
@@ -236,6 +244,8 @@
     const form = document.getElementById('filter-form');
     form.reset();
     form.submit();
+    document.querySelector('input[name="exam_date"]').value = '';
+    window.location.href = window.location.pathname;
   }
 
   // Toggle table columns
@@ -251,4 +261,5 @@
     }
   }
 </script>
+
 {% endblock %}

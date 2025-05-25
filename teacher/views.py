@@ -298,40 +298,24 @@ def remove_question_view(request,pk):
     question.delete()
     messages.success(request, "Question deleted successfully!")
     return redirect(request.META.get('HTTP_REFERER', '/'))
-
 @login_required(login_url='teacher:teacherlogin')
 @user_passes_test(is_teacher)
 def teacher_view_examinees_view(request, course_id):
     department = get_teacher_department(request)
     course = get_object_or_404(QMODEL.Course, id=course_id, department=department)
     
+    # Base queryset
     results = QMODEL.Result.objects.filter(exam=course).select_related('student')
     
-    student_ids = [result.student.id for result in results]
-    fib_answers = QMODEL.StudentAnswer.objects.filter(
-        student_id__in=student_ids,
-        question__course=course,
-        question__question_type='FIB'
-    ).values('student').annotate(fib_score=Sum('marks_obtained'))
-    
-    fib_scores = {answer['student']: answer['fib_score'] or 0 for answer in fib_answers}
-    
-    for result in results:
-        result.fib_score = fib_scores.get(result.student.id, 0)
-        result.total_score = result.marks + result.fib_score
-    
-    # Apply filters
+    # Get filter parameters
     organization = request.GET.get('organization', '')
     min_mark = request.GET.get('min_mark', '')
     max_mark = request.GET.get('max_mark', '')
     exam_date = request.GET.get('exam_date', '')
 
+    # Apply organization and date filters first
     if organization:
         results = results.filter(student__organization=organization)
-    if min_mark and min_mark.isdigit():
-        results = results.filter(marks__gte=int(min_mark))
-    if max_mark and max_mark.isdigit():
-        results = results.filter(marks__lte=int(max_mark))
     if exam_date:
         try:
             date_obj = datetime.strptime(exam_date, '%Y-%m-%d').date()
@@ -339,19 +323,53 @@ def teacher_view_examinees_view(request, course_id):
         except ValueError:
             exam_date = ''
 
+    # Calculate scores for all results (before score filtering)
+    student_ids = results.values_list('student__id', flat=True).distinct()
+    
+    fib_answers = QMODEL.StudentAnswer.objects.filter(
+        student_id__in=student_ids,
+        question__course=course,
+        question__question_type='FIB'
+    ).values('student').annotate(
+        fib_score=Sum('marks_obtained')
+    )
+    
+    fib_scores = {answer['student']: answer['fib_score'] or 0 for answer in fib_answers}
+    
+    # Convert to list to add custom attributes and calculate total_score
+    results_list = []
+    for result in results:
+        result.fib_score = fib_scores.get(result.student.id, 0)
+        result.total_score = result.marks + result.fib_score
+        results_list.append(result)
+
+    # Apply score range filtering to total_score
+    if min_mark and min_mark.isdigit():
+        min_score = int(min_mark)
+        results_list = [r for r in results_list if r.total_score >= min_score]
+    if max_mark and max_mark.isdigit():
+        max_score = int(max_mark)
+        results_list = [r for r in results_list if r.total_score <= max_score]
+
     organizations = SMODEL.Student.objects.filter(
         department=department
     ).values_list('organization', flat=True).distinct()
     
+    # Pagination (manual since we're working with a list)
+    paginator = Paginator(results_list, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
     return render(request, 'teacher/teacher_view_examinee.html', {        
         'course': course,
-        'results': results,
+        'results': page_obj,
         'organizations': organizations,
         'selected_org': organization,
         'exam_date': exam_date,
         'min_mark': min_mark,
         'max_mark': max_mark,
     })
+
 
 @login_required(login_url='teacher:teacherlogin')
 @user_passes_test(is_teacher)
@@ -440,6 +458,7 @@ def teacher_view_department_view(request, department_id=None):
         'student_list': student_list,
     }
     return render(request, 'teacher/teacher_view_examinee_department.html', context)
+
 @login_required(login_url='teacher:teacherlogin')
 def delete_view_student_list(request, pk):
     department = get_teacher_department(request)
@@ -447,6 +466,89 @@ def delete_view_student_list(request, pk):
     student_list.delete()
     messages.success(request, "Course deleted successfully!")
     return redirect('teacher:teacher-view-department')
+
+@login_required(login_url='teacher:teacherlogin')
+def teacher_report(request):
+    department = get_teacher_department(request)    
+    courses = QMODEL.Course.objects.filter(department=department)    
+    organizations = SMODEL.Student.objects.filter(
+        department=department
+    ).values_list('organization', flat=True).distinct()
+
+    # Base queryset
+    results = QMODEL.Result.objects.select_related(
+        'student', 'exam'
+    ).filter(
+        exam__department=department
+    ).order_by('-date')
+
+    # Get filter parameters FIRST
+    course_id = request.GET.get('course', '')
+    organization = request.GET.get('organization')
+    min_mark = request.GET.get('min_mark')
+    max_mark = request.GET.get('max_mark')
+    exam_date = request.GET.get('exam_date')
+
+    # Apply basic filters FIRST (except score range)
+    if course_id:
+        results = results.filter(exam__id=course_id)
+    if organization:
+        results = results.filter(student__organization=organization)
+    if exam_date:
+        try:
+            date_obj = datetime.strptime(exam_date, '%Y-%m-%d').date()
+            results = results.filter(date__date=date_obj)
+        except ValueError:
+            pass
+
+    # Calculate scores for the filtered results
+    student_ids = results.values_list('student__id', flat=True).distinct()
+    
+    # Get FIB scores for filtered students only
+    fib_answers = QMODEL.StudentAnswer.objects.filter(
+        student_id__in=student_ids,
+        question__course__department=department,
+        question__question_type='FIB'
+    ).values('student').annotate(
+        fib_score=Sum('marks_obtained')
+    )
+
+    fib_scores = {answer['student']: answer['fib_score'] or 0 for answer in fib_answers}
+
+    # Convert to list to add custom attributes and filter by total_score
+    results_list = []
+    for result in results:
+        result.fib_score = fib_scores.get(result.student.id, 0)
+        result.total_score = result.marks + result.fib_score
+        
+        # Apply score range filtering
+        include = True
+        if min_mark:
+            include = include and (result.total_score >= float(min_mark))
+        if max_mark:
+            include = include and (result.total_score <= float(max_mark))
+        
+        if include:
+            results_list.append(result)
+
+    # Custom pagination for the list
+    paginator = Paginator(results_list, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'results': page_obj,
+        'courses': courses,
+        'organizations': organizations,
+        'selected_course': course_id,
+        'selected_org': organization,
+        'min_mark': min_mark,
+        'max_mark': max_mark,
+        'selected_date': exam_date,
+        'department': department,
+    }
+    return render(request, 'teacher/teacher_report.html', context)
+
 
 def teacher_add_question_bank_view(request):
     return render(request, 'teacher/teacher_add_question_banks.html')

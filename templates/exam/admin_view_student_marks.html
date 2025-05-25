@@ -36,7 +36,6 @@
       padding: 12px 15px;
     }
     
-    
     .btn-view {
       background-color: #4a6fdc;
       color: white;
@@ -67,6 +66,52 @@
       margin-bottom: 15px;
       color: #dee2e6;
     }
+
+    .search-container {
+      padding: 20px;
+      background-color: #f8f9fa;
+      border-bottom: 1px solid #dee2e6;
+    }
+
+    .search-input {
+      border-radius: 20px;
+      padding-left: 40px;
+    }
+
+    .search-icon {
+      position: absolute;
+      z-index: 2;
+      display: block;
+      width: 2.375rem;
+      height: 2.375rem;
+      line-height: 2.375rem;
+      text-align: center;
+      pointer-events: none;
+      color: #aaa;
+      left: 15px;
+    }
+
+    .no-results {
+      padding: 20px;
+      text-align: center;
+      color: #6c757d;
+      display: none;
+    }
+    .pagination-container {
+      padding: 15px;
+      border-top: 1px solid #dee2e6;
+      display: flex;
+      justify-content: center;
+    }
+
+    .page-item.active .page-link {
+      background-color: #4a6fdc;
+      border-color: #4a6fdc;
+    }
+
+    .page-link {
+      color: #4a6fdc;
+    }
   </style>
 </head>
 
@@ -74,29 +119,37 @@
   <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
       <span><i class="fas fa-users me-2"></i>Registered Examinee</span>
-      <span class="badge bg-white text-primary">{{ students|length }} students</span>
+      <span class="badge bg-white text-primary"><span id="student-count">{{ students|length }}</span> students</span>
+    </div>
+    <div class="search-container">
+      <div class="input-group">
+        <span class="search-icon">
+          <i class="fas fa-search"></i>
+        </span>
+        <input type="text" id="search-input" class="form-control search-input" placeholder="Search students by name...">
+      </div>
+    </div>
+    <div class="no-results">
+      <i class="fas fa-user-slash fa-2x mb-2"></i>
+      <p>No students found matching your search</p>
     </div>
     <div class="card-body p-0">
       {% if students %}
       <div class="table-responsive">
-        <table class="table table-hover">
+        <table class="table table-hover" id="students-table">
           <thead>
             <tr>
               <th>Name</th>
-              <!-- <th>Photo</th> -->
               <th class="text-center">Action</th>
             </tr>
           </thead>
           <tbody>
-            {% for t in students %}
-            <tr>
-              <td>{{ t.get_name }}</td>
-              <!-- <td>
-                <img src="{% static t.profile_pic.url %}" alt="Profile" class="profile-img">
-              </td> -->
+            {% for student in students %}
+            <tr class="student-row">
+              <td class="student-name">{{ student.get_name }}</td>
               <td class="text-center action-cell">
-                <a class="btn btn-view" href="{% url 'admin-view-marks' t.id %}">
-                  <i class="fas fa-eye me-1"></i> 
+                <a class="btn btn-view" href="{% url 'admin-view-marks' student.id %}" title="View Marks">
+                  <i class="fas fa-eye me-1"></i> View
                 </a>
               </td>
             </tr>
@@ -104,16 +157,91 @@
           </tbody>
         </table>
       </div>
-      {% else %}
-      <div class="empty-state">
-        <i class="fas fa-user-graduate"></i>
-        <h5>No Students Registered</h5>
-        <p>There are currently no students registered in the system.</p>
+      <!-- Pagination -->
+      <div class="pagination-container">
+        <nav aria-label="Page navigation">
+          <ul class="pagination">
+            {% if students.has_previous %}
+              <li class="page-item">
+                <a class="page-link" href="?page=1" aria-label="First">
+                  <span aria-hidden="true">&laquo;&laquo;</span>
+                </a>
+              </li>
+              <li class="page-item">
+                <a class="page-link" href="?page={{ students.previous_page_number }}" aria-label="Previous">
+                  <span aria-hidden="true">&laquo;</span>
+                </a>
+              </li>
+            {% endif %}
+            
+            {% for num in students.paginator.page_range %}
+              {% if students.number == num %}
+                <li class="page-item active">
+                  <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+              {% elif num > students.number|add:'-3' and num < students.number|add:'3' %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+              {% endif %}
+            {% endfor %}
+            
+            {% if students.has_next %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ students.next_page_number }}" aria-label="Next">
+                  <span aria-hidden="true">&raquo;</span>
+                </a>
+              </li>
+              <li class="page-item">
+                <a class="page-link" href="?page={{ students.paginator.num_pages }}" aria-label="Last">
+                  <span aria-hidden="true">&raquo;&raquo;</span>
+                </a>
+              </li>
+            {% endif %}
+          </ul>
+        </nav>
       </div>
+      {% else %}
+      <p>No students found.</p>
       {% endif %}
     </div>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search-input');
+    const studentRows = document.querySelectorAll('.student-row');
+    const noResults = document.querySelector('.no-results');
+    const studentCount = document.getElementById('student-count');
+    
+    searchInput.addEventListener('input', function() {
+      const searchTerm = this.value.toLowerCase();
+      let visibleCount = 0;
+      
+      studentRows.forEach(row => {
+        const name = row.querySelector('.student-name').textContent.toLowerCase();
+        if (name.includes(searchTerm)) {
+          row.style.display = '';
+          visibleCount++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+      
+      // Update student count
+      studentCount.textContent = visibleCount;
+      
+      // Show/hide no results message
+      if (visibleCount === 0 && searchTerm.length > 0) {
+        noResults.style.display = 'block';
+        document.querySelector('.table-responsive').style.display = 'none';
+      } else {
+        noResults.style.display = 'none';
+        document.querySelector('.table-responsive').style.display = 'block';
+      }
+    });
+  });
+</script>
 {% endblock content %}
