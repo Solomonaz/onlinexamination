@@ -44,7 +44,6 @@ INSTALLED_APPS = [
     'exam',
     'teacher',
     'student',
-    'examiner',
     'widget_tweaks',
 
 ]
@@ -58,6 +57,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'teacher.middleware.TeacherAccessMiddleware',
+    'onlinexam.middleware.SessionTimeoutMiddleware',
 
 ]
 CSRF_COOKIE_SECURE=False
