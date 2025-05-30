@@ -141,7 +141,10 @@
 
 <div class="dashboard-container">
   <a href="{% url 'teacher:teachersignup' %}" class="add-examiner-btn">
-    <i class="fas fa-user-plus"></i> Add New Examiner
+    <i class="fas fa-user-plus"></i> Add Team Leader
+  </a>
+  <a href="{% url 'examiner:examinersignup' %}" class="add-examiner-btn">
+    <i class="fas fa-user-plus"></i> Add Examiner
   </a>
   
   <div class="card">
@@ -151,53 +154,54 @@
     </div>
     
     <div class="table-responsive">
+ 
       <table class="table table-hover align-middle">
-        <thead>
-          <tr>
+    <thead>
+        <tr>
             <th>Name</th>
-            <!-- <th>Photo</th> -->
             <th>Contact</th>
             <th>Address</th>
             <th>Department</th>
+            <th>Role</th>
             <th class="text-center">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% if teachers %}
-            {% for t in teachers %}
-              <tr>
-                <td class="fw-semibold">{{ t.get_name }}</td>
-                <!-- <td>
-                  <img src="{% static t.profile_pic.url %}" alt="{{ t.get_name }}" class="profile-img">
-                </td> -->
-                <td>{{ t.mobile }}</td>
-                <td>{{ t.address|truncatechars:30 }}</td>
-                <td>{{ t.department|truncatechars:30 }}</td>
-                <td>
-                  <div class="action-btns">
-                    <!-- <a href="{% url 'update-teacher' t.id %}" class="btn btn-edit" title="Edit">
-                      <i class="fas fa-edit"></i>
-                    </a> -->
-                    <a href="{% url 'delete-teacher' t.id %}" class="btn btn-delete" title="Delete">
-                      <i class="fas fa-trash-alt"></i>
-                    </a>
-                  </div>
-                </td>
-              </tr>
+        </tr>
+    </thead>
+    <tbody>
+        {% if staff %}
+            {% for person in staff %}
+                <tr>
+                    <td class="fw-semibold">{{ person.get_name }}</td>
+                    <td>{{ person.mobile }}</td>
+                    <td>{{ person.address|truncatechars:30 }}</td>
+                    <td>{{ person.department|truncatechars:30 }}</td>
+                    <!-- <td>
+                        {% if person in examiner %}Examiner{% else %}Team Leader{% endif %}
+                    </td> -->
+                    <td>
+                        {{ person.role }}{% if person.is_teacher %} / Team Leader{% endif %}
+                    </td>
+                    <td>
+                        <div class="action-btns">
+                            <a href="{% url 'delete-teacher' person.id %}" class="btn btn-delete" title="Delete">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
             {% endfor %}
-          {% else %}
+        {% else %}
             <tr>
-              <td colspan="5">
-                <div class="empty-state">
-                  <i class="fas fa-user-slash"></i>
-                  <h5>No Examiners Found</h5>
-                  <p>Add your first examiner by clicking the button above</p>
-                </div>
-              </td>
+                <td colspan="6">
+                    <div class="empty-state">
+                        <i class="fas fa-user-slash"></i>
+                        <h5>No Staff Members Found</h5>
+                        <p>Add your first staff member</p>
+                    </div>
+                </td>
             </tr>
-          {% endif %}
-        </tbody>
-      </table>
+        {% endif %}
+    </tbody>
+</table>
     </div>
   </div>
 </div>

@@ -15,6 +15,9 @@ class Teacher(models.Model):
         blank=False,
         related_name='teachers'
     )
+    @property
+    def role(self):
+        return "Team Leader"
     
     @property
     def get_name(self):

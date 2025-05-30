@@ -9,6 +9,7 @@ from datetime import date, timedelta
 from django.db.models import Q
 from django.core.mail import send_mail
 from teacher import models as TMODEL
+from examiner import models as EMODEL
 from student import models as SMODEL
 from teacher import forms as TFORM
 from student import forms as SFORM
@@ -124,10 +125,17 @@ def admin_teacher_view(request):
     }
     return render(request,'exam/admin_teacher.html',context=dict)
 
+from itertools import chain
 @login_required(login_url='adminlogin')
 def admin_view_teacher_view(request):
     teachers= TMODEL.Teacher.objects.all()
-    return render(request,'exam/admin_view_teacher.html',{'teachers':teachers})
+    examiners= EMODEL.Examiner.objects.all()
+    combined_staff = list(chain(teachers, examiners))
+    
+    context = {
+        'staff': combined_staff,
+    }
+    return render(request,'exam/admin_view_teacher.html',context)
 
 
 @login_required(login_url='adminlogin')
