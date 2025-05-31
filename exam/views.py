@@ -43,27 +43,23 @@ def is_teacher(user):
 def is_student(user):
     return user.groups.filter(name='STUDENT').exists()
 
-# def afterlogin_view(request):
-#     if is_student(request.user):      
-#         return redirect('student/student-dashboard')
-                
-#     elif is_teacher(request.user):
-#         accountapproval=TMODEL.Teacher.objects.all().filter(user_id=request.user.id,status=True)
-#         if accountapproval:
-#             return redirect('teacher/teacher-dashboard')
-#         else:
-#             return render(request,'teacher/teacher_wait_for_approval.html')
-#     else:
-#         return redirect('admin-dashboard')
+def is_examiner(user):
+    return user.groups.filter(name='EXAMINER').exists()
 
 def afterlogin_view(request):
-    if is_student(request.user):      
-        return redirect('student/student-dashboard')
-                
-    elif is_teacher(request.user):
-        return redirect('teacher/teacher-dashboard')
-    else:
-        return redirect('admin-dashboard')
+    try:
+        if is_examiner(request.user):
+            return redirect('examiner:examiner-dashboard')
+        elif is_teacher(request.user):
+            return redirect('teacher:teacher-dashboard')
+        elif is_student(request.user):
+            return redirect('student-dashboard')
+        else:
+            return redirect('admin-dashboard')
+    except AttributeError: 
+        if request.user.is_superuser:
+            return redirect('admin-dashboard')
+        return redirect('logout') 
 
 def adminclick_view(request):
     if request.user.is_authenticated:
@@ -103,7 +99,9 @@ def admin_dashboard_view(request):
 
     dict={
     'total_student':SMODEL.Student.objects.all().count(),
-    'total_teacher':TMODEL.Teacher.objects.all().filter(status=True).count(),
+    'team_leader_count':TMODEL.Teacher.objects.all().count(),
+    'examiner_count': EMODEL.Examiner.objects.all().count(),
+    'total_staff':EMODEL.Examiner.objects.all().count() + TMODEL.Teacher.objects.all().count(),
     'total_course':models.Course.objects.all().count(),
     'total_question':models.Question.objects.all().count(),
     'active_students': active_students, 
@@ -166,37 +164,6 @@ def delete_teacher_view(request,pk):
     teacher.delete()
     return HttpResponseRedirect('/admin-view-teacher')
 
-
-
-
-# @login_required(login_url='adminlogin')
-# def admin_view_pending_teacher_view(request):
-#     teachers= TMODEL.Teacher.objects.all().filter(status=False)
-#     return render(request,'exam/admin_view_pending_teacher.html',{'teachers':teachers})
-
-
-# @login_required(login_url='adminlogin')
-# def approve_teacher_view(request,pk):
-#     teacherSalary=forms.TeacherSalaryForm()
-#     if request.method=='POST':
-#         teacherSalary=forms.TeacherSalaryForm(request.POST)
-#         if teacherSalary.is_valid():
-#             teacher=TMODEL.Teacher.objects.get(id=pk)
-#             teacher.salary=teacherSalary.cleaned_data['salary']
-#             teacher.status=True
-#             teacher.save()
-#         else:
-#             print("form is invalid")
-#         return HttpResponseRedirect('/admin-view-pending-teacher')
-#     return render(request,'exam/salary_form.html',{'teacherSalary':teacherSalary})
-
-# @login_required(login_url='adminlogin')
-# def reject_teacher_view(request,pk):
-#     teacher=TMODEL.Teacher.objects.get(id=pk)
-#     user=User.objects.get(id=teacher.user_id)
-#     user.delete()
-#     teacher.delete()
-#     return HttpResponseRedirect('/admin-view-pending-teacher')
 
 @login_required(login_url='adminlogin')
 def admin_view_teacher_salary_view(request):
@@ -382,9 +349,8 @@ def contactus_view(request):
             return render(request, 'exam/contactussuccess.html')
     return render(request, 'exam/contactus.html', {'form':sub})
 
-
 from datetime import datetime
-
+from django.db.models import Sum
 @login_required(login_url='adminlogin')
 def report_view(request):
     # Get all distinct courses and organizations
@@ -393,19 +359,6 @@ def report_view(request):
 
     # Start with base queryset
     results = models.Result.objects.select_related('student', 'exam').order_by('-date')
-
-    student_ids = [result.student.id for result in results]
-    fib_answers = models.StudentAnswer.objects.filter(
-        student_id__in=student_ids,
-        question__course_id__in=courses,
-        question__question_type='FIB'
-    ).values('student').annotate(fib_score=Sum('marks_obtained'))
-
-    fib_scores = {answer['student']: answer['fib_score'] or 0 for answer in fib_answers}
-
-    for result in results:
-        result.fib_score = fib_scores.get(result.student.id, 0)
-        result.total_score = result.marks + result.fib_score
 
     # Get filter parameters from request
     course_id = request.GET.get('course')
@@ -419,10 +372,6 @@ def report_view(request):
         results = results.filter(exam__id=course_id)
     if organization:
         results = results.filter(student__organization=organization)
-    if min_mark:
-        results = results.filter(marks__gte=min_mark)
-    if max_mark:
-        results = results.filter(marks__lte=max_mark)
     if exam_date:
         try:
             date_obj = datetime.strptime(exam_date, '%Y-%m-%d').date()
@@ -430,13 +379,44 @@ def report_view(request):
         except ValueError:
             pass 
 
-    # Pagination - 25 items per page
-    paginator = Paginator(results, 10)
+    # Get student IDs after filtering
+    student_ids = [result.student.id for result in results]
+
+    # Calculate FIB scores only for filtered students
+    fib_answers = models.StudentAnswer.objects.filter(
+        student_id__in=student_ids,
+        question__question_type='FIB'
+    ).values('student').annotate(fib_score=Sum('marks_obtained'))
+
+    fib_scores = {answer['student']: answer['fib_score'] or 0 for answer in fib_answers}
+
+    # Apply score range filter after calculating total scores
+    filtered_results = []
+    for result in results:
+        result.fib_score = fib_scores.get(result.student.id, 0)
+        result.total_score = result.marks + result.fib_score
+        
+        # Apply score range filtering manually since we need to check total_score
+        if min_mark and result.total_score < int(min_mark):
+            continue
+        if max_mark and result.total_score > int(max_mark):
+            continue
+        filtered_results.append(result)
+
+    # Convert to a list for pagination
+    from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+    paginator = Paginator(filtered_results, 10)
     page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    
+    try:
+        page_obj = paginator.page(page_number)
+    except PageNotAnInteger:
+        page_obj = paginator.page(1)
+    except EmptyPage:
+        page_obj = paginator.page(paginator.num_pages)
 
     context = {
-        'results': page_obj,  # Changed from results to page_obj
+        'results': page_obj,
         'courses': courses,
         'organizations': organizations,
         'selected_course': course_id,

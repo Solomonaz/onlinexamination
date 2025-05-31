@@ -61,6 +61,11 @@ MIDDLEWARE = [
     'onlinexam.middleware.SessionTimeoutMiddleware',
 
 ]
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    ]
+
 CSRF_COOKIE_SECURE=False
 ROOT_URLCONF = 'onlinexam.urls'
 
@@ -139,15 +144,10 @@ STATIC_DIR,
 LOGIN_REDIRECT_URL='/afterlogin'
 
 #for contact us give your gmail id and password
-EMAIL_BACKEND ='django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_USE_TLS = True
-EMAIL_PORT = 587
-EMAIL_HOST_USER = 'cblake6231415@gmail.com' # this email will be used to send emails
-EMAIL_HOST_PASSWORD = 'Cblake#123' # host email password required
-# now sign in with your host gmail account in your browser
-# open following link and turn it ON
-# https://myaccount.google.com/lesssecureapps
-# otherwise you will get SMTPAuthenticationError at /contactus
-# this process is required because google blocks apps authentication by default
-EMAIL_RECEIVING_USER = ['cblake6231415@gmail.com'] # email on which you will receive messages sent from website
+# EMAIL_BACKEND ='django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_USE_TLS = True
+# EMAIL_PORT = 587
+# EMAIL_HOST_USER = 'cblake6231415@gmail.com'
+# EMAIL_HOST_PASSWORD = 'Cblake#123' 
+# EMAIL_RECEIVING_USER = ['cblake6231415@gmail.com']

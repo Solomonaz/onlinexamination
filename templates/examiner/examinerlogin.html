@@ -13,25 +13,23 @@
     <div class="container d-flex justify-content-center align-items-center min-vh-100">
       <div class="card shadow p-4" style="width: 100%; max-width: 500px;">
         <form method="post">
-        <!-- {% csrf_token %}
+        {% csrf_token %}
         {% if form.non_field_errors %}
         {% for error in form.non_field_errors %}
         <p class="text-danger">{{ error }}</p>
         {% endfor %}
-        {% endif %} -->
+        {% endif %}
 
           <h3 class="text-center mb-4">Trainer Login Panel</h3>
 
           <div class="mb-3">
-            <!-- {% render_field form.username class="form-control" autocomplete="off" placeholder="Username" %}
-            {{ form.username.errors }} -->
-             <input type="text" class="form-control" autocomplete="off" placeholder="Username">
+            {% render_field form.username class="form-control" autocomplete="off" placeholder="Username" %}
+            {{ form.username.errors }}
           </div>
 
           <div class="mb-3">
-            <!-- {% render_field form.password class="form-control" autocomplete="off" placeholder="Password" %}
-            {{ form.password.errors }} -->
-             <input type="text" class="form-control" autocomplete="off" placeholder="Password">
+            {% render_field form.password class="form-control" autocomplete="off" placeholder="Password" %}
+            {{ form.password.errors }}
           </div>
 
           <div class="d-flex justify-content-center">
