@@ -9,7 +9,8 @@ class Department(models.Model):
    
    def __str__(self):
         return self.department_name
-
+   
+from examiner.models import Examiner
 from django.core.exceptions import ValidationError
 class Course(models.Model):
     course_name = models.CharField(max_length=50)
@@ -17,6 +18,9 @@ class Course(models.Model):
     total_marks = models.PositiveIntegerField(default=100)
     given_time = models.PositiveIntegerField(default=60)
     department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='course_set')
+    examiners = models.ManyToManyField(Examiner, blank=True, related_name='courses')
+    is_seen = models.BooleanField(default=False)
+
 
     def __str__(self):
         return self.course_name

@@ -1,0 +1,284 @@
+{% extends 'examiner/examinerbase.html' %}
+{% block content %}
+{% load static %}
+<div class="container py-4">
+  <div class="card shadow-sm border-0 overflow-hidden">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
+      <div>
+        <small class="opacity-75">Detailed analysis of examination results</small>
+      </div>
+      <div>
+        <button class="btn btn-light btn-sm me-2" onclick="printReport()">
+          <i class="fas fa-print me-1"></i> Print
+        </button>
+        <button class="btn btn-light btn-sm" onclick="exportToExcel()">
+          <i class="fas fa-file-excel me-1"></i> Export
+        </button>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <form id="filter-form" method="get" class="row g-3 mb-4">
+        <div class="col-md-3">
+          <label class="form-label fw-semibold small mb-1">Organization</label>
+          <select name="organization" class="form-select form-select-sm auto-submit">
+            <option value="">All Organizations</option>
+            {% for org in organizations %}
+              <option value="{{ org }}" {% if org == selected_org %}selected{% endif %}>{{ org }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label fw-semibold small mb-1">Score Range</label>
+          <div class="input-group input-group-sm">
+            <input type="number" name="min_mark" value="{{ min_mark }}" class="form-control auto-submit" placeholder="Min" min="0" max="100">
+            <span class="input-group-text">to</span>
+            <input type="number" name="max_mark" value="{{ max_mark }}" class="form-control auto-submit" placeholder="Max" min="0" max="100">
+          </div>
+        </div>
+        
+        <div class="col-md-2">
+          <label class="form-label fw-semibold small mb-1">Exam Date</label>
+          <input type="date" name="exam_date" class="form-control form-control-sm auto-submit" 
+                 value="{{ exam_date|default:'' }}" 
+                 max="{% now 'Y-m-d' %}">
+      </div>
+
+        <div class="col-md-2 d-flex align-items-end">
+          <button type="submit" class="btn btn-primary btn-sm w-100">
+            <i class="fas fa-filter me-1"></i> Apply
+          </button>
+        </div>
+      </form>
+
+      {% if results %}
+      <div id="report-section">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="text-muted small">
+            Showing {{ results|length }} records
+          </div>
+          <div class="dropdown">
+            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+              <i class="fas fa-columns me-1"></i> Columns
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="#" onclick="toggleColumn(1)">Toggle Student Name</a></li>
+              <li><a class="dropdown-item" href="#" onclick="toggleColumn(2)">Toggle Username</a></li>
+              <li><a class="dropdown-item" href="#" onclick="toggleColumn(3)">Toggle Organization</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-sm table-hover table-bordered align-middle" id="report-table">
+            <thead class="table-light">
+              <tr>
+                <th width="50">#</th>
+                <th>Student Name</th>
+                <th>Username</th>
+                <th>Organization</th>
+                <th width="120">MCQ Score</th>
+                <th width="120">FIB Score</th>
+                <th width="120">Total Score</th>
+                <th width="150">Date</th>
+                <th width="120">Actions</th>
+              </tr>
+            </thead>
+                          
+              <tbody>
+                {% for result in results %}
+                <tr>
+                  <td>{{ forloop.counter }}</td>
+                  <td>{{ result.student.get_name }}</td>
+                  <td>{{ result.student.user.username }}</td>
+                  <td>{{ result.student.organization }}</td>
+                  
+                  <!-- MCQ Score -->
+                  <td>
+                    <div class="progress" style="height: 20px;">
+                      <div class="progress-bar {% if result.marks >= 75 %}bg-success{% elif result.marks >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
+                          role="progressbar" style="width: 100%" aria-valuenow="{{ result.marks }}" aria-valuemin="0" aria-valuemax="100">
+                        {{ result.marks }}%
+                      </div>
+                    </div>
+                  </td>
+                  
+                  <!-- FIB Score -->
+                  <td>  
+                    <div class="progress" style="height: 20px;">
+                      <div class="progress-bar {% if result.fib_score >= 75 %}bg-success{% elif result.fib_score >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
+                          role="progressbar" style="width: 100%" 
+                          aria-valuenow="{{ result.fib_score }}" aria-valuemin="0" aria-valuemax="100">
+                        {{ result.fib_score }}%
+                      </div>
+                    </div>
+
+                  </td>
+                  <!-- Total Score -->
+                  <td>
+                    <div class="progress" style="height: 20px;">
+                      <div class="progress-bar {% if result.total_score >= 75 %}bg-success{% elif result.total_score >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
+                          role="progressbar" style="width: 100%" 
+                          aria-valuenow="{{ result.total_score }}" aria-valuemin="0" aria-valuemax="100">
+                        {{ result.total_score }}%
+                      </div>
+                    </div>
+                  </td>
+                  <td>{{ result.date|date:"M d, Y" }}</td>
+                  <td class="text-center">
+                    {% if result.grading_status.has_fib_questions %}
+                        {% if result.grading_status.has_fib_for_student %}
+                            {% if result.grading_status.is_completed %}
+                                <a href="{% url 'examiner:examiner-view-grading' result.student.id course.id %}" 
+                                   class="btn btn-success btn-sm">
+                                    <i class="fas fa-check-circle"></i> View
+                                </a>
+                                <small class="badge bg-success">Completed</small>
+                            {% elif result.grading_status.graded_count > 0 %}
+                                <a href="{% url 'examiner:examiner-view-grading' result.student.id course.id %}" 
+                                   class="btn btn-warning btn-sm">
+                                    <i class="fas fa-spinner"></i> In Progress ({{ result.grading_status.graded_count }}/{{ result.grading_status.total_questions }})
+                                </a>
+                            {% else %}
+                                <a href="{% url 'examiner:examiner-view-grading' result.student.id course.id %}" 
+                                   class="btn btn-primary btn-sm">
+                                    <i class="fas fa-edit"></i> Not Graded
+                                </a>
+                            {% endif %}
+                        {% else %}
+                            <span class="badge bg-secondary">No FIB Answers</span>
+                        {% endif %}
+                    {% else %}
+                        <span class="badge bg-info">No FIB Questions</span>
+                    {% endif %}
+                </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+          </table>
+        </div>
+      </div>
+      {% else %}
+      <div class="text-center py-5">
+        <div class="mb-3">
+          <i class="fas fa-file-excel fa-3x text-muted opacity-25"></i>
+        </div>
+        <h5 class="text-muted">No matching records found</h5>
+        <p class="text-muted small">Try adjusting your filter criteria</p>
+        <button class="btn btn-sm btn-outline-primary mt-2" onclick="resetFilters()">
+          <i class="fas fa-sync-alt me-1"></i> Reset Filters
+        </button>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+  // Auto-submit form on filter changes
+  document.querySelectorAll('.auto-submit').forEach(el => {
+    el.addEventListener('change', () => document.getElementById('filter-form').submit());
+  });
+
+  // Debounced input for number fields
+  document.querySelectorAll('input[type="number"].auto-submit').forEach(el => {
+    let timeout;
+    el.addEventListener('input', () => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        document.getElementById('filter-form').submit();
+      }, 800);
+    });
+  });
+
+  // Print report function
+  function printReport() {
+    const printContent = document.getElementById('report-section').innerHTML;
+    const printWindow = window.open('', '', 'height=800,width=1200');
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Examinee Performance Report</title>
+          <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+          <style>
+            body { padding: 20px; }
+            .progress { height: 20px; }
+            .progress-bar { font-size: 12px; line-height: 20px; }
+            @page { size: landscape; }
+          </style>
+        </head>
+        <body>
+          <h4 class="mb-3 text-center">Examinee Performance Report</h4>
+          <div class="mb-3 text-muted small">Generated on ${new Date().toLocaleString()}</div>
+          ${printContent}
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    setTimeout(() => printWindow.print(), 500);
+  }
+
+  // Export to Excel function
+  function exportToExcel() {
+    const table = document.getElementById('report-table');
+    const workbook = XLSX.utils.table_to_book(table);
+    XLSX.writeFile(workbook, 'Examinee_Report.xlsx');
+  }
+
+  // Reset all filters
+  function resetFilters() {
+    const form = document.getElementById('filter-form');
+    form.reset();
+    form.submit();
+  }
+
+  // Toggle table columns
+  function toggleColumn(colIndex) {
+    const table = document.getElementById('report-table');
+    const rows = table.getElementsByTagName('tr');
+    
+    for (let i = 0; i < rows.length; i++) {
+      const cell = rows[i].cells[colIndex];
+      if (cell) {
+        cell.style.display = cell.style.display === 'none' ? '' : 'none';
+      }
+    }
+  }
+// Helper function to show alerts
+function showAlert(type, message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.role = 'alert';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    
+    const container = document.getElementById('explanationQuestionsContainer');
+    container.prepend(alertDiv);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        alertDiv.classList.remove('show');
+        setTimeout(() => alertDiv.remove(), 150);
+    }, 5000);
+}
+// Helper function to get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}

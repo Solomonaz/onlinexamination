@@ -1,4 +1,5 @@
-{% extends 'teacher/teacherbase.html' %}
+{% extends 'examiner/examinerbase.html' %}
+{% load widget_tweaks %}
 {% block content %}
 {% load static %}
 
@@ -14,7 +15,7 @@
       <hr>
       <div class="card">
         <div class="card-body">
-          <h5 class="card-title">Student: {{ student.user.get_full_name }}</h5>
+          <h5 class="card-title">Examinee: {{ student.user.get_full_name }}</h5>
           <h6 class="card-subtitle mb-2 text-muted">Exam: {{ course.course_name }}</h6>
           <p class="card-text">Submitted on: {{ submission_time|date:"F j, Y H:i" }}</p>
           
@@ -85,7 +86,7 @@
         </div>
 
         <div class="d-flex justify-content-between mt-4">
-          <a href="{% url 'teacher:teacher-view-examinee' course.id %}" class="btn btn-secondary">
+          <a href="{% url 'examiner:examiner-view-examinee' course.id %}" class="btn btn-secondary">
             <i class="fas fa-arrow-left me-1"></i> Back to Submissions
           </a>
           <button type="submit" class="btn btn-primary" id="submitBtn">
@@ -186,5 +187,6 @@ document.addEventListener('DOMContentLoaded', updateFibTotal);
   border-color: #dc3545;
 }
 </style>
+
 
 {% endblock %}

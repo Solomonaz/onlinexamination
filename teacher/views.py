@@ -9,6 +9,7 @@ from datetime import date, timedelta
 from exam import models as QMODEL
 from student import models as SMODEL
 from exam import forms as QFORM
+from examiner import models as EMODEL
 from django.contrib import messages
 import pandas as pd
 from io import BytesIO
@@ -113,12 +114,45 @@ def teacher_add_exam_view(request):
     
     return render(request,'teacher/teacher_add_exam.html',{'courseForm':courseForm})
 
+# @login_required(login_url='teacher:teacherlogin')
+# @user_passes_test(is_teacher)
+# def teacher_view_exam_view(request):
+#     department = get_teacher_department(request)
+#     courses = QMODEL.Course.objects.filter(department=department)
+
+#     context = {
+#         'courses':courses,
+#     }
+#     return render(request,'teacher/teacher_view_exam.html', context)
+
 @login_required(login_url='teacher:teacherlogin')
 @user_passes_test(is_teacher)
 def teacher_view_exam_view(request):
     department = get_teacher_department(request)
-    courses = QMODEL.Course.objects.filter(department=department)
-    return render(request,'teacher/teacher_view_exam.html',{'courses':courses})
+    courses = QMODEL.Course.objects.filter(department=department).prefetch_related('examiners')
+    examiners = EMODEL.Examiner.objects.filter(department=department)
+
+    if request.method == 'POST':
+        course_id = request.POST.get('course_id')
+        examiner_id = request.POST.get('examiner_id')
+        
+        try:
+            course = QMODEL.Course.objects.get(id=course_id)
+            examiner = EMODEL.Examiner.objects.get(id=examiner_id)
+            
+            # Add examiner to course (many-to-many relationship)
+            course.examiners.add(examiner)
+            messages.success(request, f'Examiner {examiner.get_name} assigned successfully!')
+        except Exception as e:
+            messages.error(request, f'Error assigning examiner: {str(e)}')
+        
+        return redirect('teacher:teacher-view-exam')
+
+    context = {
+        'examiners': examiners,
+        'courses': courses,
+    }
+    return render(request, 'teacher/teacher_view_exam.html', context)
 
 @login_required(login_url='teacher:teacherlogin')
 @user_passes_test(is_teacher)
@@ -298,6 +332,8 @@ def remove_question_view(request,pk):
     question.delete()
     messages.success(request, "Question deleted successfully!")
     return redirect(request.META.get('HTTP_REFERER', '/'))
+
+
 @login_required(login_url='teacher:teacherlogin')
 @user_passes_test(is_teacher)
 def teacher_view_examinees_view(request, course_id):

@@ -322,6 +322,16 @@
                 padding: 8px 12px;
             }
         }
+        .notification-badge {
+            display: inline-block;
+            background-color: #ff4757;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 12px;
+            margin-left: 5px;
+            line-height: 1;
+}
     </style>
 </head>
 
@@ -363,23 +373,26 @@
             <img src="{% static 'image/logo.jpg' %}" class="profile-img" alt="Profile Image">
             <!-- <h4 class="profile-name">{{request.user.first_name}} {{request.user.last_name}}</h4> -->
             <p class="profile-role">Department</p>
-            <p class="profile-role">{{ request.user.teacher.department }}</p>
+            <p class="profile-role">{{ request.user.examiner.department }}</p>
         </div>
         
         <nav class="sidebar-menu">
             <div class="menu-container">
-                <a href="/teacher/teacher-dashboard" class="menu-item {% if request.path == '/teacher/teacher-dashboard' %}active{% endif %}">
+                <a href="/examiner/examiner-dashboard" class="menu-item {% if request.path == '/examiner/examiner-dashboard' %}active{% endif %}">
                     <i class="fas fa-tachometer-alt"></i>
                     <span>Dashboard</span>
                 </a>
-                <a href="/teacher/teacher-exam" class="menu-item {% if request.path == '/teacher/teacher-exam' %}active{% endif %}">
-                    <i class="fas fa-book"></i>
-                    <span>Manage Courses</span>
+                <a href="/examiner/examiner-assigned-exam" class="menu-item {% if request.path == '/examiner/examiner-assigned-exam' %}active{% endif %}">
+                    <i class="fas fa-file-signature"></i>
+                    <span>Assigned Exams</span>
+                    {% if unseen_exam_count > 0 %}
+                    <span class="notification-badge">{{ unseen_exam_count }}</span>
+                    {% endif %}
                 </a>
-                <a href="/teacher/teacher-question" class="menu-item {% if request.path == '/teacher/teacher-question' %}active{% endif %}">
-                    <i class="fas fa-question-circle"></i>
-                    <span>Manage Questions</span>
-                </a>
+                <!-- <a href="/examiner/examiner-pending-exam" class="menu-item {% if request.path == '/examiner/examiner-question' %}active{% endif %}">
+                    <i class="fas fa-clipboard-check"></i>
+                    <span>Pending Exams</span>
+                </a> -->
             </div>
         </nav>
     </aside>

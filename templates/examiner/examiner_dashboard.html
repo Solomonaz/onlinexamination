@@ -2,5 +2,225 @@
 {% load widget_tweaks %}
 {% block content %}
 
-<p>hello from the examine dashboared</p>
+<div class="container-fluid">
+    <!-- Main Content -->
+    <main class="ms-sm-auto px-md-4">
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h1 class="h2">Examiner Dashboard</h1>
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <div class="btn-group me-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card text-white bg-primary mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Pending Exams</h5>
+                        <p class="card-text display-4">12</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-success mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Graded Today</h5>
+                        <p class="card-text display-4">15</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-info mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Graded</h5>
+                        <p class="card-text display-4">187</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Students Section -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center bg-white">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-user-clock fs-4 text-primary me-2"></i>
+                    <h4 class="mb-0">Active Examinees</h4>
+                </div>
+                <div>
+                    <span class="badge rounded-pill bg-primary py-2 px-3">
+                        <i class="fas fa-users me-1"></i>
+                        <span id="active-student-count">{{ active_students|length }}</span> Active
+                    </span>
+                    <button class="btn btn-sm btn-outline-secondary ms-2" id="refresh-active-students">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="card-body p-0">
+                {% if active_students %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Student</th>
+                                <th>Course</th>
+                                <th>Organization</th>
+                                <th>Started At</th>
+                                <th>Time Elapsed</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in active_students %}
+                            <tr class="align-middle">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar avatar-sm bg-light-primary rounded-circle me-2">
+                                            <span class="avatar-content">{{ student.user.get_full_name|slice:":1" }}</span>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0">{{ student.user.get_full_name }}</h6>
+                                            <small class="text-muted">@{{ student.user.username }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light-info text-info">{{ student.course.course_name }}</span>
+                                </td>
+                                <td>{{ student.organization|default:"-" }}</td>
+                                <td>{% now "H:i" %}</td>
+                                <td>
+                                    <div class="progress" style="height: 6px;">
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 45%;" 
+                                             aria-valuenow="45" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                    <small class="text-muted">22:45 / 60:00</small>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary me-1" data-bs-toggle="tooltip" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" data-bs-toggle="tooltip" title="Force Submit">
+                                        <i class="fas fa-stop-circle"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <div class="mb-3">
+                        <i class="fas fa-user-clock fa-4x text-muted opacity-25"></i>
+                    </div>
+                    <h5 class="text-muted">No Active Examinees</h5>
+                    <p class="text-muted">Currently no examinees are taking exams</p>
+                    <button class="btn btn-sm btn-outline-primary mt-2">
+                        <i class="fas fa-sync-alt me-1"></i> Refresh
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+            
+            {% if active_students %}
+            <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+                <small class="text-muted">Showing {{ active_students|length }} active examinees</small>
+                <button class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-download me-1"></i> Export List
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Initialize tooltips
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+        
+        // Refresh button functionality
+        document.getElementById('refresh-active-students').addEventListener('click', function() {
+            // Add refresh animation
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            
+            // Simulate refresh (replace with actual AJAX call in production)
+            setTimeout(() => {
+                this.innerHTML = '<i class="fas fa-sync-alt"></i>';
+                // Show toast notification
+                const toast = new bootstrap.Toast(document.getElementById('refreshToast'));
+                toast.show();
+            }, 1000);
+        });
+        
+        // Update elapsed time every minute
+        setInterval(updateElapsedTimes, 60000);
+        
+        function updateElapsedTimes() {
+            // This would update all elapsed times in the table
+            console.log("Updating elapsed times...");
+        }
+    });
+</script>
+
+<!-- Toast Notification (hidden by default) -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+    <div id="refreshToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="me-auto">System</strong>
+            <small>Just now</small>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+            Active examinee list refreshed successfully.
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+    
+    .avatar-sm {
+        width: 28px;
+        height: 28px;
+        font-size: 0.75rem;
+    }
+    
+    .bg-light-primary {
+        background-color: #e3f2fd;
+    }
+    
+    .bg-light-info {
+        background-color: #e1f5fe;
+    }
+    
+    .progress {
+        width: 100px;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(0, 123, 255, 0.05);
+    }
+</style>
 {% endblock %}
