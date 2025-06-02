@@ -449,3 +449,9 @@ def admin_add_department_view(request):
         else:
             messages.error(request, "Please correct the errors below.")
     return render(request, 'exam/admin_add_department.html', {'departmentForm': departmentForm})
+
+@login_required(login_url='adminlogin')
+def delete_department(request, pk):
+    department = models.Department.objects.get(id=pk)
+    department.delete()
+    return HttpResponseRedirect('/admin-department')

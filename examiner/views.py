@@ -13,7 +13,7 @@ from examiner import models as EMODEL
 from django.contrib import messages
 import pandas as pd
 from io import BytesIO
-from django.db.models import Case, When, Value, Sum, Count, IntegerField
+from django.db.models import Case, When, Value, Sum, Count, IntegerField, Q, F
 from django.db.models.functions import Coalesce
 from datetime import datetime
 from django.db.models import Prefetch
@@ -105,14 +105,50 @@ def examiner_dashboard_view(request):
     try:
         examiner = EMODEL.Examiner.objects.get(user=request.user)
         assigned_courses = QMODEL.Course.objects.filter(examiners=examiner)
-        assigned_courses_count = QMODEL.Course.objects.filter(examiners=examiner).count()
-        unseen_exam_count = QMODEL.Course.objects.filter(examiners=examiner,is_seen=False).count()
+        assigned_courses_count = assigned_courses.count()
         
+        # Get pending exams (with ungraded FIB questions)
+        pending_exams = QMODEL.Course.objects.filter(
+            examiners=examiner
+        ).annotate(
+            ungraded_fib_count=Count(
+                Case(
+                    When(questions__question_type='FIB',
+                         questions__studentanswer__is_graded=False,
+                         then=1),
+                    output_field=IntegerField()
+                )
+            )
+        ).filter(ungraded_fib_count__gt=0)
+        
+        # Get graded exams (all FIB questions graded)
+        graded_exams = QMODEL.Course.objects.filter(
+            examiners=examiner
+        ).annotate(
+            total_fib=Count('questions__studentanswer', 
+                          filter=Q(questions__question_type='FIB')),
+            graded_fib=Count('questions__studentanswer',
+                           filter=Q(questions__question_type='FIB', 
+                                   questions__studentanswer__is_graded=True))
+        ).filter(total_fib__gt=0).exclude(
+            total_fib__gt=F('graded_fib')
+        )
+        
+        # Count unseen exams
+        unseen_exam_count = QMODEL.Course.objects.filter(
+            examiners=examiner,
+            is_seen=False
+        ).count()
+
         context = {
             'examiner': examiner,
             'assigned_courses': assigned_courses,
             'assigned_courses_count': assigned_courses_count,
-            'unseen_exam_count':unseen_exam_count,
+            'unseen_exam_count': unseen_exam_count,
+            'pending_exams_count': pending_exams.count(),
+            'pending_exams': pending_exams,
+            'graded_exams_count': graded_exams.count(),
+            'graded_exams': graded_exams,
         }
         return render(request, 'examiner/examiner_dashboard.html', context)
     
@@ -120,6 +156,7 @@ def examiner_dashboard_view(request):
         messages.error(request, "Examiner profile not found.")
         return redirect('examiner:examinerlogin')
 
+        
 def examiner_assinged_exam_view(request):
     examiner = EMODEL.Examiner.objects.get(user=request.user)
     courses = QMODEL.Course.objects.filter(examiners=examiner)
@@ -289,7 +326,6 @@ def examiner_explanation_grading_view(request, student_id, course_id):
             answer.feedback = request.POST.get(feedback_key, '')
             answer.is_graded = True
             answer.save()
-            print( answer.is_graded)
         
         messages.success(request, 'FIB grades saved successfully!')
         return redirect(request.META.get('HTTP_REFERER') or 
@@ -307,3 +343,6 @@ def examiner_explanation_grading_view(request, student_id, course_id):
         'current_fib_score': current_fib_score
     }
     return render(request, 'examiner/examiner_explanation_grading.html', context)
+
+# def examiner_pending_exam(request):
+#     return render(request, 'examiner')

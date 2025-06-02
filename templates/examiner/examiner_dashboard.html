@@ -22,15 +22,25 @@
                 <div class="card text-white bg-primary mb-3">
                     <div class="card-body">
                         <h5 class="card-title">Pending Exams</h5>
-                        <p class="card-text display-4">12</p>
+                        {% if pending_exams_count > 0%}
+                        <i class="fas fa-exclamation-circle"></i>
+                        You have {{pending_exams_count}} pending Exam's
+                        {% else %}
+                        No pending exams
+                        {% endif %}
                     </div>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="card text-white bg-success mb-3">
                     <div class="card-body">
-                        <h5 class="card-title">Graded Today</h5>
-                        <p class="card-text display-4">15</p>
+                        <h5 class="card-title">Completed Exams</h5>
+                        {% if graded_exams > 0 %}
+                        <span class="badge bg-success rounded-pill">
+                        You have {{graded_exams.count}} completed Exam's
+                        {% else %}
+                        No graded exams
+                        {% endif %}
                     </div>
                 </div>
             </div>

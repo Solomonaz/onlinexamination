@@ -19,7 +19,7 @@
                     <th>Examiners</th>
                     <th>Examinees</th>
                     <th>Courses</th>
-                    <!-- <th>Actions</th> -->
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -39,6 +39,9 @@
                     </td>
                     <td class="text-center">
                         <span class="badge bg-info">{{ department.course_set.count }}</span>
+                    </td>
+                    <td class="text-center">
+                        <a href="{% url 'delete-department' department.id %}">Delete</a>
                     </td>
                 </tr>
                 {% empty %}

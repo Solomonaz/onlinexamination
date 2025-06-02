@@ -25,6 +25,7 @@ urlpatterns = [
 
     path('admin-department', views.admin_department_view,name='admin-department'),
     path('admin-add-department', views.admin_add_department_view,name='admin-add-department'),
+    path('delete-department/<int:pk>', views.delete_department,name='delete-department'),
 
     path('admin-teacher', views.admin_teacher_view,name='admin-teacher'),
     path('admin-view-teacher', views.admin_view_teacher_view,name='admin-view-teacher'),
