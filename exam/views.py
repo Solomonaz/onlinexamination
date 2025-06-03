@@ -16,7 +16,6 @@ from student import forms as SFORM
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.sessions.models import Session
-from django.utils.timezone import now
 from django.http import JsonResponse
 from django.core.paginator import Paginator
 

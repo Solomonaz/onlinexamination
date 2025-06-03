@@ -114,17 +114,6 @@ def teacher_add_exam_view(request):
     
     return render(request,'teacher/teacher_add_exam.html',{'courseForm':courseForm})
 
-# @login_required(login_url='teacher:teacherlogin')
-# @user_passes_test(is_teacher)
-# def teacher_view_exam_view(request):
-#     department = get_teacher_department(request)
-#     courses = QMODEL.Course.objects.filter(department=department)
-
-#     context = {
-#         'courses':courses,
-#     }
-#     return render(request,'teacher/teacher_view_exam.html', context)
-
 @login_required(login_url='teacher:teacherlogin')
 @user_passes_test(is_teacher)
 def teacher_view_exam_view(request):
@@ -135,16 +124,23 @@ def teacher_view_exam_view(request):
     if request.method == 'POST':
         course_id = request.POST.get('course_id')
         examiner_id = request.POST.get('examiner_id')
+        action = request.POST.get('action')  # 'assign' or 'remove'
         
         try:
             course = QMODEL.Course.objects.get(id=course_id)
             examiner = EMODEL.Examiner.objects.get(id=examiner_id)
             
-            # Add examiner to course (many-to-many relationship)
-            course.examiners.add(examiner)
-            messages.success(request, f'Examiner {examiner.get_name} assigned successfully!')
+            if action == 'assign':
+                # Add examiner to course
+                course.examiners.add(examiner)
+                messages.success(request, f'Examiner {examiner.get_name} assigned successfully!')
+            elif action == 'remove':
+                # Remove examiner from course
+                course.examiners.remove(examiner)
+                messages.success(request, f'Examiner {examiner.get_name} removed successfully!')
+                
         except Exception as e:
-            messages.error(request, f'Error assigning examiner: {str(e)}')
+            messages.error(request, f'Error: {str(e)}')
         
         return redirect('teacher:teacher-view-exam')
 

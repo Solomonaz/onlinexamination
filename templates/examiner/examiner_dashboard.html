@@ -5,14 +5,15 @@
 <div class="container-fluid">
     <!-- Main Content -->
     <main class="ms-sm-auto px-md-4">
-        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <div
+            class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
             <h1 class="h2">Examiner Dashboard</h1>
             <div class="btn-toolbar mb-2 mb-md-0">
-                <div class="btn-group me-2">
+                <!-- <div class="btn-group me-2">
                     <button type="button" class="btn btn-sm btn-outline-secondary">
                         <i class="fas fa-sync-alt"></i> Refresh
                     </button>
-                </div>
+                </div> -->
             </div>
         </div>
 
@@ -22,36 +23,29 @@
                 <div class="card text-white bg-primary mb-3">
                     <div class="card-body">
                         <h5 class="card-title">Pending Exams</h5>
-                        {% if pending_exams_count > 0%}
+                        {% if pending_exams_count > 0 %}
                         <i class="fas fa-exclamation-circle"></i>
-                        You have {{pending_exams_count}} pending Exam's
+                        You have {{pending_exams_count}} pending Exam{% if pending_exams_count > 1 %}s{% endif %}
                         {% else %}
                         No pending exams
                         {% endif %}
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <!-- <div class="col-md-4">
                 <div class="card text-white bg-success mb-3">
                     <div class="card-body">
                         <h5 class="card-title">Completed Exams</h5>
-                        {% if graded_exams > 0 %}
+                        {% if graded_exams.count > 0 %}
                         <span class="badge bg-success rounded-pill">
-                        You have {{graded_exams.count}} completed Exam's
+                            You have {{graded_exams.count}} completed Exam{% if graded_exams.count > 1 %}s{% endif %}
+                        </span>
                         {% else %}
                         No graded exams
                         {% endif %}
                     </div>
                 </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card text-white bg-info mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title">Total Graded</h5>
-                        <p class="card-text display-4">187</p>
-                    </div>
-                </div>
-            </div>
+            </div> -->
         </div>
 
         <!-- Active Students Section -->
@@ -66,12 +60,12 @@
                         <i class="fas fa-users me-1"></i>
                         <span id="active-student-count">{{ active_students|length }}</span> Active
                     </span>
-                    <button class="btn btn-sm btn-outline-secondary ms-2" id="refresh-active-students">
+                    <!-- <button class="btn btn-sm btn-outline-secondary ms-2" id="refresh-active-students">
                         <i class="fas fa-sync-alt"></i>
-                    </button>
+                    </button> -->
                 </div>
             </div>
-            
+
             <div class="card-body p-0">
                 {% if active_students %}
                 <div class="table-responsive">
@@ -83,17 +77,15 @@
                                 <th>Organization</th>
                                 <th>Started At</th>
                                 <th>Time Elapsed</th>
-                                <th>Actions</th>
+                                <!-- <th>Actions</th> -->
                             </tr>
                         </thead>
                         <tbody>
                             {% for student in active_students %}
-                            <tr class="align-middle">
+                            <tr class="align-middle" data-student-id="{{ student.id }}">
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <div class="avatar avatar-sm bg-light-primary rounded-circle me-2">
-                                            <span class="avatar-content">{{ student.user.get_full_name|slice:":1" }}</span>
-                                        </div>
+                                        
                                         <div>
                                             <h6 class="mb-0">{{ student.user.get_full_name }}</h6>
                                             <small class="text-muted">@{{ student.user.username }}</small>
@@ -104,41 +96,41 @@
                                     <span class="badge bg-light-info text-info">{{ student.course.course_name }}</span>
                                 </td>
                                 <td>{{ student.organization|default:"-" }}</td>
-                                <td>{% now "H:i" %}</td>
+                                <td class="start-time">{% now "H:i" %}</td>
                                 <td>
                                     <div class="progress" style="height: 6px;">
-                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 45%;" 
-                                             aria-valuenow="45" aria-valuemin="0" aria-valuemax="100"></div>
+                                        <div class="progress-bar bg-warning progress-bar-striped progress-bar-animated"
+                                            role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0"
+                                            aria-valuemax="100"></div>
                                     </div>
-                                    <small class="text-muted">22:45 / 60:00</small>
+                                    <small class="text-muted elapsed-time">00:00 / 60:00</small>
                                 </td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline-primary me-1" data-bs-toggle="tooltip" title="View Details">
+                                <!-- <td>
+                                    <button class="btn btn-sm btn-outline-primary me-1 view-details"
+                                        data-bs-toggle="tooltip" title="View Details">
                                         <i class="fas fa-eye"></i>
                                     </button>
-                                    <button class="btn btn-sm btn-outline-danger" data-bs-toggle="tooltip" title="Force Submit">
+                                    <button class="btn btn-sm btn-outline-danger force-submit" data-bs-toggle="tooltip"
+                                        title="Force Submit">
                                         <i class="fas fa-stop-circle"></i>
                                     </button>
-                                </td>
+                                </td> -->
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
                 {% else %}
-                <div class="text-center py-5">
+                <div class="text-center py-5" id="no-active-students">
                     <div class="mb-3">
                         <i class="fas fa-user-clock fa-4x text-muted opacity-25"></i>
                     </div>
                     <h5 class="text-muted">No Active Examinees</h5>
                     <p class="text-muted">Currently no examinees are taking exams</p>
-                    <button class="btn btn-sm btn-outline-primary mt-2">
-                        <i class="fas fa-sync-alt me-1"></i> Refresh
-                    </button>
                 </div>
                 {% endif %}
             </div>
-            
+
             {% if active_students %}
             <div class="card-footer bg-white d-flex justify-content-between align-items-center">
                 <small class="text-muted">Showing {{ active_students|length }} active examinees</small>
@@ -150,41 +142,6 @@
         </div>
     </main>
 </div>
-
-{% endblock %}
-
-{% block scripts %}
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Initialize tooltips
-        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
-        
-        // Refresh button functionality
-        document.getElementById('refresh-active-students').addEventListener('click', function() {
-            // Add refresh animation
-            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            
-            // Simulate refresh (replace with actual AJAX call in production)
-            setTimeout(() => {
-                this.innerHTML = '<i class="fas fa-sync-alt"></i>';
-                // Show toast notification
-                const toast = new bootstrap.Toast(document.getElementById('refreshToast'));
-                toast.show();
-            }, 1000);
-        });
-        
-        // Update elapsed time every minute
-        setInterval(updateElapsedTimes, 60000);
-        
-        function updateElapsedTimes() {
-            // This would update all elapsed times in the table
-            console.log("Updating elapsed times...");
-        }
-    });
-</script>
 
 <!-- Toast Notification (hidden by default) -->
 <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
@@ -199,6 +156,131 @@
         </div>
     </div>
 </div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+        // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeTooltips();
+        initializeElapsedTimeTracking();
+        
+        // Start auto-refresh (every 10 seconds)
+        setInterval(fetchActiveStudents, 10000);
+    });
+
+    // Initialize Bootstrap tooltips
+    function initializeTooltips() {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function(tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    }
+
+    // Track elapsed time for active students
+    function initializeElapsedTimeTracking() {
+        updateAllElapsedTimes();
+        setInterval(updateAllElapsedTimes, 1000);
+    }
+
+    function updateAllElapsedTimes() {
+        document.querySelectorAll('tr[data-student-id]').forEach(row => {
+            const startTimeElement = row.querySelector('.start-time');
+            if (!startTimeElement) return;
+            
+            const startTime = startTimeElement.textContent;
+            const [hours, minutes] = startTime.split(':').map(Number);
+            const startDate = new Date();
+            startDate.setHours(hours, minutes, 0, 0);
+            
+            const now = new Date();
+            const elapsedMs = now - startDate;
+            const elapsedMinutes = Math.floor(elapsedMs / 60000);
+            const elapsedSeconds = Math.floor((elapsedMs % 60000) / 1000);
+            
+            // Format as MM:SS
+            const elapsedTime = `${String(elapsedMinutes).padStart(2, '0')}:${String(elapsedSeconds).padStart(2, '0')}`;
+            
+            // Update progress bar (assuming 60 minute exam)
+            const progressPercent = Math.min((elapsedMinutes / 60) * 100, 100);
+            const progressBar = row.querySelector('.progress-bar');
+            if (progressBar) {
+                progressBar.style.width = `${progressPercent}%`;
+                progressBar.setAttribute('aria-valuenow', progressPercent);
+                
+                // Update elapsed time display
+                const elapsedTimeElement = row.querySelector('.elapsed-time');
+                if (elapsedTimeElement) {
+                    elapsedTimeElement.textContent = `${elapsedTime} / 60:00`;
+                }
+                
+                // Change color if over time
+                if (elapsedMinutes >= 60) {
+                    progressBar.classList.remove('bg-warning');
+                    progressBar.classList.add('bg-danger');
+                }
+            }
+        });
+    }
+
+    // Fetch active students via AJAX
+    function fetchActiveStudents() {
+        const refreshBtns = document.querySelectorAll('[onclick="fetchActiveStudents()"]');
+        
+        // Show loading state on all refresh buttons
+        refreshBtns.forEach(btn => {
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+        });
+        
+        fetch(window.location.href, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Update the active students container
+            const container = document.getElementById('active-students-container');
+            container.innerHTML = data.html;
+            
+            // Update counters
+            document.querySelectorAll('#active-student-count, #active-student-count-footer').forEach(el => {
+                if (el) el.textContent = data.active_count;
+            });
+            
+            // Reinitialize tooltips and time tracking
+            initializeTooltips();
+            initializeElapsedTimeTracking();
+            
+            // Show success toast
+            showToast(data.message || 'Active examinees updated successfully.');
+        })
+        .catch(error => {
+            console.error('Error fetching active students:', error);
+            showToast('Error updating active examinees list.');
+        })
+        .finally(() => {
+            // Restore refresh buttons
+            refreshBtns.forEach(btn => {
+                btn.innerHTML = '<i class="fas fa-sync-alt"></i>';
+                btn.disabled = false;
+            });
+        });
+    }
+
+    function showToast(message) {
+        const toastMessage = document.getElementById('toast-message');
+        if (toastMessage) toastMessage.textContent = message;
+        
+        const toastEl = document.getElementById('refreshToast');
+        if (toastEl) {
+            const toast = new bootstrap.Toast(toastEl);
+            toast.show();
+        }
+    }
+</script>
 
 <style>
     .avatar {
@@ -231,6 +313,19 @@
     
     .table-hover tbody tr:hover {
         background-color: rgba(0, 123, 255, 0.05);
+    }
+    
+    .progress-bar-animated {
+        animation: progress-bar-stripes 1s linear infinite;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0.5; }
+        to { opacity: 1; }
+    }
+    
+    #active-students-container {
+        animation: fadeIn 0.3s ease-in-out;
     }
 </style>
 {% endblock %}

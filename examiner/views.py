@@ -22,7 +22,9 @@ from django.contrib import messages
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.core.paginator import Paginator
-
+from django.contrib.sessions.models import Session
+from django.utils.timezone import now
+from django.contrib.auth.models import User
 
 def get_examiner_department(request):
     examiner = get_object_or_404(models.Examiner, user=request.user)
@@ -99,9 +101,34 @@ def examiner_signup_view(request):
 def is_examiner(user):
     return user.groups.filter(name='EXAMINER').exists()
 
+def get_active_students():
+    sessions = Session.objects.filter(expire_date__gte=now())
+    uid_list = []
+    for session in sessions:
+        try:
+            data = session.get_decoded()
+            uid = data.get('_auth_user_id')
+            if uid:
+                uid_list.append(uid)
+        except Exception:
+            continue
+
+    student_users = User.objects.filter(id__in=uid_list, groups__name='STUDENT')
+    return SMODEL.Student.objects.filter(user__in=student_users)
+
+
 @login_required(login_url='examiner:examinerlogin')
 @user_passes_test(is_examiner)
 def examiner_dashboard_view(request):
+    active_students = get_active_students()
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        students_data = [{
+            "name": student.user.get_full_name(),
+            "username": student.user.username,
+            "course": student.course.course_name,
+            "organization": student.organization,
+        } for student in active_students]
+        return JsonResponse({'active_students': students_data})
     try:
         examiner = EMODEL.Examiner.objects.get(user=request.user)
         assigned_courses = QMODEL.Course.objects.filter(examiners=examiner)
@@ -149,6 +176,7 @@ def examiner_dashboard_view(request):
             'pending_exams': pending_exams,
             'graded_exams_count': graded_exams.count(),
             'graded_exams': graded_exams,
+            'active_students': active_students, 
         }
         return render(request, 'examiner/examiner_dashboard.html', context)
     

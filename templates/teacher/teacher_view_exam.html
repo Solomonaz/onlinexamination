@@ -123,6 +123,21 @@
       color: white;
       transform: translateY(-2px);
     }
+    .badge .btn-link {
+    opacity: 0.7;
+    margin-left: 4px;
+    }
+    .badge .btn-link:hover {
+        opacity: 1;
+        text-decoration: none;
+    }
+    .badge {
+        margin-right: 5px;
+        margin-bottom: 5px;
+        padding: 4px 8px;
+        display: inline-flex;
+        align-items: center;
+    }
   </style>
 </head>
 
@@ -137,54 +152,6 @@
     <div class="card-header">
       <h6 class="card-title"><i class="fas fa-list-alt me-2"></i>Available Courses with result</h6>
     </div>
-<!--     
-    <div class="table-responsive">
-      <table class="table table-hover">
-        <thead>
-          <tr>
-            <th>Course Name</th>
-            <th>Questions</th>
-            <th>Total Marks</th>
-            <th>Examinee</th>
-            <th>Assign Examiner</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% if courses %}
-            {% for t in courses %}
-            <tr>
-              <td>{{ t.course_name }}</td>
-              <td>{{ t.question_number }}</td>
-              <td>{{ t.total_marks }}</td>
-              <td>
-                <a href="{% url 'teacher:teacher-view-examinee' t.id %}"
-                  class="btn btn-outline-info btn-sm d-flex justify-content-between align-items-center px-3">
-                  <span>{{ t.result_set.count }} <i class="fas fa-user"></i></span>
-                  <i class="fas fa-eye"></i>
-                </a>
-              </td>
-              <td>
-                <select name="" id="" class="form-select-sm">
-                  <option value="solomon">solomon</option>
-                  <option value="Melsew">Melsew</option>
-                  <option value="Esikadmas">Esikadmas</option>
-                </select> 
-                <a href="">save</a>
-              </td>
-            </tr>
-            {% endfor %}
-          {% else %}
-            <tr>
-              <td colspan="4" class="empty-state">
-                <i class="fas fa-book"></i>
-                <h5>Not Courses Available</h5>
-              </td>
-            </tr>
-          {% endif %}
-        </tbody>
-      </table>
-    </div> -->
-
     <div class="table-responsive">
       <table class="table table-hover">
         <thead>
@@ -213,26 +180,36 @@
                   <i class="fas fa-eye"></i>
                 </a>
               </td>
-              <td>
-                <form method="post" action="{% url 'teacher:teacher-view-exam' %}">
+             <td>
+              <form method="post" action="{% url 'teacher:teacher-view-exam' %}">
                   {% csrf_token %}
                   <input type="hidden" name="course_id" value="{{ t.id }}">
                   <select name="examiner_id" class="form-select-sm">
-                    <option value="">Select Examiner</option>
-                    {% for examiner in examiners %}
-                    <option value="{{ examiner.id }}">{{ examiner.get_name }}</option>
-                    {% endfor %}
+                      <option value="">Select Examiner</option>
+                      {% for examiner in examiners %}
+                      <option value="{{ examiner.id }}">{{ examiner.get_name }}</option>
+                      {% endfor %}
                   </select> 
-                  <button type="submit" class="btn btn-sm btn-primary">Assign</button>
-                </form>
-              </td>
-              <td>
-                {% for examiner in t.examiners.all %}
-                  <span class="badge bg-secondary">{{ examiner.get_name }}</span>
-                {% empty %}
+                  <button type="submit" name="action" value="assign" class="btn btn-sm btn-primary">Assign</button>
+              </form>
+          </td>
+          <td>
+              {% for examiner in t.examiners.all %}
+                  <span class="badge bg-secondary">
+                      {{ examiner.get_name }}
+                      <form method="post" action="{% url 'teacher:teacher-view-exam' %}" style="display: inline;">
+                          {% csrf_token %}
+                          <input type="hidden" name="course_id" value="{{ t.id }}">
+                          <input type="hidden" name="examiner_id" value="{{ examiner.id }}">
+                          <button type="submit" name="action" value="remove" class="btn btn-sm btn-link p-0" style="color: white;">
+                              <i class="fas fa-times"></i>
+                          </button>
+                      </form>
+                  </span>
+              {% empty %}
                   <span class="text-muted">Not assigned</span>
-                {% endfor %}
-              </td>
+              {% endfor %}
+          </td>
             </tr>
             {% endfor %}
           {% else %}
@@ -250,5 +227,15 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  document.querySelectorAll('[name="action"][value="remove"]').forEach(button => {
+    button.addEventListener('click', function(e) {
+        if (!confirm('Are you sure you want to remove this examiner?')) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
 
 {% endblock content %}
