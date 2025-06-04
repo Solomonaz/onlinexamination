@@ -13,6 +13,7 @@ from examiner import models as EMODEL
 from django.contrib import messages
 import pandas as pd
 from io import BytesIO
+from django.http import JsonResponse
 from django.db.models import Case, When, Value, Sum, Count, IntegerField, Q, F
 from django.db.models.functions import Coalesce
 from datetime import datetime
@@ -149,17 +150,17 @@ def examiner_dashboard_view(request):
         ).filter(ungraded_fib_count__gt=0)
         
         # Get graded exams (all FIB questions graded)
-        graded_exams = QMODEL.Course.objects.filter(
-            examiners=examiner
-        ).annotate(
-            total_fib=Count('questions__studentanswer', 
-                          filter=Q(questions__question_type='FIB')),
-            graded_fib=Count('questions__studentanswer',
-                           filter=Q(questions__question_type='FIB', 
-                                   questions__studentanswer__is_graded=True))
-        ).filter(total_fib__gt=0).exclude(
-            total_fib__gt=F('graded_fib')
-        )
+        # graded_exams = QMODEL.Course.objects.filter(
+        #     examiners=examiner
+        # ).annotate(
+        #     total_fib=Count('questions__studentanswer', 
+        #                   filter=Q(questions__question_type='FIB')),
+        #     graded_fib=Count('questions__studentanswer',
+        #                    filter=Q(questions__question_type='FIB', 
+        #                            questions__studentanswer__is_graded=True))
+        # ).filter(total_fib__gt=0).exclude(
+        #     total_fib__gt=F('graded_fib')
+        # )
         
         # Count unseen exams
         unseen_exam_count = QMODEL.Course.objects.filter(
@@ -174,9 +175,8 @@ def examiner_dashboard_view(request):
             'unseen_exam_count': unseen_exam_count,
             'pending_exams_count': pending_exams.count(),
             'pending_exams': pending_exams,
-            'graded_exams_count': graded_exams.count(),
-            'graded_exams': graded_exams,
-            'active_students': active_students, 
+            # 'graded_exams_count': graded_exams.count(),
+            # 'graded_exams': graded_exams,
         }
         return render(request, 'examiner/examiner_dashboard.html', context)
     
