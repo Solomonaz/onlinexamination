@@ -18,12 +18,13 @@ from django.contrib import messages
 from django.contrib.sessions.models import Session
 from django.http import JsonResponse
 from django.core.paginator import Paginator
-
+from .utils import log_activity
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.admin.models import LogEntry
+from .models import SystemLog
 from django.utils.timesince import timesince
-from django.utils.timezone import now
+from django.utils import timezone
 from django.contrib.admin.models import LogEntry, CHANGE
+from django.utils.timezone import now
 
 def frontpage(request):
     if request.user.is_authenticated:
@@ -91,28 +92,53 @@ def admin_dashboard_view(request):
             "organization": student.organization,
         } for student in active_students]
         return JsonResponse({'active_students': students_data})
-        
-    recent_logs = LogEntry.objects.select_related('user', 'content_type').order_by('-action_time')[:5]
+    
+    # Get all logs with pagination
+    all_logs = SystemLog.objects.select_related('user', 'content_type').order_by('-action_time')
+    paginator = Paginator(all_logs, 5)  # Show 10 logs per page
+    page_number = request.GET.get('page')
+    recent_logs = paginator.get_page(page_number)
+    
+    # Format logs for display
+    now = timezone.now()
     for log in recent_logs:
-        log.time_ago = timesince(log.action_time, now()) + " ago"
-
-    dict={
-    'total_student':SMODEL.Student.objects.all().count(),
-    'team_leader_count':TMODEL.Teacher.objects.all().count(),
-    'examiner_count': EMODEL.Examiner.objects.all().count(),
-    'total_staff':EMODEL.Examiner.objects.all().count() + TMODEL.Teacher.objects.all().count(),
-    'total_course':models.Course.objects.all().count(),
-    'total_question':models.Question.objects.all().count(),
-    'active_students': active_students, 
-    'recent_logs':recent_logs,
+        log.time_ago = timesince(log.action_time, now) + " ago"
+        log.get_action_type_display = dict(SystemLog.ACTION_CHOICES).get(log.action_type, 'Other')
+    
+    context = {
+        'total_student': SMODEL.Student.objects.all().count(),
+        'team_leader_count': TMODEL.Teacher.objects.all().count(),
+        'examiner_count': EMODEL.Examiner.objects.all().count(),
+        'total_staff': EMODEL.Examiner.objects.all().count() + TMODEL.Teacher.objects.all().count(),
+        'total_course': models.Course.objects.all().count(),
+        'total_question': models.Question.objects.all().count(),
+        'active_students': active_students, 
+        'recent_logs': recent_logs,
+        'paginator': paginator,
+        'page_obj': recent_logs,
     }
-    return render(request,'exam/admin_dashboard.html',context=dict)
+    return render(request,'exam/admin_dashboard.html', context)
+
+@login_required(login_url='adminlogin')
+def print_logs_view(request):
+    """View to handle printing of activity logs"""
+    logs = SystemLog.objects.select_related('user', 'content_type').order_by('-action_time')
+    now = timezone.now()
+    
+    for log in logs:
+        log.time_ago = timesince(log.action_time, now) + " ago"
+        log.get_action_type_display = dict(SystemLog.ACTION_CHOICES).get(log.action_type, 'Other')
+    
+    return render(request, 'exam/print_logs.html', {
+        'logs': logs,
+        'print_date': timezone.now(),
+    })
 
 @login_required(login_url='adminlogin')
 # @user_passes_test(lambda u: u.is_superuser)
 def delete_log_entry(request, pk):
     if request.method == 'POST':
-        LogEntry.objects.filter(pk=pk).delete()
+        SystemLog.objects.filter(pk=pk).delete()
     return HttpResponseRedirect(reverse('admin-dashboard'))
 
 @login_required(login_url='adminlogin')
@@ -157,7 +183,7 @@ def update_teacher_view(request,pk):
 
 @login_required(login_url='adminlogin')
 def delete_teacher_view(request,pk):
-    teacher=TMODEL.Teacher.objects.get(id=pk)
+    teacher=EMODEL.Examiner.objects.get(id=pk)
     user=User.objects.get(id=teacher.user_id)
     user.delete()
     teacher.delete()
@@ -442,7 +468,16 @@ def admin_add_department_view(request):
     if request.method == 'POST':
         departmentForm = forms.DepartmentForm(request.POST)
         if departmentForm.is_valid():        
-            departmentForm.save()
+            department = departmentForm.save()
+    
+            # Log the creation
+            log_activity(
+                user=request.user,
+                action_type='CREATE',
+                content_object=department,
+                description=f'New department {department.department_name} created'
+            )
+            
             messages.success(request, "Department added successfully!")
             return HttpResponseRedirect('/admin-add-department')
         else:
@@ -452,5 +487,14 @@ def admin_add_department_view(request):
 @login_required(login_url='adminlogin')
 def delete_department(request, pk):
     department = models.Department.objects.get(id=pk)
+    
+    # Log the deletion
+    log_activity(
+        user=request.user,
+        action_type='DELETE',
+        content_object=department,
+        description=f'Department {department.department_name} deleted from system'
+    )
+    
     department.delete()
     return HttpResponseRedirect('/admin-department')

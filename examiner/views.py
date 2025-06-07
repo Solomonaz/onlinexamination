@@ -26,6 +26,7 @@ from django.core.paginator import Paginator
 from django.contrib.sessions.models import Session
 from django.utils.timezone import now
 from django.contrib.auth.models import User
+from exam.utils import log_activity
 
 def get_examiner_department(request):
     examiner = get_object_or_404(models.Examiner, user=request.user)
@@ -35,7 +36,6 @@ def examinerclick_view(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect('afterlogin')
     return render(request,'examiner/examinerclick.html')
-
 
 
 class ExaminerLoginView(LoginView):
@@ -48,7 +48,23 @@ class ExaminerLoginView(LoginView):
             print("User is not an examiner")
             messages.error(self.request, 'You are not registered as an examiner')
             return redirect('examiner:examinerlogin')
+        
+        # Log successful login
+        log_activity(
+            user=user,
+            action_type='LOGIN',
+            description=f'Examiner {user.username} logged in successfully'
+        )
+        
         return super().form_valid(form)
+    
+    def form_invalid(self, form):
+        # Log failed login attempt
+        log_activity(
+            action_type='OTHER',
+            description='Failed login attempt - invalid credentials'
+        )
+        return super().form_invalid(form)
     
     def get_success_url(self):
         return reverse('examiner:examiner-dashboard')
@@ -68,23 +84,44 @@ def examiner_signup_view(request):
                 examiner.user = user
                 examiner.save()
                 
+                # Log examiner creation
+                log_activity(
+                    user=request.user,
+                    action_type='CREATE',
+                    content_object=examiner,
+                    description=f'New examiner {examiner.user.username} created'
+                )
+                
                 my_examiner_group = Group.objects.get_or_create(name='EXAMINER')
                 my_examiner_group[0].user_set.add(user)
                 
-                messages.success(request, 'Examiner account created successfully!')
+                messages.success(request, "Examiner registered successfully!")
                 return HttpResponseRedirect('examinersignup')
             
             except Exception as e:
-                messages.error(request, f'An error occurred during registration: {str(e)}')
+                # Log creation error
+                log_activity(
+                    user=request.user,
+                    action_type='OTHER',
+                    description=f'Error creating examiner: {str(e)}'
+                )
+                messages.error(request, f"An error occurred: {str(e)}")
         else:
-            # Form validation failed
             error_messages = []
             for field, errors in userForm.errors.items():
                 for error in errors:
                     error_messages.append(f"{field}: {error}")
+            
             for field, errors in examinerForm.errors.items():
                 for error in errors:
                     error_messages.append(f"{field}: {error}")
+            
+            # Log form validation error
+            log_activity(
+                user=request.user,
+                action_type='OTHER',
+                description='Examiner registration failed - form validation error'
+            )
             
             for msg in error_messages:
                 messages.error(request, msg)
@@ -373,4 +410,4 @@ def examiner_explanation_grading_view(request, student_id, course_id):
     return render(request, 'examiner/examiner_explanation_grading.html', context)
 
 # def examiner_pending_exam(request):
-#     return render(request, 'examiner')
+#     return render(request, 'examiner/examiner_pending_exam.html')

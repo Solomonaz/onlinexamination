@@ -1,6 +1,8 @@
 from django.db import models
 from student.models import Student
 from django.apps import apps
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.auth.models import User
 
 
 
@@ -181,6 +183,29 @@ class ActiveQuestion(models.Model):
     
     class Meta:
         unique_together = ('course', 'question')
+
+class SystemLog(models.Model):
+    ACTION_CHOICES = [
+        ('CREATE', 'Created'),
+        ('UPDATE', 'Updated'),
+        ('DELETE', 'Deleted'),
+        ('LOGIN', 'Logged In'),
+        ('LOGOUT', 'Logged Out'),
+        ('OTHER', 'Other'),
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    action_time = models.DateTimeField(auto_now_add=True)
+    action_type = models.CharField(max_length=10, choices=ACTION_CHOICES)
+    content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL, null=True, blank=True)
+    object_id = models.TextField(null=True, blank=True)
+    object_repr = models.TextField()
+    description = models.TextField(null=True, blank=True)
+    
+    class Meta:
+        ordering = ['-action_time']
+        verbose_name = 'System Log'
+        verbose_name_plural = 'System Logs'
 
 from django.db import models
 from django.contrib.auth.models import User

@@ -16,6 +16,7 @@ from io import BytesIO
 import csv
 from datetime import datetime
 from django.db.models import Prefetch
+from exam.utils import log_activity
 
 # Helper function to get teacher's department
 def get_teacher_department(request):
@@ -27,8 +28,6 @@ def teacherclick_view(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect('afterlogin')
     return render(request,'teacher/teacherclick.html')
-
-from django.contrib import messages
 
 def teacher_signup_view(request):
     if request.method == 'POST':
@@ -45,6 +44,14 @@ def teacher_signup_view(request):
                 teacher.user = user
                 teacher.save()
                 
+                # Log teacher creation
+                log_activity(
+                    user=request.user,
+                    action_type='CREATE',
+                    content_object=teacher,
+                    description=f'New teacher {teacher.user.username} created'
+                )
+                
                 my_teacher_group = Group.objects.get_or_create(name='TEACHER')
                 my_teacher_group[0].user_set.add(user)
                 
@@ -52,6 +59,12 @@ def teacher_signup_view(request):
                 return HttpResponseRedirect('teachersignup')
             
             except Exception as e:
+                # Log creation error
+                log_activity(
+                    user=request.user,
+                    action_type='OTHER',
+                    description=f'Error creating teacher: {str(e)}'
+                )
                 messages.error(request, f'An error occurred during registration: {str(e)}')
         else:
             # Form validation failed
@@ -62,6 +75,13 @@ def teacher_signup_view(request):
             for field, errors in teacherForm.errors.items():
                 for error in errors:
                     error_messages.append(f"{field}: {error}")
+            
+            # Log form validation error
+            log_activity(
+                user=request.user,
+                action_type='OTHER',
+                description='Teacher registration failed - form validation error'
+            )
             
             for msg in error_messages:
                 messages.error(request, msg)
@@ -82,6 +102,13 @@ def is_teacher(user):
 @user_passes_test(is_teacher)
 def teacher_dashboard_view(request):
     department = get_teacher_department(request)
+    
+    # Log dashboard access
+    log_activity(
+        user=request.user,
+        action_type='OTHER',
+        description=f' {request.user.username} accessed dashboard'
+    )
     
     # Get all counts in optimized way
     context = {
@@ -107,6 +134,15 @@ def teacher_add_exam_view(request):
         courseForm = QFORM.CourseForm(request.POST, department=department)
         if courseForm.is_valid():        
             course = courseForm.save()  # Department will be set automatically
+            
+            # Log exam creation
+            log_activity(
+                user=request.user,
+                action_type='CREATE',
+                content_object=course,
+                description=f'New exam {course.course_name} created'
+            )
+            
             messages.success(request, "Course added successfully!")
             return redirect('teacher:teacher-view-exam')
     else:
@@ -155,8 +191,27 @@ def teacher_view_exam_view(request):
 def delete_exam_view(request,pk):
     department = get_teacher_department(request)
     course = get_object_or_404(QMODEL.Course, id=pk, department=department)
-    course.delete()
-    messages.success(request, "Course deleted successfully!")
+    
+    try:
+        # Log exam deletion
+        log_activity(
+            user=request.user,
+            action_type='DELETE',
+            content_object=course,
+            description=f'Exam {course.course_name} deleted'
+        )
+        
+        course.delete()
+        messages.success(request, "Course deleted successfully!")
+    except Exception as e:
+        # Log deletion error
+        log_activity(
+            user=request.user,
+            action_type='OTHER',
+            description=f'Error deleting exam: {str(e)}'
+        )
+        messages.error(request, f"An error occurred: {str(e)}")
+    
     return redirect('teacher:teacher-view-exam')
 
 @login_required(login_url='teacher:teacherlogin')
@@ -182,11 +237,24 @@ def teacher_add_question_view(request):
                 question = questionForm.save(commit=False)
                 question.course = questionForm.cleaned_data['course']
                 question.save()
+                
+                # Log question creation
+                log_activity(
+                    user=request.user,
+                    action_type='CREATE',
+                    content_object=question,
+                    description=f'New question added to {question.course.course_name}'
+                )
+                
                 messages.success(request, f"{question.get_question_type_display()} question added successfully!")
                 return redirect('teacher:teacher-add-question')
             else:
-                # Debugging: Print form errors to console
-                print("Form errors:", questionForm.errors)
+                # Log form validation error
+                log_activity(
+                    user=request.user,
+                    action_type='OTHER',
+                    description='Question creation failed - form validation error'
+                )
                 messages.error(request, "Form is invalid. Please check your inputs.")
     else:
         questionForm = QFORM.QuestionForm(department=department)
@@ -322,11 +390,30 @@ def see_question_view(request,pk):
 
 @login_required(login_url='teacher:teacherlogin')
 @user_passes_test(is_teacher)
-def remove_question_view(request,pk):
+def remove_question_view(request, pk):
     department = get_teacher_department(request)
     question = get_object_or_404(QMODEL.Question, id=pk, course__department=department)
-    question.delete()
-    messages.success(request, "Question deleted successfully!")
+    
+    try:
+        # Log question deletion
+        log_activity(
+            user=request.user,
+            action_type='DELETE',
+            content_object=question,
+            description=f'Question removed from {question.course.course_name}'
+        )
+        
+        question.delete()
+        messages.success(request, "Question deleted successfully!")
+    except Exception as e:
+        # Log deletion error
+        log_activity(
+            user=request.user,
+            action_type='OTHER',
+            description=f'Error deleting question: {str(e)}'
+        )
+        messages.error(request, f"An error occurred: {str(e)}")
+    
     return redirect(request.META.get('HTTP_REFERER', '/'))
 
 
@@ -335,6 +422,14 @@ def remove_question_view(request,pk):
 def teacher_view_examinees_view(request, course_id):
     department = get_teacher_department(request)
     course = get_object_or_404(QMODEL.Course, id=course_id, department=department)
+    
+    # Log viewing examinees
+    log_activity(
+        user=request.user,
+        action_type='OTHER',
+        content_object=course,
+        description=f'Teacher viewed examinees for {course.course_name}'
+    )
     
     # Base queryset
     results = QMODEL.Result.objects.filter(exam=course).select_related('student')
@@ -410,6 +505,14 @@ def teacher_explanation_grading_view(request, student_id, course_id):
     student = get_object_or_404(SMODEL.Student, pk=student_id, department=department)
     course = get_object_or_404(QMODEL.Course, pk=course_id, department=department)
     
+    # Log grading attempt
+    log_activity(
+        user=request.user,
+        action_type='OTHER',
+        content_object=course,
+        description=f'Teacher started grading FIB answers for {student.user.username}'
+    )
+
     fib_questions = QMODEL.Question.objects.filter(
         course=course,
         question_type='FIB'
@@ -507,6 +610,13 @@ def teacher_report(request):
         department=department
     ).values_list('organization', flat=True).distinct()
 
+    # Log report access
+    log_activity(
+        user=request.user,
+        action_type='OTHER',
+        description=f'Team leader accessed exam reports'
+    )
+
     # Base queryset
     results = QMODEL.Result.objects.select_related(
         'student', 'exam'
@@ -531,7 +641,7 @@ def teacher_report(request):
             date_obj = datetime.strptime(exam_date, '%Y-%m-%d').date()
             results = results.filter(date__date=date_obj)
         except ValueError:
-            pass
+            exam_date = ''
 
     # Calculate scores for the filtered results
     student_ids = results.values_list('student__id', flat=True).distinct()
@@ -555,9 +665,9 @@ def teacher_report(request):
         
         # Apply score range filtering
         include = True
-        if min_mark:
+        if min_mark and min_mark.isdigit():
             include = include and (result.total_score >= float(min_mark))
-        if max_mark:
+        if max_mark and max_mark.isdigit():
             include = include and (result.total_score <= float(max_mark))
         
         if include:
