@@ -11,42 +11,7 @@
     <div class="card-body p-0" id="print-section">
       <div style="display: flex; flex-direction: column; height: 100%; position: relative;">
         <!-- Header Table -->
-        <table width="100%" border="1" cellspacing="0" cellpadding="5" style="border-collapse: collapse; margin-bottom: 4px; border: 1px solid #000;">
-          <tr>
-            <td width="20%" style="border: 1px solid #000; padding: 5px;">
-              <img src="/static/image/logo.jpg" alt="PAC Logo" width="80">
-            </td>
-            <td class="text-center" style="border: 1px solid #000; padding: 5px;">
-              <strong>የተቋሙ ስም/Company Name:</strong>
-              ምርታማነት ማሻሻያ የልህቀት ማዕከል<br>
-              <strong>PRODUCTIVITY IMPROVEMENT CENTER OF EXCELLENCE</strong>
-            </td>
-            <td style="border: 1px solid #000; padding: 0;">
-              <div style="border-bottom: 1px solid #000; padding: 8px;">
-                <strong>የሰነዱ ቁጥር/Document No.:</strong><br>OF-PICE-DO-001
-              </div>
-              <div style="padding: 8px;">
-                <strong>Effective Date:</strong> 26, MARCH 2025
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td colspan="2" style="border: 1px solid #000; padding: 5px;">
-              <strong>ርእስ/Title:</strong>
-            </td>
-            <td style="border: 1px solid #000; padding: 0;">
-              <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 8px;">
-                <div>
-                  <strong>የእትም ቁጥር/Issue No.:</strong> 01
-                </div>
-                <div style="width: 1px; background-color: #000; height: 20px;"></div>
-                <div style="text-align: right;">
-                  <strong>ገጽ/Page No.:</strong> Page 1 of 1
-                </div>
-              </div>
-            </td>
-          </tr>
-        </table>
+        {% include 'ISOreport/header.html' %}
 
         <!-- Content Table -->
         <div style="flex: 1; overflow-y: auto; margin-bottom: 4px; padding-bottom: 120px;">
@@ -79,19 +44,7 @@
         </div>
 
         <!-- Footer Table -->
-        <table width="100%" cellspacing="0" cellpadding="5" style="position: absolute; bottom: 0; left: 0; right: 0; margin-bottom: 0; border-collapse: collapse; border: 1px solid #000;">
-          <tr>
-            <td style="border: 1px solid #000; padding: 5px;" class="no-print">🌐www.pice.edu.et</td>
-            <td style="border: 1px solid #000; padding: 5px;">Lideta Sub-City Wereda 10 Sarbet, 50m From Kaizen Excellence Center</td>
-            <td style="border: 1px solid #000; padding: 5px;">
-              ☎ +251 11 5584764 / +251 11 5510171 <br>
-              📠 +251 11 5517354 / +251 11 5517589
-            </td>
-          </tr>
-          <tr>
-            <td colspan="3" class="text-center" style="border: 1px solid #000; padding: 5px;"><strong>WISDOM AND EXCELLENCE!!!</strong></td>
-          </tr>
-        </table>
+        {% include 'ISOreport/footer.html' %}
       </div>
     </div>
   </div>
