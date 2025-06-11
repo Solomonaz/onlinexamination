@@ -151,6 +151,7 @@
         <table class="log-table">
             <thead>
                 <tr>
+                    <th>No.</th>
                     <th>Action Type</th>
                     <th>Description</th>
                     <th>User</th>
@@ -160,6 +161,7 @@
             <tbody>
                 {% for log in logs %}
                 <tr>
+                    <td>{{forloop.counter}}</td>
                     <td>
                         <div class="action-type">
                             <i class="{% if log.action_type == 'CREATE' %}fas fa-plus{% elif log.action_type == 'UPDATE' %}fas fa-edit{% elif log.action_type == 'DELETE' %}fas fa-trash{% elif log.action_type == 'LOGIN' %}fas fa-sign-in-alt{% elif log.action_type == 'LOGOUT' %}fas fa-sign-out-alt{% else %}fas fa-info-circle{% endif %} log-icon"></i>

@@ -2,13 +2,9 @@ from django.shortcuts import render,redirect,reverse
 from django.contrib.auth import logout
 from . import forms,models
 from django.db.models import Sum
-from django.contrib.auth.models import Group
 from django.http import HttpResponseRedirect
-from django.contrib.auth.decorators import login_required,user_passes_test
+from django.contrib.auth.decorators import login_required
 from django.conf import settings
-from datetime import date, timedelta
-from django.db.models import Q
-from django.core.mail import send_mail
 from teacher import models as TMODEL
 from examiner import models as EMODEL
 from student import models as SMODEL
@@ -20,11 +16,9 @@ from django.contrib.sessions.models import Session
 from django.http import JsonResponse
 from django.core.paginator import Paginator
 from .utils import log_activity
-from django.contrib.contenttypes.models import ContentType
 from .models import SystemLog
 from django.utils.timesince import timesince
 from django.utils import timezone
-from django.contrib.admin.models import LogEntry, CHANGE
 from django.utils.timezone import now
 
 def frontpage(request):
