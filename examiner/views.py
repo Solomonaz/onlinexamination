@@ -223,14 +223,21 @@ def examiner_dashboard_view(request):
 
         
 def examiner_assinged_exam_view(request):
-    examiner = EMODEL.Examiner.objects.get(user=request.user)
-    courses = QMODEL.Course.objects.filter(examiners=examiner)
-    QMODEL.Course.objects.filter(examiners=examiner,is_seen=False).update(is_seen=True)
-
-    context = {
-        'courses':courses,
-    }
-    return render(request, 'examiner/examiner_assigned_exam.html', context)
+    if not request.user.is_authenticated:
+        return redirect('examiner:examinerlogin')
+    
+    try:
+        examiner = EMODEL.Examiner.objects.get(user=request.user)
+        courses = QMODEL.Course.objects.filter(examiners=examiner)
+        QMODEL.Course.objects.filter(examiners=examiner,is_seen=False).update(is_seen=True)
+        
+        context = {
+            'courses': courses,
+        }
+        return render(request, 'examiner/examiner_assigned_exam.html', context)
+    except EMODEL.Examiner.DoesNotExist:
+        messages.error(request, "Examiner profile not found.")
+        return redirect('examiner:examinerlogin')
 
 
 @login_required(login_url='examiner:examinerlogin')

@@ -1,4 +1,5 @@
 from django.shortcuts import render,redirect,reverse
+from django.contrib.auth import logout
 from . import forms,models
 from django.db.models import Sum
 from django.contrib.auth.models import Group
@@ -498,3 +499,7 @@ def delete_department(request, pk):
     
     department.delete()
     return HttpResponseRedirect('/admin-department')
+
+def admin_logout_view(request):
+    logout(request)
+    return HttpResponseRedirect('/adminlogin')

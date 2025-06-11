@@ -13,7 +13,7 @@ urlpatterns = [
 
     path('',views.frontpage,name=''),
     path('add-student/',views.home_view,name=''),
-    path('logout', LogoutView.as_view(template_name='exam/logout.html'),name='logout'),
+    path('logout', views.admin_logout_view,name='logout'),
     path('contactus', views.contactus_view),
     path('afterlogin', views.afterlogin_view,name='afterlogin'),
 
