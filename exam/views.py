@@ -138,20 +138,28 @@ def delete_log_entry(request, pk):
 
 @login_required(login_url='adminlogin')
 def admin_teacher_view(request):
-    dict={
-    'total_teacher':TMODEL.Teacher.objects.all().count(),
+    teachers= TMODEL.Teacher.objects.all()
+    examiners= EMODEL.Examiner.objects.all()
+    total_staff = teachers.count() + examiners.count()
+    combined_staff = list(chain(teachers, examiners))
+    
+    context = {
+        'staff': combined_staff,
+        'total_staff':total_staff,
     }
-    return render(request,'exam/admin_teacher.html',context=dict)
+    return render(request,'exam/admin_teacher.html',context)
 
 from itertools import chain
 @login_required(login_url='adminlogin')
 def admin_view_teacher_view(request):
     teachers= TMODEL.Teacher.objects.all()
     examiners= EMODEL.Examiner.objects.all()
+    total_staff = teachers.count() + examiners.count()
     combined_staff = list(chain(teachers, examiners))
     
     context = {
         'staff': combined_staff,
+        'total_staff':total_staff,
     }
     return render(request,'exam/admin_view_teacher.html',context)
 
