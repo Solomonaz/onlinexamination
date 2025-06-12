@@ -17,6 +17,6 @@ path('check-marks/<int:pk>', views.check_marks_view,name='check-marks'),
 path('student-marks', views.student_marks_view,name='student-marks'),
 
 path('ajax/load-courses/', views.load_courses, name='load_courses'),
-
+path('registration-success/', views.registration_success_view, name='registration_success'),
 
 ]

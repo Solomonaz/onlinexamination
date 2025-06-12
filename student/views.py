@@ -12,6 +12,7 @@ from django.contrib import messages
 from datetime import datetime, timedelta
 import random
 from django.db import IntegrityError
+from django.http import JsonResponse
 
 #for showing signup/login button for student
 def studentclick_view(request):
@@ -35,6 +36,9 @@ def generate_username(first_name):
 def generate_password():
     """Generate 6-digit numeric password"""
     return ''.join(random.choice('0123456789') for _ in range(6))
+
+from django.http import JsonResponse, HttpResponseRedirect
+from django.urls import reverse
 
 def student_signup_view(request):
     if request.method == 'POST':
@@ -62,34 +66,50 @@ def student_signup_view(request):
                 my_student_group = Group.objects.get_or_create(name='STUDENT')
                 my_student_group[0].user_set.add(user)
 
-                # Prepare success data
-                context = {
+                # Store registration data in session for success page
+                request.session['registration_data'] = {
                     'first_name': user.first_name,
                     'last_name': user.last_name,
                     'username': username,
                     'password': password,
-                    'date_joined': user.date_joined.strftime('%Y-%m-%d'),
+                    'student_id': student.id,
                 }
-                return render(request, 'student/registration_success.html', context)
+                
+                return JsonResponse({
+                    'success': True,
+                    'redirect_url': reverse('registration_success')
+                })
                 
             except IntegrityError:
-                messages.error(request, "Username already exists. Please try again.")
+                return JsonResponse({
+                    'success': False,
+                    'message': "Username already exists. Please try again."
+                }, status=400)
             except Exception as e:
-                messages.error(request, f"Error creating account: {str(e)}")
-        else:
-            for field, errors in userForm.errors.items():
-                for error in errors:
-                    messages.error(request, f"{field}: {error}")
-            for field, errors in studentForm.errors.items():
-                for error in errors:
-                    messages.error(request, f"{field}: {error}")
+                return JsonResponse({
+                    'success': False,
+                    'message': f"Error creating account: {str(e)}"
+                }, status=400)
     
-    # For GET request
+    # GET request handling remains the same
     userForm = forms.StudentUserForm()
     studentForm = forms.StudentForm()
     return render(request, 'student/studentsignup.html', {
         'userForm': userForm,
         'studentForm': studentForm,
+    })
+
+def registration_success_view(request):
+    registration_data = request.session.pop('registration_data', None)
+    if not registration_data:
+        return HttpResponseRedirect(reverse('studentsignup'))
+    
+    return render(request, 'student/registration_success.html', {
+        'first_name': registration_data['first_name'],
+        'last_name': registration_data['last_name'],
+        'username': registration_data['username'],
+        'password': registration_data['password'],
+        'student_id': registration_data['student_id'],
     })
 
 def is_student(user):

@@ -200,7 +200,7 @@
         {% endfor %}
       {% endif %}
 
-      <form method="POST" autocomplete="off" enctype="multipart/form-data" target="_blank">
+      <form method="POST" autocomplete="off" enctype="multipart/form-data">
         {% csrf_token %}
         
         <!-- Credentials Box -->
@@ -325,6 +325,96 @@
       $('form').find('input, select').not('[type="hidden"]').first().focus();
     });
     $(document).ready(function() {
+    // Generate credentials when first name is entered
+    $('#id_first_name').on('blur', function() {
+        const firstName = $(this).val().trim();
+        if (firstName.length >= 3) {
+            // Generate username (first 3 letters + random 3 digits)
+            const prefix = firstName.substring(0, 3).toLowerCase();
+            const randomDigits = Math.floor(100 + Math.random() * 900); // 100-999
+            const username = prefix + randomDigits;
+            
+            // Generate 6-digit password
+            const password = Math.floor(100000 + Math.random() * 900000); // 100000-999999
+            
+            // Set the values
+            $('#id_username').val(username);
+            $('#id_password').val(password);
+        }
+    });
+
+    // Prevent manual editing of username/password
+    $('#id_username, #id_password').on('keydown', function(e) {
+        e.preventDefault();
+        return false;
+    });
+});
+$(document).ready(function() {
+       // Handle form submission
+       $('form').on('submit', function(e) {
+        e.preventDefault();
+        var form = $(this);
+        var submitBtn = form.find('button[type="submit"]');
+        
+        // Disable submit button to prevent multiple submissions
+        submitBtn.prop('disabled', true);
+        submitBtn.html('<i class="fas fa-spinner fa-spin me-2"></i> Processing...');
+        
+        // Get form data including files
+        var formData = new FormData(this);
+        
+        $.ajax({
+            url: window.location.href,
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if (response.success) {
+                    // Reset the form
+                    form[0].reset();
+                    
+                    // Clear generated credentials
+                    $('#id_username').val('');
+                    $('#id_password').val('');
+                    
+                    // Open success page in new tab
+                    window.open(response.redirect_url, '_blank');
+                    
+                    // Focus on first name field for next entry
+                    $('#id_first_name').focus();
+                    
+                    // Show success message
+                    // alert('Registration successful! Form has been cleared for next student.');
+                } else {
+                    alert(response.message || 'Error occurred during registration.');
+                }
+            },
+            error: function(xhr) {
+                try {
+                    var response = JSON.parse(xhr.responseText);
+                    if (response.errors) {
+                        var errorMessages = [];
+                        for (var field in response.errors) {
+                            errorMessages.push(field + ': ' + response.errors[field].join(', '));
+                        }
+                        alert('Please fix the following errors:\n\n' + errorMessages.join('\n'));
+                    } else {
+                        alert(response.message || 'Error occurred during registration.');
+                    }
+                } catch (e) {
+                    alert('Error occurred during registration.');
+                }
+            },
+            complete: function() {
+                // Re-enable submit button
+                submitBtn.prop('disabled', false);
+                submitBtn.html('<i class="fas fa-user-plus me-2"></i> Complete Registration');
+            }
+        });
+    });
+
+    // Rest of your existing JavaScript code...
     // Generate credentials when first name is entered
     $('#id_first_name').on('blur', function() {
         const firstName = $(this).val().trim();
