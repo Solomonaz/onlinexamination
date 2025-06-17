@@ -185,20 +185,7 @@ def examiner_dashboard_view(request):
                 )
             )
         ).filter(ungraded_fib_count__gt=0)
-        
-        # Get graded exams (all FIB questions graded)
-        # graded_exams = QMODEL.Course.objects.filter(
-        #     examiners=examiner
-        # ).annotate(
-        #     total_fib=Count('questions__studentanswer', 
-        #                   filter=Q(questions__question_type='FIB')),
-        #     graded_fib=Count('questions__studentanswer',
-        #                    filter=Q(questions__question_type='FIB', 
-        #                            questions__studentanswer__is_graded=True))
-        # ).filter(total_fib__gt=0).exclude(
-        #     total_fib__gt=F('graded_fib')
-        # )
-        
+
         # Count unseen exams
         unseen_exam_count = QMODEL.Course.objects.filter(
             examiners=examiner,
@@ -231,8 +218,22 @@ def examiner_assinged_exam_view(request):
         courses = QMODEL.Course.objects.filter(examiners=examiner)
         QMODEL.Course.objects.filter(examiners=examiner,is_seen=False).update(is_seen=True)
         
+        pending_exams = QMODEL.Course.objects.filter(
+            examiners=examiner
+        ).annotate(
+            ungraded_fib_count=Count(
+                Case(
+                    When(questions__question_type='FIB',
+                         questions__studentanswer__is_graded=False,
+                         then=1),
+                    output_field=IntegerField()
+                )
+            )
+        ).filter(ungraded_fib_count__gt=0)
+
         context = {
             'courses': courses,
+            'pending_exams': pending_exams,
         }
         return render(request, 'examiner/examiner_assigned_exam.html', context)
     except EMODEL.Examiner.DoesNotExist:

@@ -36,7 +36,15 @@
                         {% for t in courses %}
                         <tr>
                             <td>{{ forloop.counter }}</td>
-                            <td>{{ t.course_name }}</td>
+                            <td>
+                                {{ t.course_name }}
+                                {% if t in pending_exams %}
+                                <span class="badge bg-warning ms-2" title="Ungraded exams pending">
+                                    <i class="fas fa-exclamation-circle"></i> Pending
+                                </span>
+                                <span class="badge bg-warning ms-2">({{pending_exams.count}})</span>
+                                {% endif %}
+                            </td>
                             <td>{{ t.question_number }}</td>
                             <td>{{ t.total_marks }}</td>
                             <td>

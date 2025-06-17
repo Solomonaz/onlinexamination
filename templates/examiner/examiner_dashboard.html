@@ -20,11 +20,11 @@
         <!-- Stats Cards -->
         <div class="row mb-4">
             <div class="col-md-4">
-                <div class="card text-white bg-primary mb-3">
+                <div class="card text-white mb-3" style="background-color: #5a8ca8;">
                     <div class="card-body">
                         <h5 class="card-title">Pending Exams</h5>
                         {% if pending_exams_count > 0 %}
-                        <i class="fas fa-exclamation-circle"></i>
+                        <i class="fas fa-exclamation-circle" style="color: rgb(154, 42, 42);"></i>
                         You have {{pending_exams_count}} pending Exam{% if pending_exams_count > 1 %}s{% endif %}
                         {% else %}
                         No pending exams
