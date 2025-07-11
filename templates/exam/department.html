@@ -41,7 +41,7 @@
                         <span class="badge bg-info">{{ department.course_set.count }}</span>
                     </td>
                     <td class="text-center">
-                        <a href="{% url 'delete-department' department.id %}">Delete</a>
+                        <a href="{% url 'delete-department' department.id %}" class="btn btn-sm btn-danger">Delete</a>
                     </td>
                 </tr>
                 {% empty %}

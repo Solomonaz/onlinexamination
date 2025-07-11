@@ -90,7 +90,7 @@ def admin_dashboard_view(request):
     
     # Get all logs with pagination
     all_logs = SystemLog.objects.select_related('user', 'content_type').order_by('-action_time')
-    paginator = Paginator(all_logs, 5)  # Show 10 logs per page
+    paginator = Paginator(all_logs, 5)
     page_number = request.GET.get('page')
     recent_logs = paginator.get_page(page_number)
     
@@ -130,11 +130,19 @@ def print_logs_view(request):
     })
 
 @login_required(login_url='adminlogin')
-# @user_passes_test(lambda u: u.is_superuser)
 def delete_log_entry(request, pk):
     if request.method == 'POST':
         SystemLog.objects.filter(pk=pk).delete()
     return HttpResponseRedirect(reverse('admin-dashboard'))
+
+def bulk_delete_logs(request):
+    if request.method == 'POST':
+        log_ids = request.POST.getlist('log_ids')
+        # Delete logs with these IDs
+        SystemLog.objects.filter(id__in=log_ids).delete()
+        messages.success(request, f'Successfully deleted {len(log_ids)} logs.')
+        return redirect('admin-dashboard')
+    return redirect('admin-dashboard')
 
 @login_required(login_url='adminlogin')
 def admin_teacher_view(request):
