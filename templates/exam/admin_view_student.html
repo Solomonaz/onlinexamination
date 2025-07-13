@@ -317,7 +317,7 @@
             <th>Contact</th>
             <th>Organization</th>
             <th>examination</th>
-            <th class="text-center" style="width: 120px;">Actions</th>
+            <!-- <th class="text-center" style="width: 120px;">Actions</th> -->
           </tr>
         </thead>
         <tbody>
@@ -338,7 +338,7 @@
                 </td>
                 <td>{{ student.organization|truncatechars:30|default:"-" }}</td>
                 <td>{{ student.course|truncatechars:30|default:"-" }}</td>
-                <td>
+                <!-- <td>
                   <div class="action-btns">
                     <a href="{% url 'update-student' student.id %}" class="btn-action btn-edit" title="Edit">
                       <i class="fas fa-edit"></i>
@@ -350,7 +350,7 @@
                       <i class="fas fa-trash-alt"></i>
                     </a>
                   </div>
-                </td>
+                </td> -->
               </tr>
             {% endfor %}
           {% else %}

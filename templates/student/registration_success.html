@@ -60,10 +60,14 @@
                             <span class="credentials">{{ password }}</span>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-12">
+                    <div class="row mb-3">
+                        <div class="col-6">
                             <strong>የምዝገባ ቀን:</strong>
-                            <span>{{ date_joined }}</span>
+                            <span class="credentials">{% now "Y-m-d" %}</span>
+                        </div>
+                        <div class="col-6">
+                            <strong>ተቋም:</strong>
+                            <span class="credentials">{{ organization }}</span>
                         </div>
                     </div>
                     <hr>

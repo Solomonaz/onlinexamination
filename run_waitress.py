@@ -15,7 +15,7 @@ if __name__ == '__main__':
         application,
         host='0.0.0.0', 
         port=8000,
-        threads=8,  
+        threads=16,  
         url_scheme='http',
         # channel_timeout=120 
     )

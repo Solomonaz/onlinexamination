@@ -72,6 +72,7 @@ def student_signup_view(request):
                     'last_name': user.last_name,
                     'username': username,
                     'password': password,
+                    'organization': student.organization,
                     'student_id': student.id,
                 }
                 
@@ -109,6 +110,7 @@ def registration_success_view(request):
         'last_name': registration_data['last_name'],
         'username': registration_data['username'],
         'password': registration_data['password'],
+        'organization': registration_data['organization'],
         'student_id': registration_data['student_id'],
     })
 
