@@ -19,6 +19,7 @@ local_ip = socket.gethostbyname(hostname)
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
+    '192.168.0.2',
     hostname,
     local_ip,
 ]
