@@ -10,6 +10,7 @@ if __name__ == '__main__':
     print(f"\nServer running on:\n")
     print(f"Local: http://localhost:8000")
     print(f"LAN: http://{local_ip}:8000\n")
+    print(f"LAN: http://192.168.0.2:8000\n")
     
     serve(
         application,
