@@ -3,7 +3,6 @@
 <html lang="en" dir="ltr">
 <head>
   <meta charset="utf-8">
-  # -*- coding: utf-8 -*-
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <title>{% block title %}PICE Examination System{% endblock %}</title>
   
@@ -150,7 +149,7 @@
     
     <div class="user-area">
       <p class="user-name">Welcome, {{request.user.first_name}}</p>
-      <a href="/logout" class="logout-btn">
+      <a href="{% url 'student-logout' %}" class="logout-btn">
         <i class="fas fa-sign-out-alt"></i>
         <span>Logout</span>
       </a>

@@ -13,6 +13,8 @@ from datetime import datetime, timedelta
 import random
 from django.db import IntegrityError
 from django.http import JsonResponse
+from django.contrib.auth import logout
+
 
 #for showing signup/login button for student
 def studentclick_view(request):
@@ -217,51 +219,6 @@ def start_exam_view(request, pk):
     response.set_cookie('course_id', course.id, httponly=True, samesite='Lax')
     return response
 
-# from django.utils import timezone
-# import random
-
-# @login_required(login_url='studentlogin')
-# @user_passes_test(is_student)
-# def start_exam_view(request, pk):
-#     course = get_object_or_404(QMODEL.Course, id=pk)
-#     given_time = course.given_time
-
-#     # Check if exam has started
-#     exam_start_time_str = request.session.get('exam_start_time')
-#     if not exam_start_time_str:
-#         exam_start_time = timezone.now()
-#         exam_start_time_str = exam_start_time.isoformat()
-#         request.session['exam_start_time'] = exam_start_time_str
-#         request.session['exam_questions'] = None  # Reset questions for new attempt
-
-#     # Get or generate random questions
-#     if not request.session.get('exam_questions'):
-#         # Use active questions if available, otherwise fall back to random selection
-#         if hasattr(course, 'active_questions'):
-#             active_questions = list(course.active_questions.filter(is_active=True).values_list('question_id', flat=True))
-#             questions = list(QMODEL.Question.objects.filter(id__in=active_questions))
-#         else:
-#             questions = course.get_random_questions()
-
-#         # Shuffle questions for this student
-#         random.shuffle(questions)
-#         request.session['exam_questions'] = [q.id for q in questions]
-#     else:
-#         # Use previously selected questions
-#         questions = list(QMODEL.Question.objects.filter(
-#             id__in=request.session['exam_questions']
-#         ).order_by('?'))
-
-
-#     context = {
-#         'exam_duration_seconds': given_time,
-#         'exam_start_time': exam_start_time_str,
-#         'course': course,
-#         'questions': questions,
-#     }
-#     response = render(request, 'student/start_exam.html', context)
-#     response.set_cookie('course_id', course.id, httponly=True, samesite='Lax')
-#     return response
 
 @login_required(login_url='studentlogin')
 @user_passes_test(is_student)
@@ -335,3 +292,7 @@ def load_courses(request):
     department_id = request.GET.get('department')
     courses = QMODEL.Course.objects.filter(department_id=department_id)
     return render(request, 'student/course_dropdown_list_options.html', {'courses': courses})
+
+def student_logout_view(request):
+    logout(request)
+    return redirect('studentlogin')
