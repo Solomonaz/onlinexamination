@@ -20,6 +20,7 @@ from .models import SystemLog
 from django.utils.timesince import timesince
 from django.utils import timezone
 from django.utils.timezone import now
+from datetime import datetime
 
 def frontpage(request):
     if request.user.is_authenticated:
@@ -385,8 +386,84 @@ def contactus_view(request):
             return render(request, 'exam/contactussuccess.html')
     return render(request, 'exam/contactus.html', {'form':sub})
 
-from datetime import datetime
-from django.db.models import Sum
+
+# @login_required(login_url='adminlogin')
+# def report_view(request):
+#     # Get all distinct courses and organizations
+#     courses = models.Course.objects.all()
+#     organizations = models.Student.objects.values_list('organization', flat=True).distinct()
+
+#     # Start with base queryset
+#     results = models.Result.objects.select_related('student', 'exam').order_by('-date')
+
+#     # Get filter parameters from request
+#     course_id = request.GET.get('course')
+#     organization = request.GET.get('organization')
+#     min_mark = request.GET.get('min_mark')
+#     max_mark = request.GET.get('max_mark')
+#     exam_date = request.GET.get('exam_date')
+
+#     # Apply filters
+#     if course_id:
+#         results = results.filter(exam__id=course_id)
+#     if organization:
+#         results = results.filter(student__organization=organization)
+#     if exam_date:
+#         try:
+#             date_obj = datetime.strptime(exam_date, '%Y-%m-%d').date()
+#             results = results.filter(date__date=date_obj)
+#         except ValueError:
+#             pass 
+
+#     # Get student IDs after filtering
+#     student_ids = [result.student.id for result in results]
+
+#     # Calculate FIB scores only for filtered students
+#     fib_answers = models.StudentAnswer.objects.filter(
+#         student_id__in=student_ids,
+#         question__question_type='FIB'
+#     ).values('student').annotate(fib_score=Sum('marks_obtained'))
+
+#     fib_scores = {answer['student']: answer['fib_score'] or 0 for answer in fib_answers}
+
+#     # Apply score range filter after calculating total scores
+#     filtered_results = []
+#     for result in results:
+#         result.fib_score = fib_scores.get(result.student.id, 0)
+#         result.total_score = result.marks + result.fib_score
+        
+#         # Apply score range filtering manually since we need to check total_score
+#         if min_mark and result.total_score < int(min_mark):
+#             continue
+#         if max_mark and result.total_score > int(max_mark):
+#             continue
+#         filtered_results.append(result)
+
+#     # Convert to a list for pagination
+#     from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+#     paginator = Paginator(filtered_results, 10)
+#     page_number = request.GET.get('page')
+    
+#     try:
+#         page_obj = paginator.page(page_number)
+#     except PageNotAnInteger:
+#         page_obj = paginator.page(1)
+#     except EmptyPage:
+#         page_obj = paginator.page(paginator.num_pages)
+
+#     context = {
+#         'results': page_obj,
+#         'courses': courses,
+#         'organizations': organizations,
+#         'selected_course': course_id,
+#         'selected_org': organization,
+#         'min_mark': min_mark,
+#         'max_mark': max_mark,
+#         'selected_date': exam_date,
+#     }
+#     return render(request, 'exam/report_view.html', context)
+
+
 @login_required(login_url='adminlogin')
 def report_view(request):
     # Get all distinct courses and organizations
@@ -402,6 +479,7 @@ def report_view(request):
     min_mark = request.GET.get('min_mark')
     max_mark = request.GET.get('max_mark')
     exam_date = request.GET.get('exam_date')
+    per_page = request.GET.get('per_page', '10')  # Default to 10 items per page
 
     # Apply filters
     if course_id:
@@ -441,7 +519,12 @@ def report_view(request):
 
     # Convert to a list for pagination
     from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-    paginator = Paginator(filtered_results, 10)
+    try:
+        per_page = int(per_page)
+    except ValueError:
+        per_page = 10
+        
+    paginator = Paginator(filtered_results, per_page)
     page_number = request.GET.get('page')
     
     try:
@@ -450,6 +533,9 @@ def report_view(request):
         page_obj = paginator.page(1)
     except EmptyPage:
         page_obj = paginator.page(paginator.num_pages)
+
+    # Define standard page size options
+    page_size_options = [10, 25, 50, 100,200,300,400,500,600,700,800,900,1000]
 
     context = {
         'results': page_obj,
@@ -460,6 +546,8 @@ def report_view(request):
         'min_mark': min_mark,
         'max_mark': max_mark,
         'selected_date': exam_date,
+        'per_page': per_page,
+        'page_size_options': page_size_options,
     }
     return render(request, 'exam/report_view.html', context)
 
