@@ -22,6 +22,7 @@ from django.utils import timezone
 from django.utils.timezone import now
 from datetime import datetime
 
+
 def frontpage(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect('afterlogin')  
@@ -464,13 +465,6 @@ def contactus_view(request):
 #     return render(request, 'exam/report_view.html', context)
 
 
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from datetime import datetime
-from django.db.models import Sum
-from . import models # Assuming your models are in a models.py in the same app
-
 @login_required(login_url='adminlogin')
 def report_view(request):
     # Get all distinct courses and organizations
@@ -526,7 +520,7 @@ def report_view(request):
     # --- Pagination Logic with Rows Per Page Selector ---
     # Get rows per page from request, default to 10
     # Use 'all' as a special value to show all items
-    per_page_options = ['3','10', '20', '50', '100', 'all'] # Define your options
+    per_page_options = ['10', '20', '50', '100', 'all'] # Define your options
     per_page = request.GET.get('per_page', '10') # Default to 10
 
     if per_page == 'all':

@@ -99,15 +99,7 @@
                 <td>{{ result.student.get_name }}</td>
                 <td>{{ result.student.organization }}</td>
                 <td>{{ result.exam.course_name }}</td>
-                <td>
-                  <div class="progress" style="height: 20px;">
-                    <div class="progress-bar {% if result.total_score >= 75 %}bg-success{% elif result.total_score >= 50 %}bg-warning{% else %}bg-danger{% endif %}"
-                          role="progressbar" style="width: {{ result.total_score }}%"
-                          aria-valuenow="{{ result.total_score }}" aria-valuemin="0" aria-valuemax="100">
-                      {{ result.total_score }}%
-                    </div>
-                  </div>
-                </td>
+                <td>{{ result.total_score }}</td>
                 <td>{{ result.date|date:"M d, Y H:i" }}</td>
               </tr>
               {% endfor %}
