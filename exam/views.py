@@ -464,6 +464,13 @@ def contactus_view(request):
 #     return render(request, 'exam/report_view.html', context)
 
 
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from datetime import datetime
+from django.db.models import Sum
+from . import models # Assuming your models are in a models.py in the same app
+
 @login_required(login_url='adminlogin')
 def report_view(request):
     # Get all distinct courses and organizations
@@ -479,7 +486,6 @@ def report_view(request):
     min_mark = request.GET.get('min_mark')
     max_mark = request.GET.get('max_mark')
     exam_date = request.GET.get('exam_date')
-    per_page = request.GET.get('per_page', '10')  # Default to 10 items per page
 
     # Apply filters
     if course_id:
@@ -491,7 +497,7 @@ def report_view(request):
             date_obj = datetime.strptime(exam_date, '%Y-%m-%d').date()
             results = results.filter(date__date=date_obj)
         except ValueError:
-            pass 
+            pass
 
     # Get student IDs after filtering
     student_ids = [result.student.id for result in results]
@@ -509,7 +515,7 @@ def report_view(request):
     for result in results:
         result.fib_score = fib_scores.get(result.student.id, 0)
         result.total_score = result.marks + result.fib_score
-        
+
         # Apply score range filtering manually since we need to check total_score
         if min_mark and result.total_score < int(min_mark):
             continue
@@ -517,25 +523,36 @@ def report_view(request):
             continue
         filtered_results.append(result)
 
-    # Convert to a list for pagination
-    from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-    try:
-        per_page = int(per_page)
-    except ValueError:
-        per_page = 10
-        
-    paginator = Paginator(filtered_results, per_page)
+    # --- Pagination Logic with Rows Per Page Selector ---
+    # Get rows per page from request, default to 10
+    # Use 'all' as a special value to show all items
+    per_page_options = ['3','10', '20', '50', '100', 'all'] # Define your options
+    per_page = request.GET.get('per_page', '10') # Default to 10
+
+    if per_page == 'all':
+        # If 'all' is selected, set per_page to the total count
+        items_per_page = len(filtered_results) if filtered_results else 1
+    else:
+        try:
+            items_per_page = int(per_page)
+            # Ensure items_per_page is one of the valid options, otherwise default
+            if str(items_per_page) not in per_page_options:
+                items_per_page = 10
+        except (ValueError, TypeError):
+            items_per_page = 10 # Fallback to default if not an integer
+
+    paginator = Paginator(filtered_results, items_per_page)
     page_number = request.GET.get('page')
-    
+
     try:
         page_obj = paginator.page(page_number)
     except PageNotAnInteger:
         page_obj = paginator.page(1)
     except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
         page_obj = paginator.page(paginator.num_pages)
+    # --- End Pagination Logic ---
 
-    # Define standard page size options
-    page_size_options = [25, 50, 100,200,300,400,500,600,700,800,900,1000]
 
     context = {
         'results': page_obj,
@@ -546,10 +563,11 @@ def report_view(request):
         'min_mark': min_mark,
         'max_mark': max_mark,
         'selected_date': exam_date,
-        'per_page': per_page,
-        'page_size_options': page_size_options,
+        'per_page': per_page, # Pass the selected per_page to the template
+        'per_page_options': per_page_options, # Pass options to the template
     }
     return render(request, 'exam/report_view.html', context)
+
 
 @login_required(login_url='adminlogin')
 def admin_department_view(request):

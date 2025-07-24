@@ -10,12 +10,12 @@
       </div>
       <div>
         <button class="btn btn-light btn-sm me-2" onclick="printReport()" title="Print current report view">
-          <i class="fas fa-print me-1"></i> Print
+          <i class="fas fa-print me-1"></i> Print Current Page
         </button>
         <button class="btn btn-light btn-sm" onclick="exportToExcel()" title="Export to Excel">
-          <i class="fas fa-file-excel me-1"></i> Export
+          <i class="fas fa-file-excel me-1"></i> Export Current Page
         </button>
-      </div>
+        </div>
     </div>
 
     <div class="card-body">
@@ -51,9 +51,9 @@
 
         <div class="col-md-2">
           <label class="form-label fw-semibold small mb-1" title="Filter by exam date">Exam Date</label>
-          <input type="date" name="exam_date" class="form-control form-control-sm auto-submit" 
-                 value="{{ exam_date|default:'' }}" 
-                 max="{% now 'Y-m-d' %}" title="Select exam date">
+          <input type="date" name="exam_date" class="form-control form-control-sm auto-submit"
+                     value="{{ selected_date|default:'' }}"
+                     max="{% now 'Y-m-d' %}" title="Select exam date">
         </div>
 
         <div class="col-md-2 d-flex align-items-end">
@@ -68,11 +68,13 @@
           <div class="text-muted small">
             Showing {{ results.start_index }} to {{ results.end_index }} of {{ results.paginator.count }} records
           </div>
-          <div class="d-flex align-items-center">
-            <label class="form-label fw-semibold small mb-0 me-2">Items per page:</label>
-            <select name="per_page" class="form-select form-select-sm auto-submit" style="width: 80px;">
-              {% for option in page_size_options %}
-                <option value="{{ option }}" {% if option == per_page %}selected{% endif %}>{{ option }}</option>
+          <div class="col-auto">
+            <label class="form-label fw-semibold small mb-0 me-2" for="per-page-selector">Rows per page:</label>
+            <select name="per_page" id="per-page-selector" class="form-select form-select-sm" style="display: inline-block; width: auto;">
+              {% for option in per_page_options %}
+                <option value="{{ option }}" {% if per_page|stringformat:"s" == option %}selected{% endif %}>
+                  {% if option == 'all' %}All{% else %}{{ option }}{% endif %}
+                </option>
               {% endfor %}
             </select>
           </div>
@@ -99,9 +101,9 @@
                 <td>{{ result.exam.course_name }}</td>
                 <td>
                   <div class="progress" style="height: 20px;">
-                    <div class="progress-bar {% if result.marks >= 75 %}bg-success{% elif result.marks >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
-                         role="progressbar" style="width: 100%" 
-                         aria-valuenow="{{ result.total_score }}" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar {% if result.total_score >= 75 %}bg-success{% elif result.total_score >= 50 %}bg-warning{% else %}bg-danger{% endif %}"
+                          role="progressbar" style="width: {{ result.total_score }}%"
+                          aria-valuenow="{{ result.total_score }}" aria-valuemin="0" aria-valuemax="100">
                       {{ result.total_score }}%
                     </div>
                   </div>
@@ -117,37 +119,37 @@
           <ul class="pagination justify-content-center pagination-sm">
             {% if results.has_previous %}
               <li class="page-item">
-                <a class="page-link" href="?page=1&per_page={{ per_page }}{% for key,value in request.GET.items %}{% if key != 'page' and key != 'per_page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="First">
+                <a class="page-link" href="?page=1{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="First">
                   <span aria-hidden="true">&laquo;&laquo;</span>
                 </a>
               </li>
               <li class="page-item">
-                <a class="page-link" href="?page={{ results.previous_page_number }}&per_page={{ per_page }}{% for key,value in request.GET.items %}{% if key != 'page' and key != 'per_page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Previous">
+                <a class="page-link" href="?page={{ results.previous_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Previous">
                   <span aria-hidden="true">&laquo;</span>
                 </a>
               </li>
             {% endif %}
-            
+
             {% for num in results.paginator.page_range %}
               {% if results.number == num %}
                 <li class="page-item active">
-                  <a class="page-link" href="?page={{ num }}&per_page={{ per_page }}{% for key,value in request.GET.items %}{% if key != 'page' and key != 'per_page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                  <a class="page-link" href="?page={{ num }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
                 </li>
               {% elif num > results.number|add:'-3' and num < results.number|add:'3' %}
                 <li class="page-item">
-                  <a class="page-link" href="?page={{ num }}&per_page={{ per_page }}{% for key,value in request.GET.items %}{% if key != 'page' and key != 'per_page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                  <a class="page-link" href="?page={{ num }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
                 </li>
               {% endif %}
             {% endfor %}
-            
+
             {% if results.has_next %}
               <li class="page-item">
-                <a class="page-link" href="?page={{ results.next_page_number }}&per_page={{ per_page }}{% for key,value in request.GET.items %}{% if key != 'page' and key != 'per_page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Next">
+                <a class="page-link" href="?page={{ results.next_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Next">
                   <span aria-hidden="true">&raquo;</span>
                 </a>
               </li>
               <li class="page-item">
-                <a class="page-link" href="?page={{ results.paginator.num_pages }}&per_page={{ per_page }}{% for key,value in request.GET.items %}{% if key != 'page' and key != 'per_page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Last">
+                <a class="page-link" href="?page={{ results.paginator.num_pages }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Last">
                   <span aria-hidden="true">&raquo;&raquo;</span>
                 </a>
               </li>
@@ -183,7 +185,15 @@
         let printContent;
         if (hasResults) {
             const reportSection = document.getElementById('report-section');
-            printContent = reportSection.innerHTML;
+            // Clone the report section to remove elements not needed for print
+            const clonedReportSection = reportSection.cloneNode(true);
+            // Remove the pagination and rows per page selector from the cloned content
+            const paginationNav = clonedReportSection.querySelector('.pagination');
+            if (paginationNav) paginationNav.remove();
+            const rowsPerPageDiv = clonedReportSection.querySelector('.d-flex.justify-content-between.align-items-center.mb-3');
+            if (rowsPerPageDiv) rowsPerPageDiv.remove(); // Remove the entire div containing count and rows per page selector
+
+            printContent = clonedReportSection.innerHTML;
         } else {
             const noResultsSection = document.querySelector('.text-center.py-5');
             if (noResultsSection) {
@@ -201,17 +211,18 @@
 
         // Get current date and time
         const now = new Date();
-        const formattedDate = now.toLocaleDateString('en-US', { 
-            year: 'numeric', 
-            month: 'long', 
+        const formattedDate = now.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
             day: 'numeric',
             hour: '2-digit',
             minute: '2-digit'
         });
 
-        // Calculate page numbers
-        const totalPages = Math.ceil({{ results.paginator.count|default:0 }} / {{ results.paginator.per_page|default:20 }});
-        
+        // Calculate page numbers for the *current view*. This is important.
+        const totalPages = Math.ceil({{ results.paginator.count|default:0 }} / {{ results.paginator.per_page|default:10 }});
+        const currentPage = {{ results.number|default:1 }};
+
         // Write content with error handling
         try {
             printWindow.document.write(`
@@ -225,7 +236,7 @@
                                 size: A4;
                                 margin: 0;
                             }
-                            body { 
+                            body {
                                 font-family: Arial, sans-serif;
                                 margin: 0;
                                 padding: 0;
@@ -239,20 +250,18 @@
                                 margin-top: 20px;
                                 margin-bottom: 60px;
                             }
-                            .progress { 
-                                height: 20px; 
+                            .progress {
+                                height: 20px;
                                 background-color: #f8f9fa;
                             }
-                            .progress-bar { 
-                                font-size: 12px; 
+                            .progress-bar {
+                                font-size: 12px;
                                 line-height: 20px;
                                 background-color: #0d6efd;
                             }
-                            .pagination, .dropdown, .no-print { 
-                                display: none; 
-                            }
-                            .d-none { 
-                                display: none !important; 
+                            /* Hide elements not needed for print */
+                            .pagination, .dropdown, .no-print, .col-auto, form {
+                                display: none !important;
                             }
                             table {
                                 width: 100%;
@@ -322,7 +331,7 @@
                                     margin-bottom: 20px;
                                 }
                                 .print-content {
-                                    margin-top: 180px;
+                                    margin-top: 180px; /* Adjust based on your header height */
                                 }
                             }
                         </style>
@@ -359,7 +368,7 @@
                                             </div>
                                             <div style="width: 1px; background-color: #000; height: 20px;"></div>
                                             <div style="text-align: right;">
-                                                <strong>ገጽ/Page No.:</strong> Page 1 of ${totalPages || 1}
+                                                <strong>ገጽ/Page No.:</strong> Page ${currentPage} of ${totalPages || 1}
                                             </div>
                                         </div>
                                     </td>
@@ -439,6 +448,49 @@
         }, 800);
       });
     });
+
+    // Handle rows per page selector change
+    const perPageSelector = document.getElementById('per-page-selector');
+    if (perPageSelector) {
+      perPageSelector.addEventListener('change', function() {
+        const form = document.getElementById('filter-form');
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'per_page';
+        hiddenInput.value = this.value;
+        form.appendChild(hiddenInput);
+        // Ensure page parameter is reset to 1 when changing per_page,
+        // unless 'all' is selected (in which case pagination becomes irrelevant).
+        const pageInput = document.querySelector('input[name="page"]');
+        if (pageInput) {
+            if (this.value === 'all') {
+                pageInput.remove(); // Remove page parameter if showing all
+            } else {
+                pageInput.value = 1; // Go to first page if changing per_page
+            }
+        } else if (this.value !== 'all') {
+            const newPageInput = document.createElement('input');
+            newPageInput.type = 'hidden';
+            newPageInput.name = 'page';
+            newPageInput.value = 1;
+            form.appendChild(newPageInput);
+        }
+
+        form.submit();
+      });
+    }
+
+    // Add a hidden input for 'per_page' to the filter form so all pagination links can pick it up
+    // This ensures when you click a page number, the per_page setting is maintained.
+    const filterForm = document.getElementById('filter-form');
+    const currentPerPage = "{{ per_page }}";
+    if (currentPerPage && currentPerPage !== '10') { // Only add if it's not the default
+        const hiddenPerPageInput = document.createElement('input');
+        hiddenPerPageInput.type = 'hidden';
+        hiddenPerPageInput.name = 'per_page';
+        hiddenPerPageInput.value = currentPerPage;
+        filterForm.appendChild(hiddenPerPageInput);
+    }
   });
 </script>
 {% endblock %}
