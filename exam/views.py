@@ -535,7 +535,7 @@ def report_view(request):
         page_obj = paginator.page(paginator.num_pages)
 
     # Define standard page size options
-    page_size_options = [10, 25, 50, 100,200,300,400,500,600,700,800,900,1000]
+    page_size_options = [25, 50, 100,200,300,400,500,600,700,800,900,1000]
 
     context = {
         'results': page_obj,
