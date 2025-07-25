@@ -11,7 +11,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Security - adjust for LAN environment
 SECRET_KEY = '@k0#p3kidu)yaaa3u1hplxz)f@^6xiy384*(+n@@s5x#1bx@m5'
-DEBUG = False
+DEBUG = True
 
 # Get local IP address for LAN access
 hostname = socket.gethostname()
@@ -28,6 +28,7 @@ ALLOWED_HOSTS = [
 # Application definition
 
 INSTALLED_APPS = [
+    'grappelli',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -53,6 +54,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'teacher.middleware.TeacherAccessMiddleware',
     'onlinexam.middleware.SessionTimeoutMiddleware',
+    
 
 ]
 
@@ -85,12 +87,12 @@ WSGI_APPLICATION = 'onlinexam.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#     }
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
+}
 
 
 LANGUAGE_CODE = 'en-us'
@@ -104,20 +106,20 @@ USE_L10N = True
 USE_TZ = True
 
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'examdb',
-        'USER': 'examuser',
-        'PASSWORD': 'admin',
-        'HOST': 'localhost',
-        'PORT': '5432',
-        'OPTIONS': {
-            'options': '-c timezone=UTC',
-            'client_encoding': 'UTF8',
-        }
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'examdb',
+#         'USER': 'examuser',
+#         'PASSWORD': 'admin',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#         'OPTIONS': {
+#             'options': '-c timezone=UTC',
+#             'client_encoding': 'UTF8',
+#         }
+#     }
+# }
 
 
 
